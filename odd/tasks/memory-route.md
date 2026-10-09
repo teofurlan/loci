@@ -137,5 +137,36 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - `npm ci --dry-run` is OK, and the parent saw `npx jest` 213 passed, tsc clean, lint clean.
 - RDD: the slice is still unreviewed (gentle-ai#5141).
 
+- 2026-10-09: The T5b verification was finished by a delegated writer. The full device flow works: setup → memorize → run (hint: a fragment plus "North-east, 530 meters") → give up → results.
+  - `a1e0adb`:
+    - FallbackLandmarkSource tries Overpass mirrors in turn, because the public endpoint returned 504s.
+    - CooldownLlmClient skips a failed model for 2 minutes.
+  - `2b25c09`:
+    - Setup redirects to the current phase after Android recreates the activity, for example on a font-scale change.
+    - The run status line reserves its height so Hint does not jump.
+    - H shows only on punched controls.
+  - RED was a missing module for each new unit; GREEN is 224/224. Parent spot check: `npx jest` → 224 passed. expo-doctor 21/21.
+  - Captures are in `.impeccable/review/phone-*.png`.
+  - **The story came from the template fallback in every run.** Ollama 0.30.10 with `gemma4:e4b` fails on this host ("Gemma4Assistant requires ctx_other"), so the LLM path (proxy or Ollama) was never exercised end to end. The intent fell back to defaults, so "20 min" gave courses of 27 to 43 minutes.
+  - Untested on the device: a real GPS punch (inversion and haptic), read aloud, and the collapse animation.
+- The impeccable finish reviewer returned **fix** with 8 material fixes: opaque control rings, a responsive story window, the visible hint cost, attribution as text, the punch-card grid, sentence-case examples, footer rules, and a world-native score. A delegated fix writer is applying them as one batch.
+- 2026-10-09: The user authorized deploying the proxy with their Vercel account (team `teofurlans-projects`).
+  - Project `loci-llm-proxy`, root `proxy/`, preset Other. The user set `GEMINI_API_KEY` (Production) in the dashboard.
+  - Production alias: https://loci-llm-proxy.vercel.app.
+  - The first deploy failed at runtime with `ERR_MODULE_NOT_FOUND`: ESM needs explicit `.js` relative imports.
+  - Fix `8bf7882`:
+    - `.js` imports, with a jest `moduleNameMapper` stripping `.js`.
+    - A strict `proxy/tsconfig.json` (NodeNext) and `@types/node`; Node pinned to 24.x.
+    - A `.vercelignore` for tests, because files under `api/` become functions.
+  - Smoke tests on production:
+    - GET returns 405.
+    - POST "hello from gemma" returns 200 with that text.
+    - An intent-style JSON prompt with maxTokens 300 returns 200 and fenced JSON.
+  - Gotcha: with maxTokens 20, Gemma 4 returns empty (`upstream_empty`), because thinking consumes the budget. The app uses 300 and 1200, which works.
+  - The repo has no git remote; pushing to GitHub is the user's decision. The CLI deploy does not need it.
+
 ## Next step
+Act on the finish review verdict, then the documenter (DESIGN.md). Get the real Gemma path working (proxy deploy or a working Ollama model). Then T6.
+
+## Previous next step (done)
 Finish the T5b verification: device captures of memorize, run and results (plus dark theme and font scale 1.3), fixes, then the impeccable finish reviewer and documenter (DESIGN.md). Then T6.
