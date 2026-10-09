@@ -16,6 +16,26 @@ The app sends `{ prompt, json?, maxTokens? }` and gets `{ text }` back. The mode
 
 `maxTokens` is the visible-answer budget: clamped to 2,048 and defaulting to 2,048 when omitted. Gemma 4 reasoning counts against the upstream `maxOutputTokens`, so the proxy adds 2,048 tokens of thinking headroom on top. Errors never include the key or the upstream body.
 
+## Retry policy and logs
+
+An upstream attempt is retried **once** when it fails with an empty reply (`upstream_empty`), a 5xx status or a 429. It is not retried on any other 4xx status, nor on a timeout or network error: 110 s plus a retry would exceed the 120 s function `maxDuration`. The second failure is the one answered as 502.
+
+Every failed attempt logs one line with `console.error`, and nothing else:
+
+```json
+{ "event": "upstream_failure", "code": "upstream_error", "status": 503, "attempt": 1, "ms": 812 }
+```
+
+| Field | Meaning |
+| --- | --- |
+| `event` | Always `upstream_failure` |
+| `code` | `upstream_error` or `upstream_empty` |
+| `status` | Upstream HTTP status; absent for an empty reply, a timeout or a network error |
+| `attempt` | 1 or 2 |
+| `ms` | Duration of that attempt |
+
+The API key, the prompt and the upstream body are never logged.
+
 ## Timeouts
 
 | Layer | Limit |

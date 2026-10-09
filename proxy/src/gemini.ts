@@ -24,11 +24,15 @@ export const DEFAULT_UPSTREAM_TIMEOUT_MS = 110_000;
  */
 export const THINKING_HEADROOM_TOKENS = 2048;
 
-/** The upstream call failed or returned nothing usable. The message never contains the key or the upstream body. */
+/**
+ * The upstream call failed or returned nothing usable. `status` is the upstream HTTP status
+ * when there was one. Neither it nor the message ever contains the key or the upstream body.
+ */
 export class UpstreamError extends Error {
   constructor(
     readonly code: 'upstream_error' | 'upstream_empty',
     message: string,
+    readonly status?: number,
   ) {
     super(message);
     this.name = 'UpstreamError';
@@ -56,7 +60,7 @@ export async function callGemini(config: GeminiConfig, prompt: string, maxTokens
       body: JSON.stringify(body),
       signal: controller.signal,
     });
-    if (!response.ok) throw new UpstreamError('upstream_error', `Gemini API request failed with status ${response.status}`);
+    if (!response.ok) throw new UpstreamError('upstream_error', `Gemini API request failed with status ${response.status}`, response.status);
     data = await response.json();
   } finally {
     clearTimeout(timer);

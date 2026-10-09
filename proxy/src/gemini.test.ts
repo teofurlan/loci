@@ -1,5 +1,5 @@
 /** @jest-environment node */
-import { callGemini, DEFAULT_UPSTREAM_TIMEOUT_MS, GEMINI_API_BASE, THINKING_HEADROOM_TOKENS } from './gemini';
+import { callGemini, DEFAULT_UPSTREAM_TIMEOUT_MS, UpstreamError, GEMINI_API_BASE, THINKING_HEADROOM_TOKENS } from './gemini';
 
 const okFetch = (body: unknown) =>
   jest.fn(async (_url: string, _init: any) => ({ ok: true, status: 200, json: async () => body }));
@@ -50,6 +50,21 @@ describe('callGemini', () => {
     const error = await callGemini(config(fetchFn), 'x').catch((e: Error) => e);
     expect((error as Error).message).toContain('429');
     expect((error as Error).message).not.toContain('SECRET');
+  });
+
+  it('carries the upstream HTTP status on UpstreamError, never the body', async () => {
+    const fetchFn = jest.fn(async () => ({ ok: false, status: 503, json: async () => ({ error: 'SECRET-BODY' }) }));
+    const error = (await callGemini(config(fetchFn), 'x').catch((e: unknown) => e)) as UpstreamError;
+    expect(error).toBeInstanceOf(UpstreamError);
+    expect(error.code).toBe('upstream_error');
+    expect(error.status).toBe(503);
+    expect(JSON.stringify(error)).not.toContain('SECRET-BODY');
+  });
+
+  it('leaves the status undefined when the model returns no text', async () => {
+    const error = (await callGemini(config(okFetch({ candidates: [] })), 'x').catch((e: unknown) => e)) as UpstreamError;
+    expect(error.code).toBe('upstream_empty');
+    expect(error.status).toBeUndefined();
   });
 
   it('throws when the model returns no text (for example, blocked)', async () => {

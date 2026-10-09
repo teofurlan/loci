@@ -10,6 +10,8 @@ export type HandlerDeps = {
   fetch: FetchFn;
   env: Record<string, string | undefined>;
   now: () => number;
+  /** Receives one structured line per failed upstream attempt. Defaults to console.error. */
+  logger?: (entry: Record<string, unknown>) => void;
   /** Defaults to 20 requests per 10 minutes per IP. */
   rateLimit?: { capacity: number; windowMs: number };
 };
@@ -36,6 +38,12 @@ function clientKey(request: Request): string {
   const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
   return forwarded || request.headers.get('x-real-ip')?.trim() || 'unknown';
 }
+
+/** One retry for transient upstream trouble. Never a timeout: 110 s plus a retry would pass the 120 s maxDuration. */
+const shouldRetry = (error: unknown): boolean =>
+  error instanceof UpstreamError &&
+  (error.code === 'upstream_empty' ||
+    (error.status !== undefined && (error.status === 429 || error.status >= 500)));
 
 type CompleteRequest = { prompt: string; maxTokens: number };
 
@@ -90,21 +98,33 @@ export function createHandler(deps: HandlerDeps): (request: Request) => Promise<
     const parsed = parseBody(raw);
     if (parsed instanceof Response) return parsed;
 
-    try {
-      const text = await callGemini(
-        {
-          fetch: deps.fetch,
-          apiKey,
-          model: deps.env.GEMINI_MODEL?.trim() || DEFAULT_GEMMA_MODEL,
-          // Server-side only and optional: never read from the request body.
-          thinkingLevel: deps.env.GEMINI_THINKING_LEVEL?.trim() || undefined,
-        },
-        parsed.prompt,
-        parsed.maxTokens,
-      );
-      return json(200, { text });
-    } catch (error) {
-      return fail(502, error instanceof UpstreamError ? error.code : 'upstream_error');
+    const config = {
+      fetch: deps.fetch,
+      apiKey,
+      model: deps.env.GEMINI_MODEL?.trim() || DEFAULT_GEMMA_MODEL,
+      // Server-side only and optional: never read from the request body.
+      thinkingLevel: deps.env.GEMINI_THINKING_LEVEL?.trim() || undefined,
+    };
+    const log = deps.logger ?? ((entry) => console.error(entry));
+
+    for (let attempt = 1; ; attempt++) {
+      const startedAt = deps.now();
+      try {
+        return json(200, { text: await callGemini(config, parsed.prompt, parsed.maxTokens) });
+      } catch (error) {
+        const upstream = error instanceof UpstreamError ? error : undefined;
+        const code = upstream?.code ?? 'upstream_error';
+        // Only these fields: never the key, the prompt or the upstream body.
+        log({
+          event: 'upstream_failure',
+          code,
+          ...(upstream?.status !== undefined && { status: upstream.status }),
+          attempt,
+          ms: deps.now() - startedAt,
+        });
+        if (attempt === 1 && shouldRetry(error)) continue;
+        return fail(502, code);
+      }
     }
   };
 }

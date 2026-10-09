@@ -7,7 +7,9 @@ const geminiReply = (text: string) => ({ candidates: [{ content: { parts: [{ tex
 
 type FetchMock = jest.Mock<Promise<{ ok: boolean; status: number; json: () => Promise<unknown> }>, [string, any]>;
 
-function setup(overrides: { fetch?: FetchMock; env?: Record<string, string | undefined>; limit?: number } = {}) {
+function setup(
+  overrides: { fetch?: FetchMock; env?: Record<string, string | undefined>; limit?: number; logger?: jest.Mock } = {},
+) {
   let now = 0;
   const fetchFn: FetchMock =
     overrides.fetch ?? (jest.fn(async () => ({ ok: true, status: 200, json: async () => geminiReply('story') })) as unknown as FetchMock);
@@ -15,6 +17,7 @@ function setup(overrides: { fetch?: FetchMock; env?: Record<string, string | und
     fetch: fetchFn as never,
     env: overrides.env ?? { GEMINI_API_KEY: SECRET },
     now: () => now,
+    logger: overrides.logger ?? jest.fn(),
     rateLimit: { capacity: overrides.limit ?? 20, windowMs: 600_000 },
   });
   const post = (body: unknown, headers: Record<string, string> = {}) =>
@@ -232,6 +235,84 @@ describe('createHandler', () => {
       expect(res.status).toBe(500);
       expect(await res.json()).toEqual({ error: 'server_misconfigured' });
       expect(fetchFn).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('retry and diagnostics', () => {
+    const status = (code: number) => ({ ok: code < 400, status: code, json: async () => ({ error: SECRET }) });
+    const good = { ok: true, status: 200, json: async () => geminiReply('story') };
+    const empty = { ok: true, status: 200, json: async () => ({ candidates: [] }) };
+    const seq = (...replies: object[]) => {
+      const queue = [...replies];
+      return jest.fn(async () => queue.shift() ?? replies[replies.length - 1]) as unknown as FetchMock;
+    };
+
+    it.each([
+      ['an empty reply', empty],
+      ['a 500', status(500)],
+      ['a 503', status(503)],
+      ['a 429', status(429)],
+    ])('retries once after %s and returns the second answer', async (_label, first) => {
+      const fetchFn = seq(first, good);
+      const res = await setup({ fetch: fetchFn }).post({ prompt: 'x' });
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ text: 'story' });
+      expect(fetchFn).toHaveBeenCalledTimes(2);
+    });
+
+    it('gives up after one retry and answers the second failure', async () => {
+      const fetchFn = seq(status(503), status(500));
+      const res = await setup({ fetch: fetchFn }).post({ prompt: 'x' });
+      expect(res.status).toBe(502);
+      expect(await res.json()).toEqual({ error: 'upstream_error' });
+      expect(fetchFn).toHaveBeenCalledTimes(2);
+    });
+
+    it.each([400, 403, 404])('does not retry a %i', async (code) => {
+      const fetchFn = seq(status(code), good);
+      const res = await setup({ fetch: fetchFn }).post({ prompt: 'x' });
+      expect(res.status).toBe(502);
+      expect(fetchFn).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not retry a timeout, which would exceed the function maxDuration', async () => {
+      const fetchFn = jest.fn(async () => {
+        throw new Error('aborted');
+      }) as unknown as FetchMock;
+      const res = await setup({ fetch: fetchFn }).post({ prompt: 'x' });
+      expect(res.status).toBe(502);
+      expect(fetchFn).toHaveBeenCalledTimes(1);
+    });
+
+    it('logs one structured line per failed attempt with code, status, attempt and ms', async () => {
+      const logger = jest.fn();
+      await setup({ fetch: seq(status(503), empty), logger }).post({ prompt: 'x' });
+      expect(logger).toHaveBeenCalledTimes(2);
+      expect(logger.mock.calls[0][0]).toEqual({ event: 'upstream_failure', code: 'upstream_error', status: 503, attempt: 1, ms: expect.any(Number) });
+      expect(logger.mock.calls[1][0]).toEqual({ event: 'upstream_failure', code: 'upstream_empty', attempt: 2, ms: expect.any(Number) });
+    });
+
+    it('logs nothing on success', async () => {
+      const logger = jest.fn();
+      await setup({ logger }).post({ prompt: 'x' });
+      expect(logger).not.toHaveBeenCalled();
+    });
+
+    it('never logs the key, the prompt or the upstream body', async () => {
+      const logger = jest.fn();
+      const fetchFn = jest.fn(async () => {
+        throw new Error(`failed for ${SECRET} with PROMPT-TEXT`);
+      }) as unknown as FetchMock;
+      await setup({ fetch: seq(status(503), status(500)), logger }).post({ prompt: 'PROMPT-TEXT' });
+      await setup({ fetch: fetchFn, logger }).post({ prompt: 'PROMPT-TEXT' });
+      expect(logger).toHaveBeenCalled();
+      const logged = JSON.stringify(logger.mock.calls);
+      expect(logged).not.toContain(SECRET);
+      expect(logged).not.toContain('PROMPT-TEXT');
+      for (const [entry] of logger.mock.calls) {
+        expect(Object.keys(entry).sort()).toEqual(expect.arrayContaining(['attempt', 'code', 'event', 'ms']));
+        expect(Object.keys(entry).every((k) => ['event', 'code', 'status', 'attempt', 'ms'].includes(k))).toBe(true);
+      }
     });
   });
 });
