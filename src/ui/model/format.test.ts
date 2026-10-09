@@ -1,5 +1,5 @@
 import type { Hint } from '../../domain/session';
-import { formatElapsed, hintSentence } from './format';
+import { controlsFigure, formatElapsed, formatPoints, hintSentence, SCORING_RULE } from './format';
 
 describe('formatElapsed', () => {
   it('formats minutes and seconds', () => {
@@ -30,5 +30,21 @@ describe('hintSentence', () => {
   it('rounds under 100 m to 10 and uses kilometers from 1 km', () => {
     expect(hintSentence(hint('S', 47))).toBe('South, 50 meters.');
     expect(hintSentence(hint('W', 1340))).toBe('West, 1.3 kilometers.');
+  });
+});
+
+describe('score copy', () => {
+  it('prints whole points without a decimal and half points with one', () => {
+    expect(formatPoints(3)).toBe('3');
+    expect(formatPoints(2.5)).toBe('2.5');
+  });
+
+  it('names the controls figure', () => {
+    expect(controlsFigure(3, 5)).toBe('3 of 5 controls');
+    expect(controlsFigure(1, 1)).toBe('1 of 1 control');
+  });
+
+  it('explains the scoring in one line', () => {
+    expect(SCORING_RULE).toBe('A control scores 1. After a hint about it, it scores ½.');
   });
 });

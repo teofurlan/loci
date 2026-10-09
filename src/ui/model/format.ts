@@ -33,3 +33,15 @@ export function spokenDistance(meters: number): string {
 
 /** The direction half of a hint, for speech and for the screen. */
 export const hintSentence = (hint: Hint): string => `${compassWord(hint.compass)}, ${spokenDistance(hint.distanceMeters)}.`;
+
+export const formatPoints = (points: number): string => (Number.isInteger(points) ? String(points) : points.toFixed(1));
+
+/** The primary results figure: controls visited out of the course total. */
+export const controlsFigure = (visited: number, total: number): string =>
+  `${visited} of ${total} control${total === 1 ? '' : 's'}`;
+
+/** The real scoring rule (see HINT_POINT_VALUE), stated once on the results screen. */
+export const SCORING_RULE = 'A control scores 1. After a hint about it, it scores ½.';
+
+/** The cost of help, shown beside the Hint button. */
+export const HINT_COST = 'Hint: that control scores ½';
