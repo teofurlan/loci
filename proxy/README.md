@@ -14,7 +14,17 @@ The app sends `{ prompt, json?, maxTokens? }` and gets `{ text }` back. The mode
 | Missing `GEMINI_API_KEY` | 500 `server_misconfigured` |
 | Gemini failed, timed out or returned no text | 502 `upstream_error` or `upstream_empty` |
 
-`maxTokens` is clamped to 1,024 and defaults to 1,024 when omitted. Errors never include the key or the upstream body.
+`maxTokens` is the visible-answer budget: clamped to 2,048 and defaulting to 2,048 when omitted. Gemma 4 reasoning counts against the upstream `maxOutputTokens`, so the proxy adds 2,048 tokens of thinking headroom on top. Errors never include the key or the upstream body.
+
+## Timeouts
+
+| Layer | Limit |
+| --- | --- |
+| App `ProxyLlmClient` | 120 s |
+| Function `maxDuration` (`vercel.json`, `api/complete.ts`) | 120 s |
+| Upstream call to Gemini | 110 s |
+
+Each layer is shorter than the one outside it, so the proxy answers with a clean 502 instead of being cut off. Gemma 4 thinking can push a long story past a minute.
 
 Rate limiting is an in-memory token bucket (20 requests per 10 minutes per IP, from `x-forwarded-for`, then `x-real-ip`).
 It lives in the function instance, so it is **per instance and best-effort**: cold starts reset it and parallel instances do not share it.
@@ -26,6 +36,7 @@ For a hard quota, add the Vercel WAF rate limiting or a shared store.
 | --- | --- | --- |
 | `GEMINI_API_KEY` | yes | Google AI Studio key |
 | `GEMINI_MODEL` | no | Defaults to `gemma-4-26b-a4b-it` |
+| `GEMINI_THINKING_LEVEL` | no | Experimental. Sent as `generationConfig.thinkingConfig.thinkingLevel` (for example `MINIMAL`) to cut Gemma 4 thinking time. Not officially documented for Gemma, so unset by default; blank means unset. Server-only, never read from the request |
 
 ## Local run
 

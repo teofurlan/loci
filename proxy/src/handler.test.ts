@@ -1,4 +1,5 @@
 /** @jest-environment node */
+import { THINKING_HEADROOM_TOKENS } from './gemini';
 import { createHandler, MAX_OUTPUT_TOKENS, MAX_PROMPT_CHARS } from './handler';
 
 const SECRET = 'SECRET-KEY';
@@ -51,6 +52,29 @@ describe('createHandler', () => {
       expect(fetchFn.mock.calls[0][0]).toContain('/models/gemma-4-31b-it:generateContent');
     });
 
+    it('passes GEMINI_THINKING_LEVEL (trimmed) to Gemini as thinkingConfig', async () => {
+      const { post, fetchFn } = setup({ env: { GEMINI_API_KEY: SECRET, GEMINI_THINKING_LEVEL: ' MINIMAL ' } });
+      await post({ prompt: 'hello', maxTokens: 100 });
+      expect(JSON.parse(fetchFn.mock.calls[0][1].body).generationConfig.thinkingConfig).toEqual({
+        thinkingLevel: 'MINIMAL',
+      });
+    });
+
+    it('sends no thinkingConfig when GEMINI_THINKING_LEVEL is blank or unset', async () => {
+      const blank = setup({ env: { GEMINI_API_KEY: SECRET, GEMINI_THINKING_LEVEL: '  ' } });
+      await blank.post({ prompt: 'hello' });
+      expect(blank.fetchFn.mock.calls[0][1].body).not.toContain('thinkingConfig');
+      const unset = setup();
+      await unset.post({ prompt: 'hello' });
+      expect(unset.fetchFn.mock.calls[0][1].body).not.toContain('thinkingConfig');
+    });
+
+    it('never takes the thinking level from the request body', async () => {
+      const { post, fetchFn } = setup();
+      await post({ prompt: 'hello', thinkingLevel: 'HIGH', thinkingConfig: { thinkingLevel: 'HIGH' } });
+      expect(fetchFn.mock.calls[0][1].body).not.toContain('thinkingConfig');
+    });
+
     it('treats a blank GEMINI_MODEL as unset', async () => {
       const { post, fetchFn } = setup({ env: { GEMINI_API_KEY: SECRET, GEMINI_MODEL: '  ' } });
       await post({ prompt: 'hello' });
@@ -59,7 +83,9 @@ describe('createHandler', () => {
   });
 
   describe('token caps', () => {
-    const sentMaxTokens = (fetchFn: FetchMock) => JSON.parse(fetchFn.mock.calls[0][1].body).generationConfig.maxOutputTokens;
+    // The visible-answer budget; callGemini adds the thinking headroom on top.
+    const sentMaxTokens = (fetchFn: FetchMock) =>
+      JSON.parse(fetchFn.mock.calls[0][1].body).generationConfig.maxOutputTokens - THINKING_HEADROOM_TOKENS;
 
     it('passes through a maxTokens below the cap', async () => {
       const { post, fetchFn } = setup();
@@ -71,7 +97,7 @@ describe('createHandler', () => {
       const { post, fetchFn } = setup();
       await post({ prompt: 'x', maxTokens: 50_000 });
       expect(sentMaxTokens(fetchFn)).toBe(MAX_OUTPUT_TOKENS);
-      expect(MAX_OUTPUT_TOKENS).toBe(1024);
+      expect(MAX_OUTPUT_TOKENS).toBe(2048);
     });
 
     it('applies the cap when maxTokens is omitted', async () => {

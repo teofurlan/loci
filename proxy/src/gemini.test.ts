@@ -1,5 +1,5 @@
 /** @jest-environment node */
-import { callGemini, GEMINI_API_BASE } from './gemini';
+import { callGemini, DEFAULT_UPSTREAM_TIMEOUT_MS, GEMINI_API_BASE, THINKING_HEADROOM_TOKENS } from './gemini';
 
 const okFetch = (body: unknown) =>
   jest.fn(async (_url: string, _init: any) => ({ ok: true, status: 200, json: async () => body }));
@@ -25,8 +25,13 @@ describe('callGemini', () => {
     expect(init.headers['Content-Type']).toBe('application/json');
     expect(JSON.parse(init.body)).toEqual({
       contents: [{ parts: [{ text: 'hi' }] }],
-      generationConfig: { maxOutputTokens: 500 },
+      generationConfig: { maxOutputTokens: 500 + THINKING_HEADROOM_TOKENS },
     });
+  });
+
+  it('adds thinking headroom so Gemma 4 reasoning cannot starve the visible answer', () => {
+    // Observed in production: a 300-token budget returned no text because thinking used it all.
+    expect(THINKING_HEADROOM_TOKENS).toBe(2048);
   });
 
   it('omits generationConfig when no token cap is given', async () => {
@@ -60,5 +65,34 @@ describe('callGemini', () => {
         }),
     );
     await expect(callGemini(config(fetchFn, { timeoutMs: 10 }), 'x')).rejects.toThrow('aborted');
+  });
+
+  it('allows the upstream 110 seconds by default, inside the 120 second function limit', () => {
+    expect(DEFAULT_UPSTREAM_TIMEOUT_MS).toBe(110_000);
+  });
+
+  describe('thinkingLevel', () => {
+    it('sends thinkingConfig next to maxOutputTokens when configured', async () => {
+      const fetchFn = okFetch(reply({ text: 'ok' }));
+      await callGemini(config(fetchFn, { thinkingLevel: 'MINIMAL' }), 'hi', 500);
+      expect(JSON.parse(fetchFn.mock.calls[0][1].body).generationConfig).toEqual({
+        maxOutputTokens: 500 + THINKING_HEADROOM_TOKENS,
+        thinkingConfig: { thinkingLevel: 'MINIMAL' },
+      });
+    });
+
+    it('creates generationConfig when only thinkingLevel is present', async () => {
+      const fetchFn = okFetch(reply({ text: 'ok' }));
+      await callGemini(config(fetchFn, { thinkingLevel: 'MINIMAL' }), 'hi');
+      expect(JSON.parse(fetchFn.mock.calls[0][1].body).generationConfig).toEqual({
+        thinkingConfig: { thinkingLevel: 'MINIMAL' },
+      });
+    });
+
+    it('sends no thinkingConfig when unset', async () => {
+      const fetchFn = okFetch(reply({ text: 'ok' }));
+      await callGemini(config(fetchFn), 'hi', 500);
+      expect(JSON.parse(fetchFn.mock.calls[0][1].body).generationConfig).not.toHaveProperty('thinkingConfig');
+    });
   });
 });

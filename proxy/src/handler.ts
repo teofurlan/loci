@@ -2,7 +2,7 @@ import { callGemini, DEFAULT_GEMMA_MODEL, UpstreamError, type FetchFn } from './
 import { TokenBucketLimiter } from './rate-limiter.js';
 
 export const MAX_PROMPT_CHARS = 8000;
-export const MAX_OUTPUT_TOKENS = 1024;
+export const MAX_OUTPUT_TOKENS = 2048;
 /** Raw body cap: a prompt at the limit, even fully escaped, stays well below it. */
 const MAX_BODY_CHARS = 32_000;
 
@@ -92,7 +92,13 @@ export function createHandler(deps: HandlerDeps): (request: Request) => Promise<
 
     try {
       const text = await callGemini(
-        { fetch: deps.fetch, apiKey, model: deps.env.GEMINI_MODEL?.trim() || DEFAULT_GEMMA_MODEL },
+        {
+          fetch: deps.fetch,
+          apiKey,
+          model: deps.env.GEMINI_MODEL?.trim() || DEFAULT_GEMMA_MODEL,
+          // Server-side only and optional: never read from the request body.
+          thinkingLevel: deps.env.GEMINI_THINKING_LEVEL?.trim() || undefined,
+        },
         parsed.prompt,
         parsed.maxTokens,
       );

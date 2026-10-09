@@ -1,5 +1,8 @@
 import type { LlmClient, LlmCompletionOptions } from '../../domain/ports';
-import { DEFAULT_LLM_TIMEOUT_MS, postJson, type FetchFn } from './http';
+import { postJson, type FetchFn } from './http';
+
+/** Above the proxy's 110 s upstream timeout, so a slow but legitimate story can still arrive. */
+export const PROXY_TIMEOUT_MS = 120_000;
 
 export type ProxyOptions = {
   fetch: FetchFn;
@@ -25,7 +28,7 @@ export class ProxyLlmClient implements LlmClient {
       `${this.options.baseUrl.replace(/\/+$/, '')}/api/complete`,
       {},
       body,
-      this.options.timeoutMs ?? DEFAULT_LLM_TIMEOUT_MS,
+      this.options.timeoutMs ?? PROXY_TIMEOUT_MS,
       'LLM proxy',
     );
     if (typeof data?.text !== 'string' || data.text === '') throw new Error('LLM proxy returned no text');

@@ -1,4 +1,4 @@
-import { ProxyLlmClient } from './proxy';
+import { PROXY_TIMEOUT_MS, ProxyLlmClient } from './proxy';
 
 const okFetch = (body: unknown) =>
   jest.fn(async (_url: string, _init: any) => ({ ok: true, status: 200, json: async () => body }));
@@ -52,5 +52,16 @@ describe('ProxyLlmClient', () => {
     );
     const client = new ProxyLlmClient({ fetch: fetchFn as never, baseUrl: 'https://p.test', timeoutMs: 10 });
     await expect(client.complete('x')).rejects.toThrow('aborted');
+  });
+
+  it('waits 120 seconds by default so a slow upstream story can arrive', async () => {
+    const spy = jest.spyOn(globalThis, 'setTimeout');
+    try {
+      await new ProxyLlmClient({ fetch: okFetch({ text: 'ok' }) as never, baseUrl: 'https://p.test' }).complete('x');
+      expect(spy.mock.calls.map((call: unknown[]) => call[1])).toContain(PROXY_TIMEOUT_MS);
+      expect(PROXY_TIMEOUT_MS).toBe(120_000);
+    } finally {
+      spy.mockRestore();
+    }
   });
 });
