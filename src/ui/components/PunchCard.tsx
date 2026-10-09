@@ -31,7 +31,7 @@ export function PunchCard({ total, visited, hinted }: Props) {
             <AppText variant="label" color={colors.overprint} tabular style={styles.number} maxFontSizeMultiplier={1.2}>
               {index + 1}
             </AppText>
-            {hinted.has(index) && (
+            {punched && hinted.has(index) && (
               <AppText variant="label" color={colors.primary} style={styles.hint} maxFontSizeMultiplier={1.2}>
                 H
               </AppText>

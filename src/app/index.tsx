@@ -1,5 +1,5 @@
 import * as Location from 'expo-location';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Linking, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +8,7 @@ import { AppText } from '../ui/components/AppText';
 import { FlagButton } from '../ui/components/FlagButton';
 import { RuleButton } from '../ui/components/RuleButton';
 import { describePlanError, type PlanErrorDescription } from '../ui/model/errors';
+import { resumeRoute } from '../ui/model/resume-route';
 import { courseStore } from '../ui/state/course';
 import { services } from '../ui/state/services';
 import { SHAPE, TYPE, useTheme } from '../ui/theme/theme';
@@ -47,6 +48,8 @@ export default function SetupScreen() {
   const [denied, setDenied] = useState<LocationProblem | null>(null);
   const [failure, setFailure] = useState<PlanErrorDescription | null>(null);
   const mounted = useRef(true);
+  // Read once on mount: planning fills the store and navigates on its own.
+  const [resumeHref] = useState(() => resumeRoute(courseStore.get().phase));
 
   useEffect(() => {
     mounted.current = true;
@@ -82,6 +85,8 @@ export default function SetupScreen() {
       if (mounted.current) setBusy(false);
     }
   }, [request]);
+
+  if (resumeHref) return <Redirect href={resumeHref} />;
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top }]}>
@@ -154,7 +159,7 @@ export default function SetupScreen() {
           <View style={styles.busy} accessibilityLiveRegion="polite">
             <ActivityIndicator color={colors.onBackground} />
             <AppText variant="body" color={colors.onSurfaceVariant} style={styles.busyText}>
-              Finding places near you and writing the story. This can take up to a minute.
+              Finding places near you and writing the story. This can take a minute or two.
             </AppText>
           </View>
         )}

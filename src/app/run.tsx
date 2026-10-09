@@ -133,11 +133,14 @@ export default function RunScreen() {
       <AppText variant="headline" color={fg} tabular style={styles.time}>
         {formatElapsed(now - course.startedAt)}
       </AppText>
-      {status && (
-        <AppText variant="body" color={fg} style={styles.status}>
-          {status}
-        </AppText>
-      )}
+      {/* Reserved height: the hint button must not jump when the first GPS fix clears the status. */}
+      <View style={styles.status}>
+        {status && (
+          <AppText variant="body" color={fg}>
+            {status}
+          </AppText>
+        )}
+      </View>
 
       <View style={styles.hintBlock}>
         <RuleButton
@@ -188,7 +191,7 @@ const styles = StyleSheet.create({
   root: { flex: 1, paddingHorizontal: 24 },
   count: { fontSize: 64, lineHeight: 68 },
   time: { marginTop: 12 },
-  status: { marginTop: 12 },
+  status: { marginTop: 12, minHeight: 48 },
   hintBlock: { marginTop: 40, alignItems: 'flex-start' },
   hintText: { marginTop: 16, gap: 10 },
   direction: { marginTop: 4 },
