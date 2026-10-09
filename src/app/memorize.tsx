@@ -167,7 +167,7 @@ export default function MemorizeScreen() {
     if (hiding) return;
     setHiding(true);
     stopSpeech();
-    for (const step of fadeSequence(reducedMotion)) {
+    for (const step of fadeSequence(reducedMotion, COLORS.ground, COLORS.runField)) {
       setFade(step.color);
       await sleep(step.ms);
     }
@@ -234,8 +234,7 @@ export default function MemorizeScreen() {
           <ScrollView style={styles.fill} contentContainerStyle={styles.dialogue}>
             <DialogueBox
               title={current.name}
-              tone="lit"
-              corner={
+                            corner={
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Next place"

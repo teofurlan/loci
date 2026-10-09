@@ -1,21 +1,10 @@
-import { PALETTE } from './palette';
+import { ACTIVE_PALETTE } from './palettes';
 
 /**
- * The Overworld theme. One fixed LCD palette: the system light or dark setting is ignored.
- * Lit is reserved for things you can press (buttons, tappable boxes, sprites, menu rows).
+ * The semantic color tokens of the active palette set (see `palettes.ts`, where `ACTIVE_PALETTE_NAME`
+ * switches between the options). Green appears only as `found`, in the map's parks and in nature sprites.
  */
-export const COLORS = {
-  /** Screen ground on setup, memorize and results. */
-  ground: PALETTE.ground,
-  /** The run field, and the fill of a pressed button. */
-  field: PALETTE.ink,
-  /** Every line and all text on ground or lit. */
-  ink: PALETTE.ink,
-  /** Pressable surfaces, and text on the ink field. */
-  lit: PALETTE.lit,
-  /** Quiet fills and decorative rules only. Never text on ink. */
-  shade: PALETTE.shade,
-} as const;
+export const COLORS = ACTIVE_PALETTE.ui;
 
 export const FONTS = {
   body: 'PixelifySans_400Regular',

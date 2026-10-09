@@ -41,7 +41,7 @@ function FoundFlash({ kind, reducedMotion, onDone }: { kind: LandmarkKind; reduc
   }, [reducedMotion, onDone]);
   return (
     <View pointerEvents="none" style={styles.flash}>
-      <PixelBox fill={COLORS.ground} border={COLORS.lit} behind={COLORS.field} double>
+      <PixelBox fill={COLORS.found} border={COLORS.runText} behind={COLORS.runField} double>
         <View style={styles.flashPlate}>
           <PixelSprite name={kind} scale={6} />
           <View style={StyleSheet.absoluteFill}>
@@ -203,17 +203,17 @@ export default function RunScreen() {
     <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
       <StatusBar style="light" />
       <View accessible accessibilityLiveRegion="polite" accessibilityLabel={`${punched} of ${total} punched`}>
-        <AppText variant="display" color={COLORS.lit} maxFontSizeMultiplier={1.3}>
+        <AppText variant="display" color={COLORS.runText} maxFontSizeMultiplier={1.3}>
           {punched}/{total} PLACES
         </AppText>
       </View>
-      <AppText variant="headline" color={COLORS.lit} maxFontSizeMultiplier={1.3} style={styles.time}>
+      <AppText variant="headline" color={COLORS.runText} maxFontSizeMultiplier={1.3} style={styles.time}>
         {formatElapsed(now - course.startedAt)}
       </AppText>
       {/* Reserved height: the hint button must not jump when the first GPS fix clears the status. */}
       <View style={styles.status}>
         {status && (
-          <AppText variant="body" color={COLORS.lit}>
+          <AppText variant="body" color={COLORS.runText}>
             {status}
           </AppText>
         )}
@@ -228,11 +228,11 @@ export default function RunScreen() {
             accessibilityHint="Reads the nearest missing control's story, then its direction. Costs half a point."
           />
         </View>
-        <AppText variant="body" color={COLORS.lit} style={styles.cost}>
+        <AppText variant="body" color={COLORS.runText} style={styles.cost}>
           {HINT_COST}
         </AppText>
         {hintNote && (
-          <AppText variant="body" color={COLORS.lit} style={styles.hintText}>
+          <AppText variant="body" color={COLORS.runText} style={styles.hintText}>
             {hintNote}
           </AppText>
         )}
@@ -240,10 +240,10 @@ export default function RunScreen() {
           <View style={styles.hintText} accessibilityLiveRegion="polite" accessibilityLabel={hintText}>
             <DialogueBox title="Hint" tone="dark">
               <View>
-                <AppText variant="body" color={COLORS.lit} style={styles.ghost}>
+                <AppText variant="body" color={COLORS.runText} style={styles.ghost}>
                   {hintText}
                 </AppText>
-                <AppText variant="body" color={COLORS.lit} style={styles.typed}>
+                <AppText variant="body" color={COLORS.runText} style={styles.typed}>
                   {typing.shown}
                 </AppText>
               </View>
@@ -255,7 +255,7 @@ export default function RunScreen() {
       <View style={styles.giveUp}>
         {confirming ? (
           <DialogueBox tone="dark">
-            <AppText variant="title" color={COLORS.lit}>
+            <AppText variant="title" color={COLORS.runText}>
               End the run and reveal the map?
             </AppText>
             <View style={styles.confirmRow}>
@@ -280,7 +280,7 @@ export default function RunScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, paddingHorizontal: 24, backgroundColor: COLORS.field },
+  root: { flex: 1, paddingHorizontal: 24, backgroundColor: COLORS.runField },
   time: { marginTop: 14 },
   status: { marginTop: 12, minHeight: 48 },
   hintScroll: { flex: 1, marginTop: 16 },

@@ -153,7 +153,7 @@ export default function SetupScreen() {
         <AppText variant="label" style={styles.fieldLabel} nativeID="request-label" maxFontSizeMultiplier={1.3}>
           Course request
         </AppText>
-        <PixelBox fill={COLORS.lit} behind={COLORS.ground} double>
+        <PixelBox fill={COLORS.panel} behind={COLORS.ground} double>
           <TextInput
             accessibilityLabelledBy="request-label"
             value={request}
@@ -193,7 +193,7 @@ export default function SetupScreen() {
         <AppText variant="label" style={styles.examplesLabel} maxFontSizeMultiplier={1.3}>
           Or pick an example
         </AppText>
-        <PixelBox fill={COLORS.lit} behind={COLORS.ground} double>
+        <PixelBox fill={COLORS.panel} behind={COLORS.ground} double>
           <View accessibilityRole="menu">
             {EXAMPLES.map((example, index) => (
               <Pressable

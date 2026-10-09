@@ -19,7 +19,7 @@ type Props = {
   selected?: boolean;
 };
 
-/** A lit pixel button. Pressed, it flips to ink with lit text; on the ink field it is the reverse. */
+/** A pixel button in the action color. Pressed, it flips to an ink fill; on the run field it inverts. */
 export function PixelButton({
   label,
   onPress,
@@ -35,10 +35,16 @@ export function PixelButton({
   const inactive = disabled || loading;
   const onInk = variant === 'onInk';
   const flipped = pressed || selected;
-  const fill = onInk ? (flipped ? COLORS.lit : COLORS.field) : flipped ? COLORS.ink : COLORS.lit;
-  const text = onInk ? (flipped ? COLORS.ink : COLORS.lit) : flipped ? COLORS.lit : COLORS.ink;
-  const border = onInk ? COLORS.lit : COLORS.ink;
-  const behind = onInk ? COLORS.field : COLORS.ground;
+  const fill = onInk
+    ? flipped
+      ? COLORS.runText
+      : COLORS.runField
+    : flipped
+      ? COLORS.ink
+      : COLORS.action;
+  const text = onInk ? (flipped ? COLORS.runField : COLORS.runText) : COLORS.onAction;
+  const border = onInk ? COLORS.runText : COLORS.ink;
+  const behind = onInk ? COLORS.runField : COLORS.ground;
   return (
     <Pressable
       accessibilityRole="button"

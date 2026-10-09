@@ -28,7 +28,7 @@ function Badge({ slot }: { slot: BadgeSlot }) {
   }
   return (
     <View accessible accessibilityLabel={label} style={styles.slot}>
-      <PixelBox fill={COLORS.lit} behind={COLORS.ground} double>
+      <PixelBox fill={COLORS.found} behind={COLORS.ground} double>
         <View style={styles.badge}>
           <PixelSprite name={slot.kind} scale={3} />
           <AppText variant="label" allowFontScaling={false} style={styles.number}>

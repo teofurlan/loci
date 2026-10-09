@@ -32,7 +32,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.ground } }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="memorize" />
-        <Stack.Screen name="run" options={{ animation: 'none', gestureEnabled: false, contentStyle: { backgroundColor: COLORS.field } }} />
+        <Stack.Screen name="run" options={{ animation: 'none', gestureEnabled: false, contentStyle: { backgroundColor: COLORS.runField } }} />
         <Stack.Screen name="results" options={{ animation: 'none', gestureEnabled: false }} />
       </Stack>
     </>

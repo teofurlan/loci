@@ -1,16 +1,4 @@
-/**
- * The one self-contained four-shade LCD palette. It never follows the system theme.
- * Text pairings: ink on ground, ink on lit, lit or ground on ink. Never shade text on ink.
- */
-export const PALETTE = {
-  ink: '#0F380F',
-  shade: '#306230',
-  ground: '#8BAC0F',
-  lit: '#9BBC0F',
-} as const;
-
-/** The palette in index order: sprite pixel values 0..3 index into this. */
-export const SHADES = [PALETTE.ink, PALETTE.shade, PALETTE.ground, PALETTE.lit] as const;
+/** Color utilities shared by the palette sets, the palette fade and the contrast checks. */
 
 const channel = (hex: string, offset: number): number => {
   const value = parseInt(hex.slice(offset, offset + 2), 16) / 255;
@@ -24,4 +12,17 @@ const luminance = (hex: string): number =>
 export function contrastRatio(a: string, b: string): number {
   const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
   return (light + 0.05) / (dark + 0.05);
+}
+
+/** Linear mix of two `#RRGGBB` colors; `amount` 0 is `from`, 1 is `to`. */
+export function mixHex(from: string, to: string, amount: number): string {
+  const t = Math.min(1, Math.max(0, amount));
+  const part = (offset: number) => {
+    const a = parseInt(from.slice(offset, offset + 2), 16);
+    const b = parseInt(to.slice(offset, offset + 2), 16);
+    return Math.round(a + (b - a) * t)
+      .toString(16)
+      .padStart(2, '0');
+  };
+  return `#${part(1)}${part(3)}${part(5)}`.toUpperCase();
 }

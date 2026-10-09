@@ -7,19 +7,19 @@ import { PixelBox } from './PixelBox';
 type Props = {
   /** The speaker: a landmark name, or a short heading. */
   title?: string;
-  /** `lit` is for tappable boxes on the ground; `dark` is for the ink field of the run screen. */
-  tone?: 'lit' | 'ground' | 'dark';
+  /** `panel` is the paper box on the ground; `dark` is for the run screen's field. */
+  tone?: 'panel' | 'dark';
   children: ReactNode;
   /** Bottom-right slot, e.g. the blinking advance cursor. */
   corner?: ReactNode;
 };
 
 /** The double-bordered handheld dialogue box, headed with the speaker's name. */
-export function DialogueBox({ title, tone = 'ground', children, corner }: Props) {
+export function DialogueBox({ title, tone = 'panel', children, corner }: Props) {
   const dark = tone === 'dark';
-  const fill = dark ? COLORS.field : tone === 'lit' ? COLORS.lit : COLORS.ground;
-  const line = dark ? COLORS.lit : COLORS.ink;
-  const behind = dark ? COLORS.field : COLORS.ground;
+  const fill = dark ? COLORS.runField : COLORS.panel;
+  const line = dark ? COLORS.runText : COLORS.ink;
+  const behind = dark ? COLORS.runField : COLORS.ground;
   return (
     <View style={styles.root}>
       <PixelBox fill={fill} border={line} behind={behind} double>

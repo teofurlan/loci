@@ -1,5 +1,7 @@
-import { PALETTE } from '../theme/palette';
+import { PALETTES } from '../theme/palettes';
 import { pixelizeStyle, type StyleLike } from './pixel-style';
+
+const MAP = PALETTES.c.map;
 
 const base = { type: 'x', source: 'openmaptiles' };
 
@@ -45,32 +47,33 @@ const style: StyleLike = {
 const paintOf = (out: StyleLike, id: string) => out.layers.find((l) => l.id === id)?.paint ?? {};
 
 describe('pixelizeStyle', () => {
-  const out = pixelizeStyle(style);
+  const out = pixelizeStyle(style, MAP);
 
   it('paints land ground, parks and woods lit, water and buildings shade', () => {
-    expect(paintOf(out, 'background')['background-color']).toBe(PALETTE.ground);
-    expect(paintOf(out, 'park')['fill-color']).toBe(PALETTE.lit);
-    expect(paintOf(out, 'landcover_wood')['fill-color']).toBe(PALETTE.lit);
-    expect(paintOf(out, 'landuse_residential')['fill-color']).toBe(PALETTE.ground);
-    expect(paintOf(out, 'water')['fill-color']).toBe(PALETTE.shade);
-    expect(paintOf(out, 'waterway')['line-color']).toBe(PALETTE.shade);
-    expect(paintOf(out, 'building')['fill-color']).toBe(PALETTE.shade);
+    expect(paintOf(out, 'background')['background-color']).toBe(MAP.land);
+    expect(paintOf(out, 'park')['fill-color']).toBe(MAP.park);
+    expect(paintOf(out, 'landcover_wood')['fill-color']).toBe(MAP.wood);
+    expect(paintOf(out, 'landuse_residential')['fill-color']).toBe(MAP.land);
+    expect(paintOf(out, 'water')['fill-color']).toBe(MAP.water);
+    expect(paintOf(out, 'waterway')['line-color']).toBe(MAP.water);
+    expect(paintOf(out, 'building')['fill-color']).toBe(MAP.building);
   });
 
-  it('keeps buildings quiet', () => {
-    expect(paintOf(out, 'building')['fill-opacity']).toBeLessThanOrEqual(0.5);
+  it('keeps buildings quiet: opaque, with no outline contrast', () => {
+    expect(paintOf(out, 'building')['fill-opacity']).toBe(1);
+    expect(paintOf(out, 'building')['fill-outline-color']).toBe(MAP.building);
   });
 
   it('draws roads as ink with ground inside the wide ones, opaque', () => {
-    expect(paintOf(out, 'highway_minor')['line-color']).toBe(PALETTE.ink);
+    expect(paintOf(out, 'highway_minor')['line-color']).toBe(MAP.road);
     expect(paintOf(out, 'highway_minor')['line-opacity']).toBe(1);
-    expect(paintOf(out, 'highway_major_casing')['line-color']).toBe(PALETTE.ink);
-    expect(paintOf(out, 'highway_major_inner')['line-color']).toBe(PALETTE.ground);
-    expect(paintOf(out, 'railway_dashline')['line-color']).toBe(PALETTE.ground);
-    expect(paintOf(out, 'boundary_2')['line-color']).toBe(PALETTE.shade);
+    expect(paintOf(out, 'highway_major_casing')['line-color']).toBe(MAP.road);
+    expect(paintOf(out, 'highway_major_inner')['line-color']).toBe(MAP.roadFill);
+    expect(paintOf(out, 'railway_dashline')['line-color']).toBe(MAP.roadFill);
+    expect(paintOf(out, 'boundary_2')['line-color']).toBe(MAP.boundary);
   });
 
-  it('keeps labels sparse, in ink with a lit halo, and drops rasters', () => {
+  it('keeps labels sparse, in ink with a light halo, and drops rasters', () => {
     const ids = out.layers.map((l) => l.id);
     expect(ids).toContain('highway-name-major');
     expect(ids).toContain('label_city');
@@ -80,13 +83,13 @@ describe('pixelizeStyle', () => {
     expect(ids).not.toContain('water_name_point_label');
     expect(ids).not.toContain('ne2');
     const label = out.layers.find((l) => l.id === 'label_city')!;
-    expect(label.paint?.['text-color']).toBe(PALETTE.ink);
-    expect(label.paint?.['text-halo-color']).toBe(PALETTE.lit);
+    expect(label.paint?.['text-color']).toBe(MAP.label);
+    expect(label.paint?.['text-halo-color']).toBe(MAP.labelHalo);
     expect(label.layout?.['text-font']).toEqual(['Noto Sans Bold']);
   });
 
   it('uses only palette colors in every color property', () => {
-    const palette = Object.values(PALETTE);
+    const palette = Object.values(MAP);
     for (const layer of out.layers) {
       for (const [key, value] of Object.entries(layer.paint ?? {})) {
         if (key.endsWith('-color')) expect(palette).toContain(value);

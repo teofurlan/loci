@@ -2,8 +2,8 @@ import type { LandmarkKind } from '../../domain/types';
 
 /**
  * Original 16 x 16 sprites, authored here as character grids and drawn from scratch.
- *   `.` transparent   `0` ink   `1` shade   `2` ground   `3` lit
- * The digits are indexes into the four-shade LCD palette (see the theme).
+ *   `.` transparent   `0` outline   `1` dark   `2` mid   `3` light
+ * The digits index the four colors each sprite gets from the active palette set (see `palettes.ts`).
  */
 export const SPRITE_SIZE = 16;
 

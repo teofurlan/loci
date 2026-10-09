@@ -2,14 +2,15 @@ import { memo } from 'react';
 import Svg, { Path } from 'react-native-svg';
 import { glyphFor, type GlyphName } from '../model/glyphs';
 import { spriteFor, spritePaths, type PaletteIndex, type Sprite, type SpriteName } from '../model/sprites';
-import { SHADES } from '../theme/palette';
+import { COLORS } from '../theme/theme';
+import { ACTIVE_PALETTE } from '../theme/palettes';
 
 type Props = {
   /** A named 16 x 16 sprite, or a small glyph. */
   name: SpriteName | `glyph:${GlyphName}`;
   /** Integer pixel scale: one sprite pixel is `scale` dp, so edges stay crisp. */
   scale: number;
-  /** Replaces the ink (index 0) color, e.g. lit when a glyph sits on an ink field. */
+  /** Replaces the outline (index 0) color, e.g. when a glyph sits on a dark button. */
   inkColor?: string;
 };
 
@@ -21,6 +22,8 @@ function resolve(name: Props['name']): Sprite {
 function PixelSpriteView({ name, scale, inkColor }: Props) {
   const sprite = resolve(name);
   const paths = spritePaths(sprite);
+  // Glyphs are single-color marks in ink; sprites take their four colors from the active palette.
+  const colors = name.startsWith('glyph:') ? null : ACTIVE_PALETTE.sprites[name as SpriteName];
   const cols = sprite[0].length;
   return (
     <Svg
@@ -31,7 +34,7 @@ function PixelSpriteView({ name, scale, inkColor }: Props) {
       importantForAccessibility="no-hide-descendants"
     >
       {([0, 1, 2, 3] as PaletteIndex[]).map((shade) =>
-        paths[shade] ? <Path key={shade} d={paths[shade]} fill={shade === 0 && inkColor ? inkColor : SHADES[shade]} /> : null,
+        paths[shade] ? <Path key={shade} d={paths[shade]} fill={shade === 0 && inkColor ? inkColor : (colors?.[shade] ?? COLORS.ink)} /> : null,
       )}
     </Svg>
   );

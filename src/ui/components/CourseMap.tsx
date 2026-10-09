@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'rea
 import type { Landmark, LatLng } from '../../domain/types';
 import { ATTRIBUTION } from '../model/format';
 import { BASE_STYLE_URL, usePixelStyle } from '../state/use-pixel-style';
+import { ACTIVE_PALETTE } from '../theme/palettes';
 import { COLORS, SHAPE } from '../theme/theme';
 import { AppText } from './AppText';
 import { PixelBox } from './PixelBox';
@@ -86,13 +87,13 @@ function CourseMapView({ start, controls, visited, selected, onSelect, style, pa
                   hitSlop={6}
                   style={styles.marker}
                 >
-                  <PixelBox fill={missed ? COLORS.ground : COLORS.lit} behind={COLORS.ground}>
+                  <PixelBox fill={missed ? COLORS.ground : COLORS.panel} behind={COLORS.ground}>
                     <View style={styles.plate}>
                       <PixelSprite name={control.kind} scale={2} />
                     </View>
                   </PixelBox>
                   <View style={[styles.tag, found && styles.tagFound]}>
-                    <AppText variant="label" allowFontScaling={false} color={found ? COLORS.lit : COLORS.ink} style={styles.tagText}>
+                    <AppText variant="label" allowFontScaling={false} color={COLORS.ink} style={styles.tagText}>
                       {index + 1}
                     </AppText>
                   </View>
@@ -130,7 +131,7 @@ function CourseMapView({ start, controls, visited, selected, onSelect, style, pa
 }
 
 const styles = StyleSheet.create({
-  root: { backgroundColor: COLORS.ground, overflow: 'hidden' },
+  root: { backgroundColor: ACTIVE_PALETTE.map.land, overflow: 'hidden' },
   map: { flex: 1 },
   marker: { paddingRight: 8, paddingBottom: 8 },
   plate: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
@@ -141,21 +142,21 @@ const styles = StyleSheet.create({
     minWidth: 18,
     height: 18,
     paddingHorizontal: 2,
-    backgroundColor: COLORS.lit,
+    backgroundColor: COLORS.panel,
     borderWidth: SHAPE.rule,
     borderColor: COLORS.ink,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cursor: { padding: 2, backgroundColor: COLORS.lit, borderWidth: SHAPE.rule, borderColor: COLORS.ink },
-  tagFound: { backgroundColor: COLORS.ink },
+  cursor: { padding: 2, backgroundColor: COLORS.panel, borderWidth: SHAPE.rule, borderColor: COLORS.ink },
+  tagFound: { backgroundColor: COLORS.found },
   tagText: { fontSize: 9, lineHeight: 12 },
   attribution: {
     position: 'absolute',
     left: 6,
     bottom: 6,
     paddingHorizontal: 4,
-    backgroundColor: COLORS.lit,
+    backgroundColor: COLORS.panel,
     borderWidth: SHAPE.rule,
     borderColor: COLORS.ink,
   },

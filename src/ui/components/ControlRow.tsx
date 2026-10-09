@@ -17,7 +17,7 @@ type Props = {
 export function ControlRow({ number, kind, name, status }: Props) {
   return (
     <View accessible accessibilityLabel={`${number}. ${name}. ${status}`} style={styles.row}>
-      <PixelBox fill={COLORS.lit} behind={COLORS.ground}>
+      <PixelBox fill={COLORS.panel} behind={COLORS.ground}>
         <View style={styles.plate}>
           <PixelSprite name={kind} scale={2} />
         </View>
