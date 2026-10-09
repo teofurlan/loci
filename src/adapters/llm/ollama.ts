@@ -10,7 +10,7 @@ export type OllamaOptions = {
 };
 
 export const DEFAULT_OLLAMA_URL = 'http://localhost:11434';
-export const DEFAULT_OLLAMA_MODEL = 'gemma3:4b';
+export const DEFAULT_OLLAMA_MODEL = 'gemma4:e4b';
 
 /** Development client for a local Ollama server (POST /api/generate, non-streaming). */
 export class OllamaClient implements LlmClient {

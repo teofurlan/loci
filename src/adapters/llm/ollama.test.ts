@@ -14,7 +14,7 @@ describe('OllamaClient', () => {
     expect(url).toBe('http://localhost:11434/api/generate');
     expect(init.method).toBe('POST');
     expect(JSON.parse(init.body)).toEqual({
-      model: 'gemma3:4b',
+      model: 'gemma4:e4b',
       prompt: 'hi',
       stream: false,
       format: 'json',

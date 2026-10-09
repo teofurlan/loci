@@ -1,5 +1,5 @@
 import fixture from './__fixtures__/buenos-aires.json';
-import { OverpassLandmarkSource } from './source';
+import { OverpassHttpError, OverpassLandmarkSource } from './source';
 
 const center = { lat: -34.6037, lng: -58.3816 };
 
@@ -50,5 +50,15 @@ describe('OverpassLandmarkSource', () => {
       timeoutMs: 10,
     });
     await expect(source.findNear(center, 500)).rejects.toThrow('aborted');
+  });
+});
+
+describe('OverpassHttpError', () => {
+  it('exposes the HTTP status so callers can back off on 429', async () => {
+    const fetchFn = jest.fn(async () => ({ ok: false, status: 429, json: async () => ({}) }));
+    const source = new OverpassLandmarkSource({ fetch: fetchFn as never, endpoint: 'https://o.test', userAgent: 'x' });
+    const error = await source.findNear(center, 500).catch((e) => e);
+    expect(error).toBeInstanceOf(OverpassHttpError);
+    expect(error.status).toBe(429);
   });
 });

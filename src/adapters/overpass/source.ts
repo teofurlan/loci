@@ -15,6 +15,14 @@ export type OverpassOptions = {
 
 export const DEFAULT_OVERPASS_ENDPOINT = 'https://overpass-api.de/api/interpreter';
 
+/** Non-2xx Overpass reply. Callers inspect `status` (429 means back off). */
+export class OverpassHttpError extends Error {
+  constructor(readonly status: number) {
+    super(`Overpass request failed with status ${status}`);
+    this.name = 'OverpassHttpError';
+  }
+}
+
 export class OverpassLandmarkSource implements LandmarkSource {
   private readonly timeoutMs: number;
 
@@ -36,7 +44,7 @@ export class OverpassLandmarkSource implements LandmarkSource {
         body: `data=${encodeURIComponent(query)}`,
         signal: controller.signal,
       });
-      if (!response.ok) throw new Error(`Overpass request failed with status ${response.status}`);
+      if (!response.ok) throw new OverpassHttpError(response.status);
       return parseOverpassResponse(await response.json());
     } finally {
       clearTimeout(timer);
