@@ -182,6 +182,14 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - Drift reported, not repaired: the map numerals use the MapLibre font Noto Sans Bold rather than Barlow Condensed, and FlagButton hardcodes ink and white instead of using theme tokens.
   - T5b is done.
 
+- 2026-10-09: Real Gemma path debugged against production.
+  - The device always showed the template story. Root cause: the intent call (maxTokens 300) got `upstream_empty`, because Gemma 4 thinking used the whole budget. The proxy returned 502, and CooldownLlmClient then skipped the model for 2 minutes, so the story was never requested.
+  - Fix 1: 2048 tokens of thinking headroom and a visible cap of 2048.
+  - Fix 2 (`75f7717`, delegated writer): upstream timeout 110 s, `proxy/vercel.json` maxDuration 120, app proxy timeout 120 s, and an optional server env `GEMINI_THINKING_LEVEL`.
+  - Measured without a thinking level: the story took 70 s and still came back empty.
+  - With `GEMINI_THINKING_LEVEL=MINIMAL` set in Vercel production (unofficial, from forum reports): intent 200 in 2.5 s and a 5-landmark story 200 in 6.9 s, with real mnemonic fragments and correct landmarkIds.
+  - 244 tests green (parent spot check).
+
 ## Next step
 Verify the real Gemma story through the proxy on the device once the root `.env.local` exists. Then T6.
 
