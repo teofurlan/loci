@@ -216,7 +216,7 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - All commit hashes before this point were rewritten; the hashes quoted above are pre-rewrite.
 
 ## Next step
-T8: outdoor walk on the phone (real GPS punches, vibration in the pocket, TTS, collapse animation), clips and screenshots, DEV post draft. Open: add a LICENSE (open-source challenge).
+T8: outdoor walk on the phone (real GPS punches, vibration in the pocket, TTS, collapse animation), clips and screenshots, DEV post draft. MIT LICENSE added (`009d105`, user decision), and main fast-forwarded to it.
 
 ## Older next step
 Act on the finish review verdict, then the documenter (DESIGN.md). Get the real Gemma path working (proxy deploy or a working Ollama model). Then T6.
