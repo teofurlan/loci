@@ -1,4 +1,5 @@
 import type { RouteIntent } from './intent';
+import type { Story } from './story';
 import type { Landmark, LatLng } from './types';
 
 export interface LandmarkSource {
@@ -14,4 +15,10 @@ export interface LlmClient {
 
 export interface IntentParser {
   parse(text: string): Promise<RouteIntent>;
+}
+
+export type StoryInput = { landmarks: Landmark[]; style?: string; language: string };
+
+export interface StoryGenerator {
+  generate(input: StoryInput): Promise<Story>;
 }
