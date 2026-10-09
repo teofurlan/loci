@@ -40,7 +40,7 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
     - A generic `/api/complete` endpoint with the model fixed server-side, maxTokens and prompt length capped, and best-effort per-IP rate limiting.
     - The key belongs to a Google project with no billing, so the worst abuse case is quota exhaustion, after which the app falls back to template stories.
     - The app-side `EXPO_PUBLIC_GEMINI_API_KEY` path is removed.
-- [ ] T6 Background location: expo-location with task-manager and a foreground service, so GPS keeps working with the screen off.
+- [x] T6 Background location: expo-location with task-manager and a foreground service, so GPS keeps working with the screen off.
 - [ ] T7 Stretch, timeboxed to 4 hours: on-device Gemma adapter using llama.rn, with a small Gemma model.
 - [ ] T8 Outdoor test run, screenshots or clips, and a draft of the DEV post.
 
@@ -195,8 +195,22 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - 260 tests green (parent spot check). Deployed; intent 200 in 3.1 s and story 200 in 6.1 s.
   - **The user confirmed on the device that the story now comes from Gemma.**
 
+- 2026-10-09: T6 done by a delegated writer.
+  - Commits: `c385096` (pure apply-fixes, tracker lifecycle and tracking mode, test-first) and `45479a2` (expo-task-manager task, foreground service notification "Loci course running", background permission explainer, foreground-only fallback with keep-awake).
+  - Android permissions `RECEIVE_BOOT_COMPLETED` and `POST_NOTIFICATIONS` were needed, though they are not in the SDK 57 docs.
+  - Vibration uses RN `Vibration`, because expo-haptics cancelled it.
+  - Device proof on a moto g24 power (Android 14), with an adb gps test provider and the screen off (Dozing):
+    - 2 punches, each with a ~622 ms vibration recorded in `dumpsys vibrator_manager`.
+    - Foreground service and notification present during the run, both gone after it.
+    - Results showed 2 of 4, 1.5 points, pin patterns, and the H on the hinted punched control.
+  - 281 tests green (parent spot check).
+  - Untested on the device: the denied-permission fallback, and an app restart mid-run (unit tests only).
+- 2026-10-09: The user authorized publishing to GitHub. **Blocked by a secret:** `proxy/.env.example`, committed blind by the parent in `89293ae` (the file is read-denied), contained the real Gemini key, and an unmasked history scan printed it in the conversation.
+  - The user rotated the key (the old one is deleted in AI Studio, the new one set in Vercel); the proxy was redeployed and returns 200.
+  - The history must be rewritten before publishing. Commands touching that path are denied to the agent, so the user runs them.
+
 ## Next step
-T6 background location (screen-off GPS with a foreground service), then T8 outdoor test and DEV post. T7 only if time allows.
+User runs the history scrub, then the parent rescans (counts only) and publishes `teofurlan/loci`. Then T8.
 
 ## Older next step
 Act on the finish review verdict, then the documenter (DESIGN.md). Get the real Gemma path working (proxy deploy or a working Ollama model). Then T6.
