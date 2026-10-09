@@ -4,7 +4,7 @@ import { KvVisitedHistory } from '../../adapters/storage/kv-visited-history';
 
 // EXPO_PUBLIC_* variables are inlined only when read statically, so list each one.
 const env = {
-  EXPO_PUBLIC_GEMINI_API_KEY: process.env.EXPO_PUBLIC_GEMINI_API_KEY,
+  EXPO_PUBLIC_LLM_PROXY_URL: process.env.EXPO_PUBLIC_LLM_PROXY_URL,
   EXPO_PUBLIC_OLLAMA_URL: process.env.EXPO_PUBLIC_OLLAMA_URL,
   EXPO_PUBLIC_OLLAMA_MODEL: process.env.EXPO_PUBLIC_OLLAMA_MODEL,
 };
