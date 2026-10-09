@@ -1,0 +1,10 @@
+{
+  "name": "loci-llm-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Vercel Function that keeps the Gemini API key server-side for the Loci app.",
+  "engines": {
+    "node": ">=20"
+  }
+}
