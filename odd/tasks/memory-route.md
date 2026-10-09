@@ -42,6 +42,9 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
     - The app-side `EXPO_PUBLIC_GEMINI_API_KEY` path is removed.
 - [x] T6 Background location: expo-location with task-manager and a foreground service, so GPS keeps working with the screen off.
 - [ ] T9 Voice request (user request on 2026-10-09): a mic button on setup that dictates the course request through on-device speech-to-text (`expo-speech-recognition`), feeding the same text path to Gemma. Research: the served Gemma 4 (26B-A4B) takes no audio, since audio is E2B/E4B/12B only per the model card, so audio-to-Gemma is not viable. Route: delegated writer, verified on the emulator `Medium_Phone_API_37.0` while the phone is away.
+- [ ] T10 Pixel world redesign (user request on 2026-10-09: less black, green map areas, avoid an orange-on-black look; pixel art in the spirit of the first Game Boy RPGs).
+  - Impeccable replacement world: the user first chose Dungeon Floor, then switched to **Overworld** (the pick card, seed d6ecdf53, code-led) because in the method of loci the place is the memory hook. It has a 4-green handheld LCD palette, original 16×16 landmark sprites that "speak" their fragment in a typewriter dialogue box, a badge-case results screen and a palette-fade start.
+  - Route: delegated writer on branch `feat/pixel-world` in a git worktree, branched after T9. `feat/memory-route` stays shippable for T8 and the post; merge only if it is finished in time.
 - [ ] T7 Stretch, timeboxed to 4 hours: on-device Gemma adapter using llama.rn, with a small Gemma model.
 - [ ] T8 Outdoor test run, screenshots or clips, and a draft of the DEV post.
 
