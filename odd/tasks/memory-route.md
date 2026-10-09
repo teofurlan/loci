@@ -190,8 +190,13 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - With `GEMINI_THINKING_LEVEL=MINIMAL` set in Vercel production (unofficial, from forum reports): intent 200 in 2.5 s and a 5-landmark story 200 in 6.9 s, with real mnemonic fragments and correct landmarkIds.
   - 244 tests green (parent spot check).
 
+- 2026-10-09: The first device test through the proxy still showed the template. The phone's single intent request got a transient 502 (curl replays were 200), and CooldownLlmClient (wrapping every client) then blocked the story call.
+  - Fixed by a delegated writer: `eea41e2` (cooldown only wraps Ollama) and `6a2797f` (the proxy retries once on empty, 5xx or 429, and logs `{event, code, status, attempt, ms}` with no key, prompt or body).
+  - 260 tests green (parent spot check). Deployed; intent 200 in 3.1 s and story 200 in 6.1 s.
+  - **The user confirmed on the device that the story now comes from Gemma.**
+
 ## Next step
-Verify the real Gemma story through the proxy on the device once the root `.env.local` exists. Then T6.
+T6 background location (screen-off GPS with a foreground service), then T8 outdoor test and DEV post. T7 only if time allows.
 
 ## Older next step
 Act on the finish review verdict, then the documenter (DESIGN.md). Get the real Gemma path working (proxy deploy or a working Ollama model). Then T6.
