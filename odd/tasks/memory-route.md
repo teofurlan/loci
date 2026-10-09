@@ -29,7 +29,7 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
 ## Tasks
 - [x] T1 Scaffold the Expo TypeScript app, jest-expo, lint and typecheck scripts, `.gitignore`, and a README stub. Route: delegated (scaffold plus T2, 2+ non-trivial files).
 - [x] T2 Domain core in pure TypeScript, test-first: haversine distance, random checkpoint generation within a target distance, checkpoint hit detection with a radius, and scoring. Route: delegated with T1.
-- [ ] T3 Landmarks: Overpass adapter behind a LandmarkSource port (query builder, response parser, injected fetch; fixtures, no network in tests) plus a domain `selectCheckpoints` that snaps loop candidates to real landmarks. It weights by user preferences (green areas, recognizable landmarks) and mixes new and already-visited landmarks by ratio. Route: delegated (2+ non-trivial files).
+- [x] T3 Landmarks: Overpass adapter behind a LandmarkSource port (query builder, response parser, injected fetch; fixtures, no network in tests) plus a domain `selectCheckpoints` that snaps loop candidates to real landmarks. It weights by user preferences (green areas, recognizable landmarks) and mixes new and already-visited landmarks by ratio. Route: delegated (2+ non-trivial files).
 - [ ] T4a Intent parsing: Gemma turns a free-text request ("20 min walk, beginner, green areas, I remember places better than street names") into validated structured params (distance or time, pace, preferences, story style). The domain applies defaults and bounds, and the LLM never invents coordinates.
 - [ ] T4 StoryGenerator port. Remote Gemma adapter (Gemini API, Ollama in development) with the mnemonic prompt and a cached-story fallback.
 - [ ] T5 Screens: setup (free-text request), memorize (map plus story text, with optional Android TTS), run (pocket mode with a black overlay, haptics, hints, give up), and results. Hints replay one unvisited checkpoint's story fragment via TTS, then give a direction, and each one costs score; giving up reveals the map. Map uses MapLibre with free OSM-based tiles.
@@ -67,5 +67,15 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - The user suggested a 4 km minimum, but that conflicts with their own "20 min walk" example (about 1.6 km). Flagged to the user.
 - RDD: assess of 77ac686 against base 8e787f9 → medium, under_budget (395 lines). The slice stays pending.
 
+- 2026-10-08: T3 done by a delegated writer.
+  - Commits: `e3be1f9` and `906a761`.
+  - RED was a missing module for select, query, parse and source; GREEN is 43/43 tests.
+  - Parent spot check: `npx jest` → 43 passed.
+  - About 550 lines: roughly 220 of production code, the rest tests and the fixture.
+  - Live Overpass smoke test by the parent (600 m around the Obelisco): HTTP 200 with 43 elements. Confirmed that `nw` combined with `around` works and that ways come back as `center: {lat, lon}`.
+  - Writer recommendations: snapRadius 250 m, with one retry at about 400 m when a checkpoint is unmatched. The query radius should be about targetDistance/π + snap. The caller handles 429 backoff.
+- The user accepted the distance defaults and the rule that Gemma picks only from OSM landmarks.
+- RDD: assess against base 8e787f9 → medium, slice_budget_reached (958 lines), so a review is due. Preflight STATUS stopped with `managed_assets_outdated`. The continuation `gentle-ai sync --agent claude-code` failed because the Pi MCP adapter extension is missing, and a re-queried STATUS gives the same stop. The review is blocked pending the user's decision.
+
 ## Next step
-T3 (delegated writer).
+Resolve the RDD block, then T4a and T4 (intent parsing and the story generator).
