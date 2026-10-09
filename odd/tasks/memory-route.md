@@ -209,8 +209,14 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - The user rotated the key (the old one is deleted in AI Studio, the new one set in Vercel); the proxy was redeployed and returns 200.
   - The history must be rewritten before publishing. Commands touching that path are denied to the agent, so the user runs them.
 
+- 2026-10-09: The user ran the parent's scrub script (filter-branch with an index-filter that sets every version of `proxy/.env.example` to the blanked copy; backup refs and reflog dropped, gc).
+  - Script output: 1 distinct blob, 0 key lines.
+  - Parent rescan, counts only: 0 for the old key prefix, AQ.-style, AIza, gh, sk, OIDC and private-key patterns, and no stash.
+  - Published as public https://github.com/teofurlan/loci, with `main` (default) and `feat/memory-route` at `e3666a0`.
+  - All commit hashes before this point were rewritten; the hashes quoted above are pre-rewrite.
+
 ## Next step
-User runs the history scrub, then the parent rescans (counts only) and publishes `teofurlan/loci`. Then T8.
+T8: outdoor walk on the phone (real GPS punches, vibration in the pocket, TTS, collapse animation), clips and screenshots, DEV post draft. Open: add a LICENSE (open-source challenge).
 
 ## Older next step
 Act on the finish review verdict, then the documenter (DESIGN.md). Get the real Gemma path working (proxy deploy or a working Ollama model). Then T6.
