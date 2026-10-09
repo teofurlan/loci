@@ -30,8 +30,8 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
 - [x] T1 Scaffold the Expo TypeScript app, jest-expo, lint and typecheck scripts, `.gitignore`, and a README stub. Route: delegated (scaffold plus T2, 2+ non-trivial files).
 - [x] T2 Domain core in pure TypeScript, test-first: haversine distance, random checkpoint generation within a target distance, checkpoint hit detection with a radius, and scoring. Route: delegated with T1.
 - [x] T3 Landmarks: Overpass adapter behind a LandmarkSource port (query builder, response parser, injected fetch; fixtures, no network in tests) plus a domain `selectCheckpoints` that snaps loop candidates to real landmarks. It weights by user preferences (green areas, recognizable landmarks) and mixes new and already-visited landmarks by ratio. Route: delegated (2+ non-trivial files).
-- [ ] T4a Intent parsing: Gemma turns a free-text request ("20 min walk, beginner, green areas, I remember places better than street names") into validated structured params (distance or time, pace, preferences, story style). The domain applies defaults and bounds, and the LLM never invents coordinates.
-- [ ] T4 StoryGenerator port. Remote Gemma adapter (Gemini API, Ollama in development) with the mnemonic prompt and a cached-story fallback.
+- [x] T4a Intent parsing: Gemma turns a free-text request ("20 min walk, beginner, green areas, I remember places better than street names") into validated structured params (distance or time, pace, preferences, story style). The domain applies defaults and bounds, and the LLM never invents coordinates.
+- [x] T4 StoryGenerator port. Remote Gemma adapter (Gemini API, Ollama in development) with the mnemonic prompt and a cached-story fallback.
 - [ ] T5 Screens: setup (free-text request), memorize (map plus story text, with optional Android TTS), run (pocket mode with a black overlay, haptics, hints, give up), and results. Hints replay one unvisited checkpoint's story fragment via TTS, then give a direction, and each one costs score; giving up reveals the map. Map uses MapLibre with free OSM-based tiles.
 - [ ] T6 Background location: expo-location with task-manager and a foreground service, so GPS keeps working with the screen off.
 - [ ] T7 Stretch, timeboxed to 4 hours: on-device Gemma adapter using llama.rn, with a small Gemma model.
@@ -83,5 +83,16 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - No decline invocation was captured, so no substitute command was run.
   - The slice from 8e787f9 to a6ceb68 stays unreviewed. Delivery follows ordinary policy.
 
+- 2026-10-08: T4a and T4 done by a delegated writer.
+  - Commits: `66d8e3d` (intent) and `cda68ca` (story).
+  - RED was a missing module for each new module; GREEN is 90/90.
+  - Parent spot check: `npx jest` → 90 passed. tsc is clean. Lint is clean with `--no-cache`, because the expo cache was stale.
+  - About 928 lines, roughly 55% of them tests.
+  - Verified: the Gemini API serves Gemma 4 only (`gemma-4-26b-a4b-it`, `gemma-4-31b-it`) via `generateContent` with an `x-goog-api-key` header. JSON mode for Gemma is unverified, so the client relies on prompt-level JSON plus extraction.
+  - Ollama dev model: the code defaults to `gemma3:4b`. Recommended: `gemma4:e4b`, to match production.
+  - CachedStoryGenerator calls the model first and falls back to the cache on failure; cache-first is still an open choice.
+  - The Android emulator reaches Ollama at `10.0.2.2:11434`.
+- RDD: the slice from 8e787f9 is due (1902 lines). STATUS still stops with `managed_assets_outdated` (gentle-ai#5141), so the slice stays unreviewed.
+
 ## Next step
-T4a and T4 (intent parsing and the story generator).
+Android SDK setup with the user, then T5 and T6 (screens and background location) in a new session inside the repo.
