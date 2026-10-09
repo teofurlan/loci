@@ -36,7 +36,7 @@ For a hard quota, add the Vercel WAF rate limiting or a shared store.
 | --- | --- | --- |
 | `GEMINI_API_KEY` | yes | Google AI Studio key |
 | `GEMINI_MODEL` | no | Defaults to `gemma-4-26b-a4b-it` |
-| `GEMINI_THINKING_LEVEL` | no | Experimental. Sent as `generationConfig.thinkingConfig.thinkingLevel` (for example `MINIMAL`) to cut Gemma 4 thinking time. Not officially documented for Gemma, so unset by default; blank means unset. Server-only, never read from the request |
+| `GEMINI_THINKING_LEVEL` | no | Experimental. Sent as `generationConfig.thinkingConfig.thinkingLevel` (for example `MINIMAL`) to cut Gemma 4 thinking time. Not officially documented for Gemma, so unset by default; blank means unset. Server-only, never read from the request. `MINIMAL` was verified on 2026-10-09: the 5-landmark story went from over 70 s (empty) to about 7 s |
 
 ## Local run
 
