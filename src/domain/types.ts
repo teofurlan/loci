@@ -35,3 +35,28 @@ export type RunScore = {
   ratio: number;
   order: readonly number[];
 };
+
+export type LandmarkKind =
+  | 'park'
+  | 'water'
+  | 'monument'
+  | 'artwork'
+  | 'worship'
+  | 'fountain'
+  | 'viewpoint'
+  | 'library'
+  | 'square'
+  | 'other';
+
+export type Landmark = {
+  /** OSM element reference, e.g. "node/123" or "way/456". */
+  id: string;
+  name: string;
+  kind: LandmarkKind;
+  position: LatLng;
+};
+
+export type RoutePreferences = {
+  preferGreen: boolean;
+  preferRecognizable: boolean;
+};
