@@ -77,5 +77,11 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
 - The user accepted the distance defaults and the rule that Gemma picks only from OSM landmarks.
 - RDD: assess against base 8e787f9 → medium, slice_budget_reached (958 lines), so a review is due. Preflight STATUS stopped with `managed_assets_outdated`. The continuation `gentle-ai sync --agent claude-code` failed because the Pi MCP adapter extension is missing, and a re-queried STATUS gives the same stop. The review is blocked pending the user's decision.
 
+- RDD block, user chose "report and continue":
+  - Found equivalent open issue gentle-ai#5141 (sync --agent claude-code aborts in the Pi CodeGraph step; also reproduced on 4.0.0, so no published fix exists).
+  - Added one occurrence comment: issuecomment-6073026435.
+  - No decline invocation was captured, so no substitute command was run.
+  - The slice from 8e787f9 to a6ceb68 stays unreviewed. Delivery follows ordinary policy.
+
 ## Next step
-Resolve the RDD block, then T4a and T4 (intent parsing and the story generator).
+T4a and T4 (intent parsing and the story generator).
