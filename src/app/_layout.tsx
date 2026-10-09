@@ -1,4 +1,4 @@
-import { PixelifySans_400Regular, PixelifySans_600SemiBold } from '@expo-google-fonts/pixelify-sans';
+import { Jersey10_400Regular } from '@expo-google-fonts/jersey-10';
 import { PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
@@ -11,7 +11,7 @@ import { COLORS } from '../ui/theme/theme';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({ PixelifySans_400Regular, PixelifySans_600SemiBold, PressStart2P_400Regular });
+  const [loaded, error] = useFonts({ Jersey10_400Regular, PressStart2P_400Regular });
   const ready = loaded || !!error;
 
   // Edge-to-edge: the system bars are transparent, so they show the app ground. `style` names the button ink,

@@ -1,5 +1,5 @@
 import type { Hint } from '../../domain/session';
-import { ATTRIBUTION, controlsFigure, formatElapsed, formatPoints, HINT_COST, hintSentence, SCORING_RULE } from './format';
+import { ATTRIBUTION, controlsFigure, formatElapsed, formatPoints, pointsLabel, HINT_COST, hintSentence, SCORING_RULE } from './format';
 
 describe('formatElapsed', () => {
   it('formats minutes and seconds', () => {
@@ -56,5 +56,15 @@ describe('score copy', () => {
     expect(ATTRIBUTION.codePointAt(0)).toBe(0x00a9);
     expect(ATTRIBUTION).not.toContain('�');
     expect(ATTRIBUTION).toBe('© OpenStreetMap contributors, OpenFreeMap');
+  });
+});
+
+describe('pointsLabel', () => {
+  it('says "1 point" for exactly one and "points" otherwise', () => {
+    expect(pointsLabel(1)).toBe('1 point');
+    expect(pointsLabel(0)).toBe('0 points');
+    expect(pointsLabel(2)).toBe('2 points');
+    expect(pointsLabel(0.5)).toBe('0.5 points');
+    expect(pointsLabel(1.5)).toBe('1.5 points');
   });
 });

@@ -164,7 +164,7 @@ export default function SetupScreen() {
             editable={!busy && dictation.phase === 'idle'}
             multiline
             placeholder="e.g. 20 min walk, green areas, I remember places better than street names"
-            placeholderTextColor={COLORS.ink}
+            placeholderTextColor={COLORS.muted}
             selectionColor={COLORS.ink}
             cursorColor={COLORS.ink}
             style={styles.input}
@@ -257,7 +257,7 @@ export default function SetupScreen() {
                 style={[styles.example, index > 0 && styles.exampleRule, { opacity: busy ? 0.5 : 1 }]}
               >
                 <View style={styles.cursor}>
-                  {cursorRow === example && <PixelSprite name="glyph:right" scale={3} />}
+                  {cursorRow === example && <PixelSprite name="glyph:right" scale={2} />}
                 </View>
                 <AppText variant="body" style={styles.exampleText}>
                   {example}
@@ -308,7 +308,8 @@ const styles = StyleSheet.create({
   example: { minHeight: SHAPE.target, paddingRight: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center' },
   exampleRule: { borderTopWidth: SHAPE.rule, borderTopColor: COLORS.ink },
   exampleText: { flex: 1 },
-  cursor: { width: 30, alignItems: 'center' },
+  // 12 dp: the example text starts at the same x as the request field's text.
+  cursor: { width: 12, alignItems: 'flex-start' },
   panel: { marginTop: 24 },
   panelAction: { marginTop: 8, alignItems: 'flex-start' },
   busy: { flexDirection: 'row', alignItems: 'center', gap: 12 },

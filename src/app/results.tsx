@@ -9,7 +9,7 @@ import { ControlRow } from '../ui/components/ControlRow';
 import { CourseMap } from '../ui/components/CourseMap';
 import { PixelBox } from '../ui/components/PixelBox';
 import { PixelButton } from '../ui/components/PixelButton';
-import { controlsFigure, formatElapsed, formatPoints, SCORING_RULE } from '../ui/model/format';
+import { controlsFigure, formatElapsed, pointsLabel, SCORING_RULE } from '../ui/model/format';
 import { courseStore, useCourse } from '../ui/state/course';
 import { services } from '../ui/state/services';
 import { COLORS, SHAPE } from '../ui/theme/theme';
@@ -41,7 +41,7 @@ export default function ResultsScreen() {
 
   const score = scoreSession(course.session);
   const completed = course.session.status === 'completed';
-  const scoreLine = `${controlsFigure(score.visited, score.total)} visited · ${formatPoints(score.points)} points`;
+  const scoreLine = `${controlsFigure(score.visited, score.total)} visited · ${pointsLabel(score.points)}`;
 
   const newCourse = () => {
     courseStore.reset();

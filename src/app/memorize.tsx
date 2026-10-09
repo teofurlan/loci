@@ -231,10 +231,28 @@ export default function MemorizeScreen() {
       ) : (
         <>
           <StampStrip controls={plan.checkpoints} selected={selected} onSelect={jump} />
-          <ScrollView style={styles.fill} contentContainerStyle={styles.dialogue}>
-            <DialogueBox
-              title={current.name}
-                            corner={
+          <View style={styles.dialogue}>
+            <DialogueBox title={current.name} stretch>
+              <ScrollView style={styles.fill} contentContainerStyle={styles.dialogueText}>
+                <AppText variant="bodySmall">
+                  Control {selected + 1} of {total} · {minutes.perControl[selected]} min
+                </AppText>
+                <Pressable
+                  accessibilityLabel={`${current.name}. ${fragment}`}
+                  accessibilityHint="Tap to show the whole fragment"
+                  onPress={typing.skip}
+                >
+                  {/* The full text holds the box at its final height so typing never makes it jump. */}
+                  <AppText variant="body" style={styles.ghost}>
+                    {fragment}
+                  </AppText>
+                  <AppText variant="body" style={styles.typed}>
+                    {typing.shown}
+                  </AppText>
+                </Pressable>
+              </ScrollView>
+              {/* Outside the scroll region, so the cursor never hides below the fold. */}
+              <View style={styles.cursorRow}>
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Next place"
@@ -243,31 +261,12 @@ export default function MemorizeScreen() {
                   style={styles.next}
                 >
                   <View style={{ opacity: typing.done && blink ? 1 : 0 }}>
-                    <PixelSprite name="glyph:down" scale={3} />
+                    <PixelSprite name="glyph:pointer" scale={3} />
                   </View>
                 </Pressable>
-              }
-            >
-              <AppText variant="bodySmall">
-                Control {selected + 1} of {total} · {minutes.perControl[selected]} min
-              </AppText>
-              <Pressable
-                accessibilityLabel={`${current.name}. ${fragment}`}
-                accessibilityHint="Tap to show the whole fragment"
-                onPress={typing.skip}
-                style={styles.fragmentWrap}
-              >
-                {/* The full text holds the box at its final height so typing never makes it jump. */}
-                <AppText variant="body" style={styles.ghost}>
-                  {fragment}
-                </AppText>
-                <AppText variant="body" style={styles.typed}>
-                  {typing.shown}
-                </AppText>
-              </Pressable>
-              <View style={styles.cursorRoom} />
+              </View>
             </DialogueBox>
-          </ScrollView>
+          </View>
         </>
       )}
 
@@ -301,13 +300,13 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.ink,
   },
   headerText: { flex: 1 },
-  storyTitle: { fontSize: 18, lineHeight: 22 },
-  meta: { fontSize: 15, lineHeight: 20 },
-  dialogue: { paddingHorizontal: 12, paddingTop: 6, paddingBottom: 14 },
-  fragmentWrap: { minHeight: SHAPE.target },
+  storyTitle: { fontSize: 24, lineHeight: 26 },
+  meta: { fontSize: 20, lineHeight: 22 },
+  dialogue: { flex: 1, paddingHorizontal: 12, paddingTop: 6, paddingBottom: 8 },
+  dialogueText: { gap: 6, paddingBottom: 4 },
+  cursorRow: { alignItems: 'flex-end', minHeight: 40 },
   ghost: { opacity: 0 },
   typed: { position: 'absolute', left: 0, right: 0, top: 0 },
-  cursorRoom: { height: 14 },
   next: { width: SHAPE.target, height: SHAPE.target, alignItems: 'center', justifyContent: 'center' },
   askContent: { padding: 12, gap: 12 },
   footer: { paddingHorizontal: 16, paddingTop: 8 },

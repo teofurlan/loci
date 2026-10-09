@@ -1,6 +1,10 @@
 import { advanceIndex, MS_PER_CHAR, revealedCount, typedText } from './typewriter';
 
 describe('typewriter timing', () => {
+  it('types about 14 characters a second, near speech pace', () => {
+    expect(MS_PER_CHAR).toBe(70);
+  });
+
   it('reveals one character per cadence tick', () => {
     expect(revealedCount(0, 10)).toBe(0);
     expect(revealedCount(MS_PER_CHAR - 1, 10)).toBe(0);

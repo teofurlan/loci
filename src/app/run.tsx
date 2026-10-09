@@ -238,7 +238,7 @@ export default function RunScreen() {
         )}
         {hint && (
           <View style={styles.hintText} accessibilityLiveRegion="polite" accessibilityLabel={hintText}>
-            <DialogueBox title="Hint" tone="dark">
+            <DialogueBox title="Clue" tone="dark">
               <View>
                 <AppText variant="body" color={COLORS.runText} style={styles.ghost}>
                   {hintText}

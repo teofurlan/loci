@@ -5,6 +5,8 @@ import { spriteFor, spritePaths, type PaletteIndex, type Sprite, type SpriteName
 import { COLORS } from '../theme/theme';
 import { PALETTE } from '../theme/palettes';
 
+const GLYPH_COLORS = [COLORS.ink, COLORS.ink, COLORS.action, COLORS.panel] as const;
+
 type Props = {
   /** A named 16 x 16 sprite, or a small glyph. */
   name: SpriteName | `glyph:${GlyphName}`;
@@ -22,8 +24,8 @@ function resolve(name: Props['name']): Sprite {
 function PixelSpriteView({ name, scale, inkColor }: Props) {
   const sprite = resolve(name);
   const paths = spritePaths(sprite);
-  // Glyphs are single-color marks in ink; sprites take their four colors from the palette.
-  const colors = name.startsWith('glyph:') ? null : PALETTE.sprites[name as SpriteName];
+  // Glyphs are ink marks (the pointer also uses the action color); sprites take four colors from the palette.
+  const colors = name.startsWith('glyph:') ? GLYPH_COLORS : PALETTE.sprites[name as SpriteName];
   const cols = sprite[0].length;
   return (
     <Svg

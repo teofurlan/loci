@@ -1,8 +1,9 @@
 import { Camera, Map, ViewAnnotation } from '@maplibre/maplibre-react-native';
-import { memo, useMemo, type ComponentProps } from 'react';
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { memo, useMemo, useState, type ComponentProps } from 'react';
+import { Pressable, StyleSheet, View, type LayoutChangeEvent, type StyleProp, type ViewStyle } from 'react-native';
 import type { Landmark, LatLng } from '../../domain/types';
 import { ATTRIBUTION } from '../model/format';
+import { fitZoom, projectPx, separateMarkers } from '../model/marker-layout';
 import { BASE_STYLE_URL, usePixelStyle } from '../state/use-pixel-style';
 import { PALETTE } from '../theme/palettes';
 import { COLORS, SHAPE } from '../theme/theme';
@@ -10,7 +11,11 @@ import { AppText } from './AppText';
 import { PixelBox } from './PixelBox';
 import { PixelSprite } from './PixelSprite';
 
-const MIN_SPAN_DEGREES = 0.004;
+/** About 130 m: tight courses still fill the map instead of floating in a mostly empty one. */
+const MIN_SPAN_DEGREES = 0.0012;
+/** Plates are 32 dp with a number tag: keep their centers at least this far apart. */
+const MARKER_GAP = 46;
+const DEFAULT_PADDING = { top: 48, right: 40, bottom: 40, left: 40 };
 
 type Props = {
   start: LatLng;
@@ -25,7 +30,9 @@ type Props = {
   padding?: { top: number; right: number; bottom: number; left: number };
 };
 
-function boundsOf(points: readonly LatLng[]): [number, number, number, number] {
+type BoundsTuple = [number, number, number, number];
+
+function boundsOf(points: readonly LatLng[]): BoundsTuple {
   const lngs = points.map((p) => p.lng);
   const lats = points.map((p) => p.lat);
   let west = Math.min(...lngs);
@@ -53,10 +60,26 @@ function CourseMapView({ start, controls, visited, selected, onSelect, style, pa
   const { style: pixelStyle, failed } = usePixelStyle();
   const bounds = useMemo(() => boundsOf([start, ...controls.map((c) => c.position)]), [start, controls]);
   const mapStyle = (pixelStyle as unknown as MapStyle | null) ?? (failed ? BASE_STYLE_URL : null);
+  const [viewport, setViewport] = useState<{ width: number; height: number } | null>(null);
+  const framing = padding ?? DEFAULT_PADDING;
+
+  // Framing and marker spreading need the real size, so the map mounts after layout: the camera then
+  // fits the course once, at the right zoom, instead of guessing before the view has a size.
+  const offsets = useMemo(() => {
+    if (!viewport) return null;
+    const [west, south, east, north] = bounds;
+    const zoom = fitZoom({ west, south, east, north }, viewport, framing);
+    const points = [...controls.map((c) => c.position), start].map((p) => projectPx(p, zoom));
+    return separateMarkers(points, MARKER_GAP);
+  }, [viewport, bounds, controls, start, framing]);
+  const onLayout = (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setViewport((old) => (old && old.width === width && old.height === height ? old : { width, height }));
+  };
 
   return (
-    <View style={[styles.root, style]}>
-      {mapStyle && (
+    <View style={[styles.root, style]} onLayout={onLayout}>
+      {mapStyle && offsets && (
         <Map
           style={styles.map}
           mapStyle={mapStyle}
@@ -67,7 +90,7 @@ function CourseMapView({ start, controls, visited, selected, onSelect, style, pa
           touchRotate={false}
           touchPitch={false}
         >
-          <Camera initialViewState={{ bounds, padding: padding ?? { top: 48, right: 40, bottom: 40, left: 40 } }} />
+          <Camera initialViewState={{ bounds, padding: framing }} />
           {controls.map((control, index) => {
             const found = visited?.has(index) ?? false;
             const missed = visited !== undefined && !found;
@@ -77,7 +100,7 @@ function CourseMapView({ start, controls, visited, selected, onSelect, style, pa
                 id={`control-${index}`}
                 lngLat={[control.position.lng, control.position.lat]}
                 anchor="center"
-                offset={[-4, -4]}
+                offset={[offsets[index].dx - 4, offsets[index].dy - 4]}
               >
                 <Pressable
                   accessibilityRole="button"
@@ -107,14 +130,19 @@ function CourseMapView({ start, controls, visited, selected, onSelect, style, pa
               id="cursor"
               lngLat={[controls[selected].position.lng, controls[selected].position.lat]}
               anchor="bottom"
-              offset={[0, -22]}
+              offset={[offsets[selected].dx - 4, offsets[selected].dy - 24]}
             >
-              <View accessible={false} pointerEvents="none" style={styles.cursor}>
-                <PixelSprite name="glyph:down" scale={4} />
+              <View accessible={false} pointerEvents="none">
+                <PixelSprite name="glyph:pointer" scale={3} />
               </View>
             </ViewAnnotation>
           )}
-          <ViewAnnotation id="start" lngLat={[start.lng, start.lat]} anchor="center">
+          <ViewAnnotation
+            id="start"
+            lngLat={[start.lng, start.lat]}
+            anchor="center"
+            offset={[offsets[controls.length].dx, offsets[controls.length].dy]}
+          >
             <View accessible accessibilityLabel="You are here, the start">
               <PixelSprite name="you" scale={2} />
             </View>
@@ -148,7 +176,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cursor: { padding: 2, backgroundColor: COLORS.panel, borderWidth: SHAPE.rule, borderColor: COLORS.ink },
   tagFound: { backgroundColor: COLORS.found },
   tagText: { fontSize: 9, lineHeight: 12 },
   attribution: {
@@ -160,7 +187,7 @@ const styles = StyleSheet.create({
     borderWidth: SHAPE.rule,
     borderColor: COLORS.ink,
   },
-  attributionText: { fontSize: 13, lineHeight: 16 },
+  attributionText: { fontSize: 18, lineHeight: 20 },
 });
 
 export const CourseMap = memo(CourseMapView);

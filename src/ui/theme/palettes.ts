@@ -28,6 +28,8 @@ export type MapTokens = {
   wood: string;
   water: string;
   road: string;
+  /** Minor roads, service roads and paths: demoted so only major roads carry full ink. */
+  roadMinor: string;
   /** The inside of wide roads and the dash of railways. */
   roadFill: string;
   building: string;
@@ -65,8 +67,9 @@ function build(ui: UiTokens, map: MapTokens, kinds: Record<string, SpriteColors>
       square: k('square'),
       other: k('other'),
       you: k('you'),
-      'found-a': [outline, ui.found, ui.found, ui.found],
-      'found-b': [outline, ui.found, ui.found, ui.found],
+      // Sparkles around a newly earned badge are gold, not green.
+      'found-a': [outline, '#EF7D57', '#FFCD75', '#FFCD75'],
+      'found-b': [outline, '#EF7D57', '#FFCD75', '#FFCD75'],
       unknown: [outline, ui.muted, ui.panel, ui.panel],
     },
   };
@@ -91,6 +94,7 @@ const B = build(
     wood: '#38B764',
     water: '#41A6F6',
     road: '#1A1C2C',
+    roadMinor: '#333C57',
     roadFill: '#94B0C2',
     building: '#94B0C2',
     boundary: '#566C86',
@@ -98,17 +102,17 @@ const B = build(
     labelHalo: '#F4F4F4',
   },
   {
-    park: ['#1A1C2C', '#257179', '#38B764', '#A7F070'],
+    park: ['#1A1C2C', '#8A4A3A', '#38B764', '#A7F070'],
     water: ['#1A1C2C', '#3B5DC9', '#41A6F6', '#73EFF7'],
     monument: ['#1A1C2C', '#566C86', '#94B0C2', '#F4F4F4'],
     artwork: ['#1A1C2C', '#B13E53', '#EF7D57', '#FFCD75'],
     worship: ['#1A1C2C', '#B13E53', '#EF7D57', '#FFCD75'],
     fountain: ['#1A1C2C', '#41A6F6', '#94B0C2', '#73EFF7'],
     viewpoint: ['#1A1C2C', '#333C57', '#566C86', '#F4F4F4'],
-    library: ['#1A1C2C', '#B13E53', '#FFCD75', '#F4F4F4'],
+    library: ['#1A1C2C', '#566C86', '#FFCD75', '#F4F4F4'],
     square: ['#1A1C2C', '#566C86', '#FFCD75', '#F4F4F4'],
     other: ['#1A1C2C', '#B13E53', '#FFCD75', '#F4F4F4'],
-    you: ['#1A1C2C', '#3B5DC9', '#FFCD75', '#F4F4F4'],
+    you: ['#1A1C2C', '#B13E53', '#FFCD75', '#3B5DC9'],
   },
   'Sweetie 16',
 );

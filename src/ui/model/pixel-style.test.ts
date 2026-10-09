@@ -59,13 +59,31 @@ describe('pixelizeStyle', () => {
     expect(paintOf(out, 'building')['fill-color']).toBe(MAP.building);
   });
 
+  it('demotes minor roads and paths to the muted tone, keeping ink for major roads', () => {
+    expect(paintOf(out, 'highway_minor')['line-color']).toBe(MAP.roadMinor);
+    expect(paintOf(out, 'highway_major_casing')['line-color']).toBe(MAP.road);
+  });
+
+  it('adds grass and park layers the base style lacks, right above the ground', () => {
+    const ids = out.layers.map((l) => l.id);
+    const grass = out.layers.find((l) => l.id === 'pixel-landuse-green');
+    const cover = out.layers.find((l) => l.id === 'pixel-landcover-grass');
+    expect(grass?.paint?.['fill-color']).toBe(MAP.park);
+    expect(grass?.['source-layer']).toBe('landuse');
+    expect(cover?.paint?.['fill-color']).toBe(MAP.park);
+    expect(cover?.['source-layer']).toBe('landcover');
+    expect(grass?.source).toBe('openmaptiles');
+    expect(ids.indexOf('background')).toBeLessThan(ids.indexOf('pixel-landuse-green'));
+    expect(ids.indexOf('pixel-landuse-green')).toBeLessThan(ids.indexOf('water'));
+  });
+
   it('keeps buildings quiet: opaque, with no outline contrast', () => {
     expect(paintOf(out, 'building')['fill-opacity']).toBe(1);
     expect(paintOf(out, 'building')['fill-outline-color']).toBe(MAP.building);
   });
 
   it('draws roads as ink with ground inside the wide ones, opaque', () => {
-    expect(paintOf(out, 'highway_minor')['line-color']).toBe(MAP.road);
+    expect(paintOf(out, 'highway_minor')['line-color']).toBe(MAP.roadMinor);
     expect(paintOf(out, 'highway_minor')['line-opacity']).toBe(1);
     expect(paintOf(out, 'highway_major_casing')['line-color']).toBe(MAP.road);
     expect(paintOf(out, 'highway_major_inner')['line-color']).toBe(MAP.roadFill);

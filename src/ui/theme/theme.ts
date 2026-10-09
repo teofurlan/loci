@@ -7,8 +7,9 @@ import { PALETTE } from './palettes';
 export const COLORS = PALETTE.ui;
 
 export const FONTS = {
-  body: 'PixelifySans_400Regular',
-  bodyBold: 'PixelifySans_600SemiBold',
+  // Jersey 10 (OFL): its 5 never reads as an S, and it carries the © sign. Pixelify Sans failed both.
+  body: 'Jersey10_400Regular',
+  bodyBold: 'Jersey10_400Regular',
   label: 'PressStart2P_400Regular',
 } as const;
 
@@ -20,14 +21,14 @@ export type TypeRole = 'display' | 'headline' | 'title' | 'label' | 'body' | 'bo
 type RoleStyle = { fontFamily: string; fontSize: number; lineHeight: number };
 
 /**
- * Pixel faces need generous sizes: Pixelify Sans runs at 20 sp for the story, and Press Start 2P,
+ * Pixel faces need generous sizes: Jersey 10 runs at 26 sp for the story, and Press Start 2P,
  * a wide face, stays short and sparse. Both scale with the system font size.
  */
 export const TYPE: Record<TypeRole, RoleStyle> = {
   display: { fontFamily: FONTS.label, fontSize: 22, lineHeight: 32 },
   headline: { fontFamily: FONTS.label, fontSize: 16, lineHeight: 26 },
-  title: { fontFamily: FONTS.bodyBold, fontSize: 24, lineHeight: 30 },
+  title: { fontFamily: FONTS.bodyBold, fontSize: 30, lineHeight: 34 },
   label: { fontFamily: FONTS.label, fontSize: 12, lineHeight: 20 },
-  body: { fontFamily: FONTS.body, fontSize: 20, lineHeight: 28 },
-  bodySmall: { fontFamily: FONTS.body, fontSize: 17, lineHeight: 24 },
+  body: { fontFamily: FONTS.body, fontSize: 26, lineHeight: 30 },
+  bodySmall: { fontFamily: FONTS.body, fontSize: 22, lineHeight: 26 },
 };

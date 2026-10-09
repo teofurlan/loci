@@ -7,6 +7,8 @@ export type StyleLike = { version: number; sources: Record<string, unknown>; gly
 /** Road names and settlement names only: everything else would crowd the sprites. */
 const KEEP_LABELS = /^(highway-name-major|label_(city|city_capital|town|village))$/;
 const GREEN = /park|wood|grass|forest|garden|pitch|golf|recreation/;
+const MINOR = /minor|path|service|track|railway|pier/;
+const PARK_CLASSES = ['park', 'garden', 'playground', 'pitch', 'golf_course', 'recreation_ground', 'village_green', 'cemetery'];
 const LABEL_FONT = ['Noto Sans Bold'];
 
 function paintFill(layer: LayerLike, map: MapTokens): Props {
@@ -26,6 +28,7 @@ function paintLine(layer: LayerLike, map: MapTokens): Props {
   else if (/boundary/.test(id)) color = map.boundary;
   else if (/casing/.test(id)) color = map.road;
   else if (/inner|dashline|subtle/.test(id)) color = map.roadFill;
+  else if (MINOR.test(id)) color = map.roadMinor;
   return { ...keep, 'line-color': color, 'line-opacity': 1 };
 }
 
@@ -39,15 +42,43 @@ function paintSymbol(layer: LayerLike, map: MapTokens): LayerLike {
 }
 
 /**
+ * The base style only draws protected parks and woods, so plazas, gardens and grass would stay land-colored.
+ * These fills add them from the landuse and landcover tile layers, right above the ground.
+ */
+function greenLayers(source: string, map: MapTokens): LayerLike[] {
+  const matching = (values: string[]) => ['match', ['get', 'class'], values, true, false];
+  return [
+    {
+      id: 'pixel-landcover-grass',
+      type: 'fill',
+      source,
+      'source-layer': 'landcover',
+      filter: matching(['grass']),
+      paint: { 'fill-color': map.park, 'fill-opacity': 1 },
+    },
+    {
+      id: 'pixel-landuse-green',
+      type: 'fill',
+      source,
+      'source-layer': 'landuse',
+      filter: matching(PARK_CLASSES),
+      paint: { 'fill-color': map.park, 'fill-opacity': 1 },
+    },
+  ];
+}
+
+/**
  * Recolors an OpenFreeMap (OpenMapTiles) style into the terrain language: parks and woods green, land pale,
- * water blue, roads ink, buildings quiet, sparse ink labels. Pure: the input is not mutated.
+ * water blue, major roads ink, minor roads muted, buildings quiet, sparse ink labels. Pure: the input is not mutated.
  */
 export function pixelizeStyle(style: StyleLike, map: MapTokens): StyleLike {
+  const source = style.layers.find((l) => typeof l.source === 'string')?.source as string | undefined;
   const layers: LayerLike[] = [];
   for (const layer of style.layers) {
     switch (layer.type) {
       case 'background':
         layers.push({ ...layer, paint: { 'background-color': map.land } });
+        layers.push(...greenLayers(source ?? 'openmaptiles', map));
         break;
       case 'fill':
         layers.push({ ...layer, paint: paintFill(layer, map) });

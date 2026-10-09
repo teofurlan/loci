@@ -1,5 +1,5 @@
-/** One cadence for every typed fragment, with or without speech: about 20 characters a second. */
-export const MS_PER_CHAR = 50;
+/** One cadence for every typed fragment, with or without speech: about 14 characters a second, near speech pace. */
+export const MS_PER_CHAR = 70;
 
 /** How many characters of a text of `length` are visible after `elapsedMs` of typing. */
 export function revealedCount(elapsedMs: number, length: number): number {
