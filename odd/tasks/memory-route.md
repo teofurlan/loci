@@ -41,6 +41,7 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
     - The key belongs to a Google project with no billing, so the worst abuse case is quota exhaustion, after which the app falls back to template stories.
     - The app-side `EXPO_PUBLIC_GEMINI_API_KEY` path is removed.
 - [x] T6 Background location: expo-location with task-manager and a foreground service, so GPS keeps working with the screen off.
+- [ ] T9 Voice request (user request on 2026-10-09): a mic button on setup that dictates the course request through on-device speech-to-text (`expo-speech-recognition`), feeding the same text path to Gemma. Research: the served Gemma 4 (26B-A4B) takes no audio, since audio is E2B/E4B/12B only per the model card, so audio-to-Gemma is not viable. Route: delegated writer, verified on the emulator `Medium_Phone_API_37.0` while the phone is away.
 - [ ] T7 Stretch, timeboxed to 4 hours: on-device Gemma adapter using llama.rn, with a small Gemma model.
 - [ ] T8 Outdoor test run, screenshots or clips, and a draft of the DEV post.
 
