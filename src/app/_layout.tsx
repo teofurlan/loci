@@ -5,6 +5,7 @@ import {
 } from '@expo-google-fonts/barlow-condensed';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
+import { NavigationBar } from 'expo-navigation-bar';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { useTheme } from '../ui/theme/theme';
@@ -19,6 +20,12 @@ export default function RootLayout() {
     BarlowCondensed_700Bold,
   });
   const ready = loaded || !!error;
+
+  // Edge-to-edge: the system bar is transparent, so its button ink follows the app theme. `style` names the
+  // button ink, like StatusBar. The declarative <NavigationBar> did not apply on device; the imperative call does.
+  useEffect(() => {
+    NavigationBar.setStyle(dark ? 'light' : 'dark');
+  }, [dark]);
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync();

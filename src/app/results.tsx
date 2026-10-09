@@ -53,17 +53,17 @@ export default function ResultsScreen() {
         <AppText variant="headline" accessibilityRole="header">
           {completed ? 'Course complete' : 'Course ended'}
         </AppText>
-        <AppText variant="headline" tabular style={styles.figure} accessibilityLabel={controlsFigure(score.visited, score.total)}>
-          {controlsFigure(score.visited, score.total)}
+        <AppText variant="title" tabular style={styles.figure} accessibilityLabel={`${controlsFigure(score.visited, score.total)} visited`}>
+          {controlsFigure(score.visited, score.total)} visited
         </AppText>
         <AppText variant="title" tabular style={styles.points}>
           {formatPoints(score.points)} points
         </AppText>
+        <AppText variant="body" color={colors.onSurfaceVariant} tabular style={styles.stats}>
+          {plural(score.hintsUsed, 'hint')}, {formatElapsed(course.elapsedMs)}
+        </AppText>
         <AppText variant="body" color={colors.onSurfaceVariant} tabular style={styles.rule}>
           {SCORING_RULE}
-        </AppText>
-        <AppText variant="body" color={colors.onSurfaceVariant} tabular>
-          {plural(score.hintsUsed, 'hint')}, {formatElapsed(course.elapsedMs)}
         </AppText>
 
         <View style={styles.card}>
@@ -108,10 +108,11 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   fill: { flex: 1 },
   scroll: { paddingHorizontal: 16, paddingBottom: 24 },
-  figure: { marginTop: 4, fontSize: 44, lineHeight: 48 },
-  points: { marginTop: 4 },
-  rule: { marginTop: 4 },
-  card: { marginTop: 20 },
+  figure: { marginTop: 8 },
+  points: { marginTop: 0 },
+  stats: { marginTop: 16 },
+  rule: { marginTop: 8 },
+  card: { marginTop: 24 },
   sectionLabel: { marginTop: 28, marginBottom: 8 },
   map: { height: 300, borderWidth: SHAPE.rule, borderRadius: SHAPE.radius, overflow: 'hidden' },
   sheet: { marginTop: 20, borderTopWidth: SHAPE.rule },

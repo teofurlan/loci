@@ -3,6 +3,7 @@ import { useKeepAwake } from 'expo-keep-awake';
 import * as Location from 'expo-location';
 import * as Speech from 'expo-speech';
 import { Redirect, router } from 'expo-router';
+import { NavigationBar } from 'expo-navigation-bar';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
@@ -13,7 +14,7 @@ import { AppText } from '../ui/components/AppText';
 import { RuleButton } from '../ui/components/RuleButton';
 import { formatElapsed, HINT_COST, hintSentence } from '../ui/model/format';
 import { courseStore, useCourse } from '../ui/state/course';
-import { POCKET } from '../ui/theme/theme';
+import { POCKET, useTheme } from '../ui/theme/theme';
 
 const INVERT_MS = 650;
 
@@ -35,6 +36,14 @@ export default function RunScreen() {
   const fg = inverted ? POCKET.black : POCKET.white;
 
   const running = course.phase === 'run';
+
+  // Pocket mode owns the system bar too: light buttons on the black frame (dark ink while the frame is inverted
+  // to white). Leaving restores the theme default.
+  const { dark } = useTheme();
+  useEffect(() => {
+    NavigationBar.setStyle(inverted ? 'dark' : 'light');
+  }, [inverted]);
+  useEffect(() => () => NavigationBar.setStyle(dark ? 'light' : 'dark'), [dark]);
 
   useEffect(() => {
     if (course.phase === 'results') router.replace('/results');

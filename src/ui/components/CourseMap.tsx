@@ -4,6 +4,7 @@ import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Polygon } from 'react-native-svg';
 import type { Landmark, LatLng } from '../../domain/types';
 import { useTheme } from '../theme/theme';
+import { ATTRIBUTION } from '../model/format';
 import { AppText } from './AppText';
 
 const STYLE_LIGHT = 'https://tiles.openfreemap.org/styles/positron';
@@ -12,8 +13,6 @@ const STYLE_NIGHT = 'https://tiles.openfreemap.org/styles/dark';
 const RING_RADIUS = 15;
 const RING_WIDTH = 3;
 const MIN_SPAN_DEGREES = 0.004;
-/** Required by the OpenStreetMap and OpenFreeMap licences. Drawn by us in ink, so the stock teal button is off. */
-export const ATTRIBUTION = '© OpenStreetMap contributors, OpenFreeMap';
 
 type Props = {
   start: LatLng;
@@ -75,6 +74,8 @@ function CourseMapView({ start, controls, visited, collapse = 0, style, padding 
   return (
     <View style={style}>
     <Map
+      // Remounted on a theme change: swapping the style in place left the map blank or dropped the start triangle.
+      key={dark ? 'night' : 'day'}
       style={styles.map}
       mapStyle={dark ? STYLE_NIGHT : STYLE_LIGHT}
       androidView="texture"

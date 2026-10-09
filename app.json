@@ -42,6 +42,7 @@
           }
         }
       ],
+      ["expo-navigation-bar", { "enforceContrast": false }],
       "@maplibre/maplibre-react-native"
     ]
   }

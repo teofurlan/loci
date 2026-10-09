@@ -40,8 +40,11 @@ export const formatPoints = (points: number): string => (Number.isInteger(points
 export const controlsFigure = (visited: number, total: number): string =>
   `${visited} of ${total} control${total === 1 ? '' : 's'}`;
 
-/** The real scoring rule (see HINT_POINT_VALUE), stated once on the results screen. */
-export const SCORING_RULE = 'A control scores 1. After a hint about it, it scores ½.';
+/** The real scoring rule (see HINT_POINT_VALUE), stated once, in one line, on the results screen. */
+export const SCORING_RULE = 'Hinted controls score ½';
 
 /** The cost of help, shown beside the Hint button. */
-export const HINT_COST = 'Hint: that control scores ½';
+export const HINT_COST = "A hint halves that control's score";
+
+/** Required by the OpenStreetMap and OpenFreeMap licences. Escaped so no file encoding can corrupt the sign. */
+export const ATTRIBUTION = '© OpenStreetMap contributors, OpenFreeMap';

@@ -1,5 +1,5 @@
 import type { Hint } from '../../domain/session';
-import { controlsFigure, formatElapsed, formatPoints, hintSentence, SCORING_RULE } from './format';
+import { ATTRIBUTION, controlsFigure, formatElapsed, formatPoints, HINT_COST, hintSentence, SCORING_RULE } from './format';
 
 describe('formatElapsed', () => {
   it('formats minutes and seconds', () => {
@@ -44,7 +44,17 @@ describe('score copy', () => {
     expect(controlsFigure(1, 1)).toBe('1 of 1 control');
   });
 
-  it('explains the scoring in one line', () => {
-    expect(SCORING_RULE).toBe('A control scores 1. After a hint about it, it scores ½.');
+  it('explains the scoring in one short line', () => {
+    expect(SCORING_RULE).toBe('Hinted controls score ½');
+  });
+
+  it('anchors the hint cost to the Hint action', () => {
+    expect(HINT_COST).toBe("A hint halves that control's score");
+  });
+
+  it('credits OpenStreetMap with a real copyright sign, never a replacement character', () => {
+    expect(ATTRIBUTION.codePointAt(0)).toBe(0x00a9);
+    expect(ATTRIBUTION).not.toContain('�');
+    expect(ATTRIBUTION).toBe('© OpenStreetMap contributors, OpenFreeMap');
   });
 });
