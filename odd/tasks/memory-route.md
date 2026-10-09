@@ -35,7 +35,11 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
 - [ ] T5 Screens: setup (free-text request), memorize (map plus story text, with optional Android TTS), run (pocket mode with a black overlay, haptics, hints, give up), and results. Hints replay one unvisited checkpoint's story fragment via TTS, then give a direction, and each one costs score; giving up reveals the map. Map uses MapLibre with free OSM-based tiles. Split into:
   - [x] T5a Application layer, test-first: `planRoute` use case (intent → distance → loop → landmarks with snap 250 m and one 400 m retry → select → story), run session with hints and give up, visited-landmark history port, and the composition root config (Ollama in dev, Gemini via env). Route: delegated (writer trigger, 2+ non-trivial files).
   - [ ] T5b Expo Router screens, MapLibre (OpenFreeMap tiles, no key), expo-speech TTS, expo-haptics, pocket overlay, and foreground location during the run. Development build on the phone, checked manually. Route: delegated (writer trigger).
-- [ ] T4b LLM proxy, decided by the user on 2026-10-09: a Vercel function holds `GEMINI_API_KEY` server-side, with basic rate limiting. The app gets a `ProxyLlmClient` adapter and `resolveLlmConfig` selects it from `EXPO_PUBLIC_LLM_PROXY_URL`. The Gemini key is never embedded in the APK. Deploying needs explicit user authorization for the Vercel account. Route: decided at task start.
+- [x] T4b LLM proxy, decided by the user on 2026-10-09: a Vercel function holds `GEMINI_API_KEY` server-side, with basic rate limiting. The app gets a `ProxyLlmClient` adapter and `resolveLlmConfig` selects it from `EXPO_PUBLIC_LLM_PROXY_URL`. The Gemini key is never embedded in the APK. Deploying needs explicit user authorization for the Vercel account. Route: delegated writer in an isolated git worktree (the user asked for parallel work while the T5b writer holds the main worktree); merged into feat/memory-route afterwards.
+  - Parent design defaults:
+    - A generic `/api/complete` endpoint with the model fixed server-side, maxTokens and prompt length capped, and best-effort per-IP rate limiting.
+    - The key belongs to a Google project with no billing, so the worst abuse case is quota exhaustion, after which the app falls back to template stories.
+    - The app-side `EXPO_PUBLIC_GEMINI_API_KEY` path is removed.
 - [ ] T6 Background location: expo-location with task-manager and a foreground service, so GPS keeps working with the screen off.
 - [ ] T7 Stretch, timeboxed to 4 hours: on-device Gemma adapter using llama.rn, with a small Gemma model.
 - [ ] T8 Outdoor test run, screenshots or clips, and a draft of the DEV post.
@@ -116,5 +120,22 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - `.atl/` (the gentle-ai skill-registry cache) is now in `.git/info/exclude` so the review inventory is clean. This is local only; the repo is unchanged.
 - RDD: assess from 8e787f9 (untracked excluded) → medium, slice_budget_reached (2615 lines). Preflight STATUS stopped again with `managed_assets_outdated`. The sync continuation failed the same way (gentle-ai 3.7.0, gentle-ai#5141, already reported), so the slice stays unreviewed.
 
+- 2026-10-09: The user picked the proxy and asked for `/impeccable` on the screens.
+  - PRODUCT.md written: primary user casual walkers, English UI.
+  - Direction: Control Sheet (orienteering Score-O), seed 8e7e888b, code-led. The contract is in `.impeccable/surfaces/src-app.md` (commit `069ef30`).
+- T5b, partial: the delegated writer committed `bd296dc` (store, walking minutes, pictograms, punch pattern, kv VisitedHistory), `c20fe55` (expo-router, theme, fonts) and `fc85896` (four screens with the MapLibre overprint).
+  - The dev build was installed on the phone (`com.teofurlan.loci`). Captures exist only for setup (`.impeccable/review/01-*`, `02-setup-busy.png`).
+  - The session died when the terminal closed, mid-verification. The parent committed the leftover tweaks as `c5ee326`.
+- T4b done by a delegated writer in a worktree: `b204185` (proxy function with validation, caps, rate limiter and Gemini call) and `e40ded1` (ProxyLlmClient; the app-side Gemini client was removed).
+  - RED was a missing module per behavior; 213 tests GREEN.
+  - Parent spot check in the worktree: `npx jest` → 213 passed.
+  - Merged as `86c2e71`. The user edited `.env.example`, committed as `4d70dca` and `89293ae`; the agent was denied `.env*` access by the global settings, which the user keeps as they are.
+  - Nothing deployed.
+- Dependency fix `fe0f321`:
+  - `jest-expo` 57 needs the `@react-native/jest-preset` peer, which was undeclared, so jest failed in the main checkout.
+  - `react-dom` had resolved to 19.3 against React 19.2.3. It is now installed through expo at 19.2.3.
+  - `npm ci --dry-run` is OK, and the parent saw `npx jest` 213 passed, tsc clean, lint clean.
+- RDD: the slice is still unreviewed (gentle-ai#5141).
+
 ## Next step
-T5b (screens), then T6. Pending user decision: Gemini key embedded in the APK or behind a proxy.
+Finish the T5b verification: device captures of memorize, run and results (plus dark theme and font scale 1.3), fixes, then the impeccable finish reviewer and documenter (DESIGN.md). Then T6.
