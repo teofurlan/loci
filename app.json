@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#8BAC0F",
+    "backgroundColor": "#94B0C2",
     "platforms": [
       "android"
     ],
@@ -17,7 +17,7 @@
     "android": {
       "package": "com.teofurlan.loci",
       "adaptiveIcon": {
-        "backgroundColor": "#8BAC0F",
+        "backgroundColor": "#94B0C2",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -35,6 +35,16 @@
       "expo-router",
       "expo-sqlite",
       "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#94B0C2",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 128,
+          "resizeMode": "contain",
+          "dark": { "backgroundColor": "#94B0C2", "image": "./assets/splash-icon.png" }
+        }
+      ],
       [
         "expo-location",
         {
@@ -60,7 +70,9 @@
       "@maplibre/maplibre-react-native",
       [
         "expo-speech-recognition",
-        { "microphonePermission": "Loci uses the microphone so you can speak your course request." }
+        {
+          "microphonePermission": "Loci uses the microphone so you can speak your course request."
+        }
       ]
     ]
   }
