@@ -1,4 +1,4 @@
-import { createHandler } from '../src/handler';
+import { createHandler } from '../src/handler.js';
 
 // Created once per function instance so the in-memory rate limiter survives across requests.
 const handle = createHandler({

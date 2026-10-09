@@ -1,5 +1,5 @@
-import { callGemini, DEFAULT_GEMMA_MODEL, UpstreamError, type FetchFn } from './gemini';
-import { TokenBucketLimiter } from './rate-limiter';
+import { callGemini, DEFAULT_GEMMA_MODEL, UpstreamError, type FetchFn } from './gemini.js';
+import { TokenBucketLimiter } from './rate-limiter.js';
 
 export const MAX_PROMPT_CHARS = 8000;
 export const MAX_OUTPUT_TOKENS = 1024;
@@ -57,7 +57,8 @@ function parseBody(raw: string): CompleteRequest | Response {
   }
   if (prompt.length > MAX_PROMPT_CHARS) return fail(413, 'prompt_too_large');
 
-  return { prompt, maxTokens: Math.min(Math.floor(maxTokens ?? MAX_OUTPUT_TOKENS) || 1, MAX_OUTPUT_TOKENS) };
+  const requested = typeof maxTokens === 'number' ? maxTokens : MAX_OUTPUT_TOKENS;
+  return { prompt, maxTokens: Math.min(Math.floor(requested) || 1, MAX_OUTPUT_TOKENS) };
 }
 
 /**

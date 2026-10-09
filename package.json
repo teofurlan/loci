@@ -45,6 +45,9 @@
   "private": true,
   "jest": {
     "preset": "jest-expo",
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/android/",

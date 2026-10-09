@@ -5,6 +5,9 @@
   "type": "module",
   "description": "Vercel Function that keeps the Gemini API key server-side for the Loci app.",
   "engines": {
-    "node": ">=20"
+    "node": "24.x"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0"
   }
 }
