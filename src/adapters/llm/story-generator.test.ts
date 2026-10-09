@@ -1,6 +1,6 @@
 import type { Landmark } from '../../domain/types';
 import { fakeLlm } from './fakes';
-import { LlmStoryGenerator } from './story-generator';
+import { buildStoryPrompt, LlmStoryGenerator } from './story-generator';
 
 const lm = (id: string, name: string, kind: Landmark['kind']): Landmark => ({
   id,
@@ -9,6 +9,27 @@ const lm = (id: string, name: string, kind: Landmark['kind']): Landmark => ({
   position: { lat: 1, lng: 2 },
 });
 const landmarks = [lm('node/1', 'Obelisco', 'monument'), lm('way/2', 'Rosedal', 'park')];
+
+describe('buildStoryPrompt themes', () => {
+  const themed = buildStoryPrompt({ landmarks, style: 'The Lord of the Rings', language: 'en' });
+
+  it('weaves a requested theme through every fragment', () => {
+    expect(themed).toContain('The Lord of the Rings');
+    expect(themed).toMatch(/theme/i);
+    expect(themed).toMatch(/every fragment/i);
+  });
+
+  it('still requires each place to be named and tied to the real landmark', () => {
+    expect(themed).toContain('Obelisco');
+    expect(themed).toContain('Rosedal');
+    expect(themed).toMatch(/NAME of the (real )?place/);
+    expect(themed).toMatch(/memory hook/i);
+  });
+
+  it('keeps the playful default when no style is asked for', () => {
+    expect(buildStoryPrompt({ landmarks, language: 'en' })).toMatch(/playful and surreal/);
+  });
+});
 
 describe('LlmStoryGenerator', () => {
   it('builds a prompt with names, kinds, ids, language and style, and asks for JSON', async () => {
