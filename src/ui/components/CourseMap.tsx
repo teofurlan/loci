@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'rea
 import type { Landmark, LatLng } from '../../domain/types';
 import { ATTRIBUTION } from '../model/format';
 import { BASE_STYLE_URL, usePixelStyle } from '../state/use-pixel-style';
-import { ACTIVE_PALETTE, ACTIVE_PALETTE_NAME } from '../theme/palettes';
+import { PALETTE } from '../theme/palettes';
 import { COLORS, SHAPE } from '../theme/theme';
 import { AppText } from './AppText';
 import { PixelBox } from './PixelBox';
@@ -58,8 +58,6 @@ function CourseMapView({ start, controls, visited, selected, onSelect, style, pa
     <View style={[styles.root, style]}>
       {mapStyle && (
         <Map
-          // Remounted per palette: view annotations render once to a bitmap and would keep the old colors.
-          key={ACTIVE_PALETTE_NAME}
           style={styles.map}
           mapStyle={mapStyle}
           androidView="texture"
@@ -133,7 +131,7 @@ function CourseMapView({ start, controls, visited, selected, onSelect, style, pa
 }
 
 const styles = StyleSheet.create({
-  root: { backgroundColor: ACTIVE_PALETTE.map.land, overflow: 'hidden' },
+  root: { backgroundColor: PALETTE.map.land, overflow: 'hidden' },
   map: { flex: 1 },
   marker: { paddingRight: 8, paddingBottom: 8 },
   plate: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },

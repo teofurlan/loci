@@ -26,4 +26,5 @@ export function MicButton({ listening, stopping, disabled, onPress }: Props) {
   );
 }
 
-const styles = StyleSheet.create({ root: { alignSelf: 'flex-start' } });
+/** Full width: the mic shares the text area's and the example menu's left and right edges. */
+const styles = StyleSheet.create({ root: { alignSelf: 'stretch' } });

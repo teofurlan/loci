@@ -1,10 +1,10 @@
-import { ACTIVE_PALETTE } from './palettes';
+import { PALETTE } from './palettes';
 
 /**
- * The semantic color tokens of the active palette set (see `palettes.ts`, where `ACTIVE_PALETTE_NAME`
- * switches between the options). Green appears only as `found`, in the map's parks and in nature sprites.
+ * The semantic color tokens of the world's one palette (see `palettes.ts`). Green appears only as
+ * `found`, in the map's parks and woods, and in the park sprite.
  */
-export const COLORS = ACTIVE_PALETTE.ui;
+export const COLORS = PALETTE.ui;
 
 export const FONTS = {
   body: 'PixelifySans_400Regular',

@@ -1,7 +1,7 @@
-import { PALETTES } from '../theme/palettes';
+import { PALETTE } from '../theme/palettes';
 import { pixelizeStyle, type StyleLike } from './pixel-style';
 
-const MAP = PALETTES.c.map;
+const MAP = PALETTE.map;
 
 const base = { type: 'x', source: 'openmaptiles' };
 

@@ -3,7 +3,7 @@ import Svg, { Path } from 'react-native-svg';
 import { glyphFor, type GlyphName } from '../model/glyphs';
 import { spriteFor, spritePaths, type PaletteIndex, type Sprite, type SpriteName } from '../model/sprites';
 import { COLORS } from '../theme/theme';
-import { ACTIVE_PALETTE } from '../theme/palettes';
+import { PALETTE } from '../theme/palettes';
 
 type Props = {
   /** A named 16 x 16 sprite, or a small glyph. */
@@ -22,8 +22,8 @@ function resolve(name: Props['name']): Sprite {
 function PixelSpriteView({ name, scale, inkColor }: Props) {
   const sprite = resolve(name);
   const paths = spritePaths(sprite);
-  // Glyphs are single-color marks in ink; sprites take their four colors from the active palette.
-  const colors = name.startsWith('glyph:') ? null : ACTIVE_PALETTE.sprites[name as SpriteName];
+  // Glyphs are single-color marks in ink; sprites take their four colors from the palette.
+  const colors = name.startsWith('glyph:') ? null : PALETTE.sprites[name as SpriteName];
   const cols = sprite[0].length;
   return (
     <Svg

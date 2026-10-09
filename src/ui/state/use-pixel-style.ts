@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { pixelizeStyle, type StyleLike } from '../model/pixel-style';
-import { ACTIVE_PALETTE } from '../theme/palettes';
+import { PALETTE } from '../theme/palettes';
 
 /** The upstream OpenFreeMap style, recolored at load by `pixelizeStyle`. */
 export const BASE_STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
@@ -16,7 +16,7 @@ function load(): Promise<StyleLike> {
         return response.json() as Promise<StyleLike>;
       }),
       new Promise<never>((_, reject) => setTimeout(() => reject(new Error('style timeout')), TIMEOUT_MS)),
-    ]).then((style) => pixelizeStyle(style, ACTIVE_PALETTE.map));
+    ]).then((style) => pixelizeStyle(style, PALETTE.map));
     cached = request;
     // A failure must not stay cached: the next screen tries again.
     request.catch(() => {
