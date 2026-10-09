@@ -7,7 +7,9 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "platforms": ["android"],
+    "platforms": [
+      "android"
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -20,7 +22,10 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "permissions": ["RECEIVE_BOOT_COMPLETED", "POST_NOTIFICATIONS"]
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -45,8 +50,17 @@
           }
         }
       ],
-      ["expo-navigation-bar", { "enforceContrast": false }],
-      "@maplibre/maplibre-react-native"
+      [
+        "expo-navigation-bar",
+        {
+          "enforceContrast": false
+        }
+      ],
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-speech-recognition",
+        { "microphonePermission": "Loci uses the microphone so you can speak your course request." }
+      ]
     ]
   }
 }

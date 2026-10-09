@@ -39,3 +39,12 @@ export const PICTOGRAMS: Record<LandmarkKind, readonly string[]> = {
 };
 
 export const pictogramFor = (kind: LandmarkKind): readonly string[] => PICTOGRAMS[kind];
+
+/** Dictation controls on the same 24 grid: a microphone, and a stop square while listening. */
+export const MIC_PICTOGRAM: readonly string[] = [
+  'M9 4.5A3 3 0 0 1 15 4.5V11A3 3 0 0 1 9 11Z',
+  'M5.5 11C5.5 14.6 8.4 17.5 12 17.5C15.6 17.5 18.5 14.6 18.5 11',
+  'M12 17.5V21',
+  'M9 21H15',
+];
+export const STOP_PICTOGRAM: readonly string[] = ['M7 7H17V17H7Z'];

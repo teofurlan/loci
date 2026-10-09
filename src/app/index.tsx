@@ -1,12 +1,15 @@
 import * as Location from 'expo-location';
 import { Redirect, router } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { LatLng } from '../domain/types';
 import { AppText } from '../ui/components/AppText';
 import { FlagButton } from '../ui/components/FlagButton';
+import { MicButton } from '../ui/components/MicButton';
 import { RuleButton } from '../ui/components/RuleButton';
+import { dictationReducer, INITIAL_DICTATION } from '../ui/model/dictation';
 import { describePlanError, type PlanErrorDescription } from '../ui/model/errors';
 import { resumeRoute } from '../ui/model/resume-route';
 import { courseStore } from '../ui/state/course';
@@ -18,6 +21,9 @@ const EXAMPLES = [
   '30 min run, I remember places better than street names',
   'Easy walk past recognizable landmarks',
 ];
+
+/** The device locale, so dictation follows the language the phone is set to. */
+const deviceLocale = () => Intl.DateTimeFormat().resolvedOptions().locale;
 
 const FIX_TIMEOUT_MS = 15_000;
 
@@ -47,6 +53,7 @@ export default function SetupScreen() {
   const [busy, setBusy] = useState(false);
   const [denied, setDenied] = useState<LocationProblem | null>(null);
   const [failure, setFailure] = useState<PlanErrorDescription | null>(null);
+  const [dictation, dispatch] = useReducer(dictationReducer, INITIAL_DICTATION);
   const mounted = useRef(true);
   // Read once on mount: planning fills the store and navigates on its own.
   const [resumeHref] = useState(() => resumeRoute(courseStore.get().phase));
@@ -55,8 +62,43 @@ export default function SetupScreen() {
     mounted.current = true;
     return () => {
       mounted.current = false;
+      ExpoSpeechRecognitionModule.abort();
     };
   }, []);
+
+  useSpeechRecognitionEvent('result', (event) =>
+    dispatch({ type: 'result', transcript: event.results[0]?.transcript ?? '', isFinal: event.isFinal }),
+  );
+  useSpeechRecognitionEvent('end', () => dispatch({ type: 'end' }));
+  useSpeechRecognitionEvent('error', (event) =>
+    dispatch({ type: 'error', code: event.error, message: event.message }),
+  );
+
+  // Dictation owns the field text while it produces results; typing takes over between sessions.
+  const [seenDictationText, setSeenDictationText] = useState<string | null>(null);
+  if (dictation.text !== seenDictationText) {
+    setSeenDictationText(dictation.text);
+    if (dictation.text !== null) setRequest(dictation.text);
+  }
+
+  const toggleDictation = useCallback(async () => {
+    if (dictation.phase === 'listening') {
+      dispatch({ type: 'stop' });
+      ExpoSpeechRecognitionModule.stop();
+      return;
+    }
+    try {
+      const permission = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      if (!permission.granted) {
+        dispatch({ type: 'denied', canAskAgain: permission.canAskAgain });
+        return;
+      }
+      dispatch({ type: 'start', base: request });
+      ExpoSpeechRecognitionModule.start({ lang: deviceLocale(), interimResults: true });
+    } catch (error) {
+      dispatch({ type: 'error', code: 'unknown', message: String(error) });
+    }
+  }, [dictation.phase, request]);
 
   const setCourse = useCallback(async () => {
     setFailure(null);
@@ -110,7 +152,7 @@ export default function SetupScreen() {
           accessibilityLabelledBy="request-label"
           value={request}
           onChangeText={setRequest}
-          editable={!busy}
+          editable={!busy && dictation.phase === 'idle'}
           multiline
           placeholder="e.g. 20 min walk, green areas, I remember places better than street names"
           placeholderTextColor={colors.onSurfaceVariant}
@@ -118,6 +160,28 @@ export default function SetupScreen() {
           cursorColor={colors.onBackground}
           style={[styles.input, { borderColor: colors.outline, color: colors.onBackground }]}
         />
+
+        <View style={styles.mic}>
+          <MicButton
+            listening={dictation.phase !== 'idle'}
+            stopping={dictation.phase === 'stopping'}
+            disabled={busy}
+            onPress={toggleDictation}
+          />
+        </View>
+        {dictation.problem && (
+          <View style={[styles.panel, { borderColor: colors.error }]} accessibilityLiveRegion="polite">
+            <AppText variant="title" color={colors.error}>
+              {dictation.problem.problem}
+            </AppText>
+            <AppText variant="body">{dictation.problem.recovery}</AppText>
+            {dictation.problem.kind === 'denied' && dictation.problem.canAskAgain === false && (
+              <View style={styles.panelAction}>
+                <RuleButton label="Open settings" onPress={() => Linking.openSettings()} />
+              </View>
+            )}
+          </View>
+        )}
 
         <AppText variant="label" color={colors.onSurfaceVariant} style={styles.examplesLabel}>
           Or tap an example
@@ -197,6 +261,7 @@ const styles = StyleSheet.create({
     fontSize: TYPE.body.fontSize,
     lineHeight: TYPE.body.lineHeight,
   },
+  mic: { marginTop: 10 },
   examplesLabel: { marginTop: 20, marginBottom: 8 },
   examples: { gap: 8, alignSelf: 'stretch' },
   example: {
