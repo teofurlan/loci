@@ -1,0 +1,21 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.1 084b4234",
+  "osm3s": { "timestamp_osm_base": "2026-10-08T10:00:00Z", "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL." },
+  "elements": [
+    { "type": "node", "id": 111, "lat": -34.6037, "lon": -58.3816, "tags": { "name": "Plaza de la Republica", "place": "square" } },
+    { "type": "node", "id": 112, "lat": -34.6033, "lon": -58.3814, "tags": { "name": "Obelisco de Buenos Aires", "historic": "monument", "tourism": "attraction" } },
+    { "type": "node", "id": 113, "lat": -34.6040, "lon": -58.3820, "tags": { "amenity": "fountain" } },
+    { "type": "node", "id": 114, "lat": -34.6050, "lon": -58.3830, "tags": { "name": "Fuente de los Lagos", "amenity": "fountain" } },
+    { "type": "way", "id": 221, "center": { "lat": -34.6100, "lon": -58.3700 }, "tags": { "name": "Parque Lezama", "leisure": "park" } },
+    { "type": "way", "id": 222, "center": { "lat": -34.6110, "lon": -58.3710 }, "tags": { "name": "Lago del Parque", "natural": "water" } },
+    { "type": "way", "id": 223, "center": { "lat": -34.6120, "lon": -58.3720 }, "tags": { "name": "Catedral Metropolitana", "amenity": "place_of_worship" } },
+    { "type": "node", "id": 115, "lat": -34.6060, "lon": -58.3840, "tags": { "name": "Mirador del Cabildo", "tourism": "viewpoint" } },
+    { "type": "node", "id": 116, "lat": -34.6070, "lon": -58.3850, "tags": { "name": "Biblioteca Nacional", "amenity": "library" } },
+    { "type": "node", "id": 117, "lat": -34.6080, "lon": -58.3860, "tags": { "name": "Mural Sin Titulo", "tourism": "artwork" } },
+    { "type": "node", "id": 118, "lat": -34.6090, "lon": -58.3870, "tags": { "name": "Casa Antigua", "historic": "building" } },
+    { "type": "node", "id": 119, "lat": -34.6095, "lon": -58.3875, "tags": { "name": "Museo Curioso", "tourism": "attraction" } },
+    { "type": "node", "id": 112, "lat": -34.6033, "lon": -58.3814, "tags": { "name": "Obelisco de Buenos Aires", "historic": "memorial" } },
+    { "type": "way", "id": 224, "tags": { "name": "Way without geometry", "leisure": "park" } }
+  ]
+}
