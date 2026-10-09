@@ -49,7 +49,19 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - The user picked 8 kinds: museum, theatre/cinema, playground, stadium/sports, statue/memorial, tower/lighthouse, train station, market.
   - Sprites stay original. Guidance comes from the opusgamelabs `game-assets` skill (MIT in its frontmatter; reviewed by the parent): only its Sprite Design Rules and archetype catalog. It was NOT installed globally, because it also scrapes real-person photos and brand logos (IP and likeness risk) and targets Phaser.
   - Optional 2-frame idle animations (water, fountain, flag, avatar walk) if time allows.
-  - Route: a fresh delegated writer in the pixel-world worktree, after the T10 batches land.
+  - Route: ONE fresh delegated writer in the pixel-world worktree that does T11 and T13 together, after the T10 batches land. It is the sole owner of phone builds while it runs.
+- [ ] T13 Logo integration (the user's logo is approved on 2026-10-09, made in the user-owned `loci-logo` worktree with gentle-shell).
+  - Read `C:/Users/teofu/Code/loci-worktrees/loci-logo/assets/branding/loci/README.md`; the files there are UNTRACKED on `feat/loci-logo`.
+  - Copy only the runtime assets into the pixel-world worktree (for example `assets/branding/`):
+    - `loci-mark-pixel.svg`: the approved pixel symbol, recolorable through its fill.
+    - `loci-mark-pixel.png` (96×112) and `loci-mark-pixel-enlarged.png` (4×, nearest-neighbor).
+    - `loci-mark.svg`: the vector master, kept byte-identical.
+  - Do not copy `review.*`, `pixel-directions.jpg`, `pixel-grid.txt` or `build-pixel.py`.
+  - Do not modify, merge or commit anything in the loci-logo worktree.
+  - Integrate it with the pixel world without redesigning it: keep the silhouette, proportions, three hollow checkpoints, transparency and aspect ratio. Render with nearest-neighbor at integer multiples of 96×112, and recolor it to the palette ink. Check small sizes on the device; it loses detail at 32 px.
+  - **Do T13 together with T11, in the same single writer** (user decision on 2026-10-09): only one agent at a time may build to or drive the phone.
+  - Placements: the loading-screen logo slot left by the T10 polish batch, and possibly the setup header.
+  - Android launcher icon: the symbols are not launcher icons. Build a padded square adaptive-icon foreground (safe zone) on a Sweetie 16 background per the Expo SDK 57 `android.adaptiveIcon` docs, then rebuild natively and check it on the launcher.
 - [ ] T12 "Quest" mode: map with an ordered path; a longer fragment per point, readable or audible only near the point and hidden once the walker moves away; answering a question about the previous point unlocks the next clue. Ranked hard. Parent recommendation: answer by voice (TTS question + T9 dictation) to keep the phone in the pocket, and do it after the challenge submission.
 - [ ] T7 Stretch, timeboxed to 4 hours: on-device Gemma adapter using llama.rn, with a small Gemma model.
 - [ ] T8 Outdoor test run, screenshots or clips, and a draft of the DEV post.
@@ -251,8 +263,36 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - story themes: storyStyle broadened from tone to theme, with the prompt weaving the theme around each landmark
   - Backlog: T11 (sprites), T12 (quest mode).
 
+- 2026-10-09 (end of day, paused by the user to resume tomorrow, possibly from Claude Desktop). State of `feat/pixel-world` (worktree `C:/Users/teofu/Code/loci-worktrees/pixel-world`):
+  - Commits since the finish review:
+    - `f5df775` finish-review fixes: Jersey 10 body font for unambiguous digits and ©, dialogue layout, map framing and marker separation, muted minor roads and green parks, muted placeholder, plural "point", 70 ms typewriter, church spire and columned library, "Clue" title.
+    - `07754b6` story themes woven through every fragment.
+    - `e954781` Sweetie 16 native splash (expo-splash-screen plugin) and a themed LoadingScreen; `AppMark` is the single slot for the logo.
+    - `7953b26` square icon mic inside the request box, plus a themed example.
+    - `6741dd5` WIP captures.
+  - Parent spot check: `npx jest` → 388 passed; worktree clean; secret scan 0 (counts only).
+  - NOT verified on the phone yet: everything after the first sprite sheet (dialogue box at 1.15 and 1.3, map framing and terrain, ©, splash, loading, square mic). Lint and expo-doctor were not run after batch 2. The adaptive-icon PNGs may still be green.
+  - Open: the tree trunk looks heavy and the canopy shade became ink dither; fix it.
+  - The `px-*` captures besides `px-sprites` and `px-setup-mic-bar` are stale.
+  - The T10 verdict pass by the impeccable finish reviewer is still owed after the recapture, then the documenter (DESIGN.md for the pixel world).
+  - Phone build recipe (Windows path limit):
+    - `robocopy` the worktree (minus `.git`, `android` and `.impeccable`) to a short path such as `C:\lw-px`.
+    - `npx expo prebuild`, then `gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a`.
+    - Install on `ZT322SKLL5`, set `debug_http_host` to `localhost:8082`, and run Metro on 8082.
+    - Delete the temp folder afterwards.
+  - The opusgamelabs skill copy (reviewed) and the pixel brief draft are kept in `C:/Users/teofu/Code/loci-worktrees/_refs/`.
+
 ## Next step
-T8: outdoor walk on the phone (real GPS punches, vibration in the pocket, TTS, collapse animation), clips and screenshots, DEV post draft. MIT LICENSE added (`009d105`, user decision), and main fast-forwarded to it.
+Resume in one session, from the repo `C:/Users/teofu/Code/loci` (main checkout on `feat/memory-route`). The pixel work lives in the worktree `C:/Users/teofu/Code/loci-worktrees/pixel-world`.
+1. ONE writer (the sole phone owner), in the pixel-world worktree:
+   a. Verify and recapture the T10 batches on the phone, and fix the tree trunk.
+   b. T11: the 8 new landmark kinds and sprites (with optional 2-frame animations).
+   c. T13: logo integration plus the Android adaptive icon.
+   Then run lint and expo-doctor.
+2. Send the recaptures to an impeccable finish-review verdict pass, then the documenter (DESIGN.md).
+3. Merge `feat/pixel-world` into `feat/memory-route` and fast-forward `main`, then build the release APK for the walk.
+4. T8: outdoor walk, clips, DEV post (deadline 2026-10-11 23:59 PDT). T9 dictation gets checked on the phone during the walk.
+Never touch the user-owned `loci-logo` worktree beyond reading its README and copying its runtime assets for T13.
 
 ## Older next step
 Act on the finish review verdict, then the documenter (DESIGN.md). Get the real Gemma path working (proxy deploy or a working Ollama model). Then T6.
