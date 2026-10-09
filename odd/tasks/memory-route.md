@@ -219,6 +219,15 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - Published as public https://github.com/teofurlan/loci, with `main` (default) and `feat/memory-route` at `e3666a0`.
   - All commit hashes before this point were rewritten; the hashes quoted above are pre-rewrite.
 
+- 2026-10-09: T10 progress on `feat/pixel-world`, from a delegated writer:
+  - Overworld screens built: `eeec07d`, `d7d58ef`, `75f8e32`.
+  - The user rejected the all-green look ("green only where it means something"). Three palettes were built behind a swappable token set with a WCAG AA contrast test (`6922399`, `d69711c`) and captured on the phone with a Gemma story via the proxy.
+  - **The user chose B, Sweetie 16** (GrafxKid): ground `#94B0C2`, panel `#C9D8E1`, ink `#1A1C2C`, action `#B13E53`, run field `#1A1C2C`, found and park green `#38B764`/`#A7F070`.
+  - Setup busy fix `d484c6f`: examples and mic are hidden while planning, and the planning box sits above the pinned button. Verified at font scale 1 and 1.3.
+  - 373 tests green.
+  - Queued: mic width equal to the field, richer sprites (the church was too thin), remove palettes A and C.
+  - Windows gotcha: native builds from the long worktree path fail (ninja 260-char limit). The writer built from a short temporary copy.
+
 ## Next step
 T8: outdoor walk on the phone (real GPS punches, vibration in the pocket, TTS, collapse animation), clips and screenshots, DEV post draft. MIT LICENSE added (`009d105`, user decision), and main fast-forwarded to it.
 
