@@ -45,7 +45,11 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
 - [ ] T10 Pixel world redesign (user request on 2026-10-09: less black, green map areas, avoid an orange-on-black look; pixel art in the spirit of the first Game Boy RPGs).
   - Impeccable replacement world: the user first chose Dungeon Floor, then switched to **Overworld** (the pick card, seed d6ecdf53, code-led) because in the method of loci the place is the memory hook. It has a 4-green handheld LCD palette, original 16×16 landmark sprites that "speak" their fragment in a typewriter dialogue box, a badge-case results screen and a palette-fade start.
   - Route: delegated writer on branch `feat/pixel-world` in a git worktree, branched after T9. `feat/memory-route` stays shippable for T8 and the post; merge only if it is finished in time.
-- [ ] T11 More landmark kinds and sprites, based on what a bigger city offers. The parent proposes a list, the user picks, then the sprites are designed. Option: Kenney 16x16 packs are CC0 (to confirm via the pack's license.txt) versus original sprites. Ranked medium.
+- [ ] T11 More landmark kinds and sprites, IN SCOPE for the challenge (user decision on 2026-10-09: evaluators in big cities would otherwise see mostly "other").
+  - The user picked 8 kinds: museum, theatre/cinema, playground, stadium/sports, statue/memorial, tower/lighthouse, train station, market.
+  - Sprites stay original. Guidance comes from the opusgamelabs `game-assets` skill (MIT in its frontmatter; reviewed by the parent): only its Sprite Design Rules and archetype catalog. It was NOT installed globally, because it also scrapes real-person photos and brand logos (IP and likeness risk) and targets Phaser.
+  - Optional 2-frame idle animations (water, fountain, flag, avatar walk) if time allows.
+  - Route: a fresh delegated writer in the pixel-world worktree, after the T10 batches land.
 - [ ] T12 "Quest" mode: map with an ordered path; a longer fragment per point, readable or audible only near the point and hidden once the walker moves away; answering a question about the previous point unlocks the next clue. Ranked hard. Parent recommendation: answer by voice (TTS question + T9 dictation) to keep the phone in the pocket, and do it after the challenge submission.
 - [ ] T7 Stretch, timeboxed to 4 hours: on-device Gemma adapter using llama.rn, with a small Gemma model.
 - [ ] T8 Outdoor test run, screenshots or clips, and a draft of the DEV post.
