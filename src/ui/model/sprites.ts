@@ -290,7 +290,7 @@ export const FOUND_FRAMES = ['found-a', 'found-b'] as const;
 
 const parsed = new Map<SpriteName, Sprite>();
 
-function parse(rows: readonly string[]): Sprite {
+export function parseGrid(rows: readonly string[]): Sprite {
   return rows.map((row) =>
     Array.from(row, (ch): Pixel => {
       if (ch === '.') return null;
@@ -303,7 +303,7 @@ function parse(rows: readonly string[]): Sprite {
 export function spriteFor(name: SpriteName): Sprite {
   let sprite = parsed.get(name);
   if (!sprite) {
-    sprite = parse(GRIDS[name]);
+    sprite = parseGrid(GRIDS[name]);
     parsed.set(name, sprite);
   }
   return sprite;

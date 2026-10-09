@@ -4,46 +4,78 @@ import * as Speech from 'expo-speech';
 import { Redirect, router } from 'expo-router';
 import { NavigationBar } from 'expo-navigation-bar';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useRef, useState } from 'react';
-import { BackHandler, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { BackHandler, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Hint } from '../domain/session';
-import type { LatLng } from '../domain/types';
+import type { LandmarkKind, LatLng } from '../domain/types';
 import { AppText } from '../ui/components/AppText';
-import { RuleButton } from '../ui/components/RuleButton';
+import { DialogueBox } from '../ui/components/DialogueBox';
+import { PixelBox } from '../ui/components/PixelBox';
+import { PixelButton } from '../ui/components/PixelButton';
+import { PixelSprite } from '../ui/components/PixelSprite';
 import { formatElapsed, HINT_COST, hintSentence } from '../ui/model/format';
 import { trackingMode, trackingNotice, type TrackingMode } from '../ui/model/tracking-mode';
 import { courseStore, useCourse } from '../ui/state/course';
 import { handleLocations, subscribeRunEvents, tracker } from '../ui/state/location-task';
-import { POCKET, useTheme } from '../ui/theme/theme';
+import { FOUND_FRAMES } from '../ui/model/sprites';
+import { useReducedMotion } from '../ui/state/use-reduced-motion';
+import { useTypewriter } from '../ui/state/use-typewriter';
+import { COLORS } from '../ui/theme/theme';
 
-const INVERT_MS = 650;
+const FLASH_MS = 1400;
+const FRAME_MS = 200;
+/** If the speech engine never reports a start, the hint types out anyway after this long. */
+const TTS_START_FALLBACK_MS = 1500;
+
+/** The punch: the landmark's sprite with a 2-frame "found" sparkle. Reduced motion holds one frame. */
+function FoundFlash({ kind, reducedMotion, onDone }: { kind: LandmarkKind; reducedMotion: boolean; onDone: () => void }) {
+  const [frame, setFrame] = useState(1);
+  useEffect(() => {
+    const done = setTimeout(onDone, FLASH_MS);
+    const flip = reducedMotion ? null : setInterval(() => setFrame((value) => 1 - value), FRAME_MS);
+    return () => {
+      clearTimeout(done);
+      if (flip) clearInterval(flip);
+    };
+  }, [reducedMotion, onDone]);
+  return (
+    <View pointerEvents="none" style={styles.flash}>
+      <PixelBox fill={COLORS.ground} border={COLORS.lit} behind={COLORS.field} double>
+        <View style={styles.flashPlate}>
+          <PixelSprite name={kind} scale={6} />
+          <View style={StyleSheet.absoluteFill}>
+            <PixelSprite name={FOUND_FRAMES[frame]} scale={6} />
+          </View>
+        </View>
+      </PixelBox>
+    </View>
+  );
+}
+
 
 export default function RunScreen() {
   const course = useCourse();
   const insets = useSafeAreaInsets();
+  const reducedMotion = useReducedMotion();
   const [now, setNow] = useState(() => Date.now());
-  const [inverted, setInverted] = useState(false);
+  const [flash, setFlash] = useState<LandmarkKind | null>(null);
   const [hint, setHint] = useState<Hint | null>(null);
+  const [hintArmed, setHintArmed] = useState(false);
   const [hintNote, setHintNote] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [hasFix, setHasFix] = useState(false);
   const [mode, setMode] = useState<TrackingMode | null>(null);
   const lastPosition = useRef<LatLng | null>(null);
-
-  // Two values only: black and white, swapped for one beat on every punch.
-  const bg = inverted ? POCKET.white : POCKET.black;
-  const fg = inverted ? POCKET.black : POCKET.white;
+  const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const running = course.phase === 'run';
 
-  // Pocket mode owns the system bar too: light buttons on the black frame (dark ink while the frame is inverted
-  // to white). Leaving restores the theme default.
-  const { dark } = useTheme();
+  // The run owns the system bar too: light button ink on the ink field. Leaving restores the ground default.
   useEffect(() => {
-    NavigationBar.setStyle(inverted ? 'dark' : 'light');
-  }, [inverted]);
-  useEffect(() => () => NavigationBar.setStyle(dark ? 'light' : 'dark'), [dark]);
+    NavigationBar.setStyle('light');
+    return () => NavigationBar.setStyle('dark');
+  }, []);
 
   useEffect(() => {
     if (course.phase === 'results') router.replace('/results');
@@ -56,7 +88,7 @@ export default function RunScreen() {
   }, [running]);
 
   // The background task and the foreground watcher both feed `handleLocations`, which punches and vibrates.
-  // While this screen is up it only mirrors the result: the last fix and the inversion beat.
+  // While this screen is up it only mirrors the result: the last fix and the found flash.
   useEffect(
     () =>
       subscribeRunEvents(({ position, punched }) => {
@@ -65,8 +97,11 @@ export default function RunScreen() {
           setHasFix(true);
         }
         if (punched) {
-          setInverted(true);
-          setTimeout(() => setInverted(false), INVERT_MS);
+          const state = courseStore.get();
+          if (state.phase === 'run') {
+            const last = state.session.run.visits[state.session.run.visits.length - 1];
+            if (last) setFlash(state.session.landmarks[last.checkpointIndex].kind);
+          }
         }
       }),
     [],
@@ -117,6 +152,19 @@ export default function RunScreen() {
     return () => sub.remove();
   }, []);
 
+  useEffect(
+    () => () => {
+      if (hintTimer.current) clearTimeout(hintTimer.current);
+    },
+    [],
+  );
+
+  const endFlash = useCallback(() => setFlash(null), []);
+
+  // The hint box types its text on the TTS start event, like the memorize dialogue.
+  const hintText = hint ? `${hint.fragment}\n${hintSentence(hint)}` : '';
+  const typing = useTypewriter(hintText, hintArmed, reducedMotion);
+
   const askForHint = async () => {
     setHintNote(null);
     let position = lastPosition.current;
@@ -131,95 +179,121 @@ export default function RunScreen() {
     const given = courseStore.hint(position);
     if (!given) return;
     setHint(given);
+    setHintArmed(false);
+    if (hintTimer.current) clearTimeout(hintTimer.current);
+    hintTimer.current = setTimeout(() => setHintArmed(true), TTS_START_FALLBACK_MS);
     Speech.stop();
-    Speech.speak(given.fragment, { onDone: () => Speech.speak(hintSentence(given)) });
+    Speech.speak(given.fragment, {
+      onStart: () => {
+        if (hintTimer.current) clearTimeout(hintTimer.current);
+        setHintArmed(true);
+      },
+      onDone: () => Speech.speak(hintSentence(given)),
+    });
   };
 
   if (course.phase === 'empty') return <Redirect href="/" />;
-  if (course.phase !== 'run') return <View style={[styles.root, { backgroundColor: POCKET.black }]} />;
+  if (course.phase !== 'run') return <View style={styles.root} />;
 
   const total = course.session.run.checkpoints.length;
   const punched = course.session.run.visits.length;
   const status = mode ? trackingNotice(mode, hasFix) : null;
 
   return (
-    <View style={[styles.root, { backgroundColor: bg, paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
-      <StatusBar style={inverted ? 'dark' : 'light'} />
+    <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
+      <StatusBar style="light" />
       <View accessible accessibilityLiveRegion="polite" accessibilityLabel={`${punched} of ${total} punched`}>
-        <AppText variant="display" color={fg} tabular style={styles.count}>
-          {punched} of {total} punched
+        <AppText variant="display" color={COLORS.lit} maxFontSizeMultiplier={1.3}>
+          {punched}/{total} PLACES
         </AppText>
       </View>
-      <AppText variant="headline" color={fg} tabular style={styles.time}>
+      <AppText variant="headline" color={COLORS.lit} maxFontSizeMultiplier={1.3} style={styles.time}>
         {formatElapsed(now - course.startedAt)}
       </AppText>
       {/* Reserved height: the hint button must not jump when the first GPS fix clears the status. */}
       <View style={styles.status}>
         {status && (
-          <AppText variant="body" color={fg}>
+          <AppText variant="body" color={COLORS.lit}>
             {status}
           </AppText>
         )}
       </View>
 
-      <View style={styles.hintBlock}>
-        <RuleButton
-          label="Hint"
-          color={fg}
-          onPress={askForHint}
-          accessibilityHint="Reads the nearest missing control's story, then its direction. Costs half a point."
-        />
-        <AppText variant="body" color={fg} style={styles.cost}>
+      <ScrollView style={styles.hintScroll} contentContainerStyle={styles.hintBlock}>
+        <View style={styles.hintButton}>
+          <PixelButton
+            variant="onInk"
+            label="Hint"
+            onPress={askForHint}
+            accessibilityHint="Reads the nearest missing control's story, then its direction. Costs half a point."
+          />
+        </View>
+        <AppText variant="body" color={COLORS.lit} style={styles.cost}>
           {HINT_COST}
         </AppText>
         {hintNote && (
-          <AppText variant="body" color={fg} style={styles.hintText}>
+          <AppText variant="body" color={COLORS.lit} style={styles.hintText}>
             {hintNote}
           </AppText>
         )}
         {hint && (
-          <View style={styles.hintText} accessibilityLiveRegion="polite">
-            <AppText variant="body" color={fg}>
-              {hint.fragment}
+          <View style={styles.hintText} accessibilityLiveRegion="polite" accessibilityLabel={hintText}>
+            <DialogueBox title="Hint" tone="dark">
+              <View>
+                <AppText variant="body" color={COLORS.lit} style={styles.ghost}>
+                  {hintText}
+                </AppText>
+                <AppText variant="body" color={COLORS.lit} style={styles.typed}>
+                  {typing.shown}
+                </AppText>
+              </View>
+            </DialogueBox>
+          </View>
+        )}
+      </ScrollView>
+
+      <View style={styles.giveUp}>
+        {confirming ? (
+          <DialogueBox tone="dark">
+            <AppText variant="title" color={COLORS.lit}>
+              End the run and reveal the map?
             </AppText>
-            <AppText variant="title" color={fg} style={styles.direction}>
-              {hintSentence(hint)}
-            </AppText>
+            <View style={styles.confirmRow}>
+              <View style={styles.confirmButton}>
+                <PixelButton variant="onInk" label="Keep walking" onPress={() => setConfirming(false)} />
+              </View>
+              <View style={styles.confirmButton}>
+                <PixelButton variant="onInk" label="End run" onPress={() => courseStore.giveUp(Date.now())} />
+              </View>
+            </View>
+          </DialogueBox>
+        ) : (
+          <View style={styles.giveUpButton}>
+            <PixelButton variant="onInk" label="Give up" onPress={() => setConfirming(true)} />
           </View>
         )}
       </View>
 
-      <View style={styles.spacer} />
-
-      <View style={styles.giveUp}>
-        {confirming ? (
-          <>
-            <AppText variant="title" color={fg}>
-              End the run and reveal the map?
-            </AppText>
-            <View style={styles.confirmRow}>
-              <RuleButton label="Keep walking" color={fg} onPress={() => setConfirming(false)} />
-              <RuleButton label="End run" color={fg} onPress={() => courseStore.giveUp(Date.now())} />
-            </View>
-          </>
-        ) : (
-          <RuleButton label="Give up" color={fg} onPress={() => setConfirming(true)} />
-        )}
-      </View>
+      {flash && <FoundFlash kind={flash} reducedMotion={reducedMotion} onDone={endFlash} />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, paddingHorizontal: 24 },
-  count: { fontSize: 64, lineHeight: 68 },
-  time: { marginTop: 12 },
+  root: { flex: 1, paddingHorizontal: 24, backgroundColor: COLORS.field },
+  time: { marginTop: 14 },
   status: { marginTop: 12, minHeight: 48 },
-  hintBlock: { marginTop: 40, alignItems: 'flex-start' },
-  cost: { marginTop: 8 },
-  hintText: { marginTop: 16, gap: 10 },
-  direction: { marginTop: 4 },
-  spacer: { flex: 1, minHeight: 96 },
-  giveUp: { alignItems: 'flex-start', gap: 12 },
-  confirmRow: { flexDirection: 'row', gap: 48 },
+  hintScroll: { flex: 1, marginTop: 16 },
+  hintBlock: { alignItems: 'flex-start', paddingBottom: 16 },
+  hintButton: { alignSelf: 'flex-start' },
+  cost: { marginTop: 10 },
+  hintText: { marginTop: 16, gap: 10, alignSelf: 'stretch' },
+  ghost: { opacity: 0 },
+  typed: { position: 'absolute', left: 0, right: 0, top: 0 },
+  giveUp: { marginTop: 12, alignItems: 'stretch', gap: 12 },
+  giveUpButton: { alignSelf: 'flex-start' },
+  confirmRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  confirmButton: { flexShrink: 1 },
+  flash: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
+  flashPlate: { width: 96, height: 96 },
 });

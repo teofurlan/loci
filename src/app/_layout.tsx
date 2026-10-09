@@ -1,32 +1,24 @@
-import {
-  BarlowCondensed_500Medium,
-  BarlowCondensed_600SemiBold,
-  BarlowCondensed_700Bold,
-} from '@expo-google-fonts/barlow-condensed';
+import { PixelifySans_400Regular, PixelifySans_600SemiBold } from '@expo-google-fonts/pixelify-sans';
+import { PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
 import { NavigationBar } from 'expo-navigation-bar';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import '../ui/state/location-task';
-import { useTheme } from '../ui/theme/theme';
+import { COLORS } from '../ui/theme/theme';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const { colors, dark } = useTheme();
-  const [loaded, error] = useFonts({
-    BarlowCondensed_500Medium,
-    BarlowCondensed_600SemiBold,
-    BarlowCondensed_700Bold,
-  });
+  const [loaded, error] = useFonts({ PixelifySans_400Regular, PixelifySans_600SemiBold, PressStart2P_400Regular });
   const ready = loaded || !!error;
 
-  // Edge-to-edge: the system bar is transparent, so its button ink follows the app theme. `style` names the
-  // button ink, like StatusBar. The declarative <NavigationBar> did not apply on device; the imperative call does.
+  // Edge-to-edge: the system bars are transparent, so they show the app ground. `style` names the button ink,
+  // like StatusBar. The overworld is one fixed palette: the system light or dark setting is ignored.
   useEffect(() => {
-    NavigationBar.setStyle(dark ? 'light' : 'dark');
-  }, [dark]);
+    NavigationBar.setStyle('dark');
+  }, []);
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync();
@@ -36,12 +28,12 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar style={dark ? 'light' : 'dark'} />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
+      <StatusBar style="dark" />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.ground } }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="memorize" />
-        <Stack.Screen name="run" options={{ animation: 'none', gestureEnabled: false }} />
-        <Stack.Screen name="results" options={{ animation: 'fade', gestureEnabled: false }} />
+        <Stack.Screen name="run" options={{ animation: 'none', gestureEnabled: false, contentStyle: { backgroundColor: COLORS.field } }} />
+        <Stack.Screen name="results" options={{ animation: 'none', gestureEnabled: false }} />
       </Stack>
     </>
   );

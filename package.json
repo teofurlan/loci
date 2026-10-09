@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "dependencies": {
-    "@expo-google-fonts/barlow-condensed": "^0.4.1",
     "@expo-google-fonts/pixelify-sans": "^0.4.2",
     "@expo-google-fonts/press-start-2p": "^0.4.1",
     "@maplibre/maplibre-react-native": "^11.5.0",

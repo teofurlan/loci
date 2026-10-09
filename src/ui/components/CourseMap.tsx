@@ -1,26 +1,24 @@
-import { Camera, GeoJSONSource, Layer, Map, ViewAnnotation } from '@maplibre/maplibre-react-native';
-import { memo, useMemo } from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import Svg, { Polygon } from 'react-native-svg';
+import { Camera, Map, ViewAnnotation } from '@maplibre/maplibre-react-native';
+import { memo, useMemo, type ComponentProps } from 'react';
+import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import type { Landmark, LatLng } from '../../domain/types';
-import { useTheme } from '../theme/theme';
 import { ATTRIBUTION } from '../model/format';
+import { BASE_STYLE_URL, usePixelStyle } from '../state/use-pixel-style';
+import { COLORS, SHAPE } from '../theme/theme';
 import { AppText } from './AppText';
+import { PixelBox } from './PixelBox';
+import { PixelSprite } from './PixelSprite';
 
-const STYLE_LIGHT = 'https://tiles.openfreemap.org/styles/positron';
-const STYLE_NIGHT = 'https://tiles.openfreemap.org/styles/dark';
-
-const RING_RADIUS = 15;
-const RING_WIDTH = 3;
 const MIN_SPAN_DEGREES = 0.004;
 
 type Props = {
   start: LatLng;
   controls: readonly Landmark[];
-  /** Indexes of punched controls. When given, punched controls print filled and missed ones stay open. */
+  /** Indexes of punched controls. When given, found places print lit and missed ones stay dim. */
   visited?: ReadonlySet<number>;
-  /** 0 = full overprint, 1 = circles collapsed into their numbers. */
-  collapse?: number;
+  /** The control whose sprite is highlighted. */
+  selected?: number;
+  onSelect?: (index: number) => void;
   style?: StyleProp<ViewStyle>;
   /** Space reserved around the course when framing it, in dp. */
   padding?: { top: number; right: number; bottom: number; left: number };
@@ -44,101 +42,110 @@ function boundsOf(points: readonly LatLng[]): [number, number, number, number] {
   return [west, south, east, north];
 }
 
+type MapStyle = ComponentProps<typeof Map>['mapStyle'];
+
 /**
- * Score-O overprint on a muted basemap: a purple start triangle and numbered control
- * circles, with no legs because the order is free.
+ * The overworld: the OpenFreeMap terrain recolored to four greens, a pixel "you" at the start and one
+ * kind sprite per control with its number tag. No legs, because the order is free.
  */
-function CourseMapView({ start, controls, visited, collapse = 0, style, padding }: Props) {
-  const { colors, dark } = useTheme();
-
-  const data = useMemo(
-    () => ({
-      type: 'FeatureCollection' as const,
-      features: controls.map((control, index) => ({
-        type: 'Feature' as const,
-        id: index,
-        properties: { n: String(index + 1), punched: visited?.has(index) ?? false },
-        geometry: { type: 'Point' as const, coordinates: [control.position.lng, control.position.lat] },
-      })),
-    }),
-    [controls, visited],
-  );
-
+function CourseMapView({ start, controls, visited, selected, onSelect, style, padding }: Props) {
+  const { style: pixelStyle, failed } = usePixelStyle();
   const bounds = useMemo(() => boundsOf([start, ...controls.map((c) => c.position)]), [start, controls]);
-  const radius = RING_RADIUS * (1 - collapse) + 2 * collapse;
-  // The map ground: pure black at night, pure white by day. Unpunched rings are filled with it so
-  // basemap labels never run through the numerals, and the stroke thins to nothing as the rings collapse.
-  const ground = dark ? '#000000' : '#FFFFFF';
-  const ringWidth = RING_WIDTH * (1 - collapse);
+  const mapStyle = (pixelStyle as unknown as MapStyle | null) ?? (failed ? BASE_STYLE_URL : null);
 
   return (
-    <View style={style}>
-    <Map
-      // Remounted on a theme change: swapping the style in place left the map blank or dropped the start triangle.
-      key={dark ? 'night' : 'day'}
-      style={styles.map}
-      mapStyle={dark ? STYLE_NIGHT : STYLE_LIGHT}
-      androidView="texture"
-      compass={false}
-      logo={false}
-      attribution={false}
-      touchRotate={false}
-      touchPitch={false}
-    >
-      <Camera initialViewState={{ bounds, padding: padding ?? { top: 48, right: 40, bottom: 40, left: 40 } }} />
-      <GeoJSONSource id="controls" data={data}>
-        <Layer
-          id="control-rings"
-          type="circle"
-          paint={{
-            'circle-radius': radius,
-            'circle-color': ['case', ['get', 'punched'], colors.overprint, ground],
-            'circle-stroke-color': colors.overprint,
-            'circle-stroke-width': ringWidth,
-          }}
-        />
-        <Layer
-          id="control-numbers"
-          type="symbol"
-          layout={{
-            'text-field': ['get', 'n'],
-            'text-font': ['Noto Sans Bold'],
-            'text-size': 15,
-            'text-allow-overlap': true,
-            'text-ignore-placement': true,
-          }}
-          paint={{
-            'text-color': ['case', ['get', 'punched'], ground, colors.overprint],
-            'text-halo-color': ['case', ['get', 'punched'], colors.overprint, ground],
-            'text-halo-width': 1.5,
-          }}
-        />
-      </GeoJSONSource>
-      <ViewAnnotation id="start" lngLat={[start.lng, start.lat]} anchor="center">
-        <Svg width={34} height={34} viewBox="0 0 34 34" accessible={false}>
-          <Polygon
-            points="17,4 31,29 3,29"
-            fill="none"
-            stroke={colors.overprint}
-            strokeWidth={RING_WIDTH}
-            strokeLinejoin="miter"
-          />
-        </Svg>
-      </ViewAnnotation>
-    </Map>
-    <View pointerEvents="none" style={[styles.attribution, { backgroundColor: colors.background }]}>
-      <AppText variant="label" color={colors.onSurfaceVariant} style={styles.attributionText} maxFontSizeMultiplier={1.2}>
-        {ATTRIBUTION}
-      </AppText>
-    </View>
+    <View style={[styles.root, style]}>
+      {mapStyle && (
+        <Map
+          style={styles.map}
+          mapStyle={mapStyle}
+          androidView="texture"
+          compass={false}
+          logo={false}
+          attribution={false}
+          touchRotate={false}
+          touchPitch={false}
+        >
+          <Camera initialViewState={{ bounds, padding: padding ?? { top: 48, right: 40, bottom: 40, left: 40 } }} />
+          {controls.map((control, index) => {
+            const found = visited?.has(index) ?? false;
+            const missed = visited !== undefined && !found;
+            const active = index === selected;
+            return (
+              <ViewAnnotation
+                key={control.id}
+                id={`control-${index}`}
+                lngLat={[control.position.lng, control.position.lat]}
+                anchor="center"
+                selected={active}
+              >
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Control ${index + 1}, ${control.name}`}
+                  accessibilityState={{ selected: active }}
+                  disabled={!onSelect}
+                  onPress={() => onSelect?.(index)}
+                  hitSlop={6}
+                >
+                  <PixelBox fill={missed ? COLORS.ground : COLORS.lit} behind={COLORS.ground} double={active}>
+                    <View style={styles.plate}>
+                      <PixelSprite name={control.kind} scale={2} />
+                    </View>
+                  </PixelBox>
+                  <View style={[styles.tag, found && styles.tagFound]}>
+                    <AppText variant="label" allowFontScaling={false} color={found ? COLORS.lit : COLORS.ink} style={styles.tagText}>
+                      {index + 1}
+                    </AppText>
+                  </View>
+                </Pressable>
+              </ViewAnnotation>
+            );
+          })}
+          <ViewAnnotation id="start" lngLat={[start.lng, start.lat]} anchor="center">
+            <View accessible accessibilityLabel="You are here, the start">
+              <PixelSprite name="you" scale={2} />
+            </View>
+          </ViewAnnotation>
+        </Map>
+      )}
+      <View pointerEvents="none" style={styles.attribution}>
+        <AppText variant="bodySmall" allowFontScaling={false} style={styles.attributionText}>
+          {ATTRIBUTION}
+        </AppText>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { backgroundColor: COLORS.ground, overflow: 'hidden' },
   map: { flex: 1 },
-  attribution: { position: 'absolute', left: 6, bottom: 6, paddingHorizontal: 4, paddingVertical: 1 },
-  attributionText: { fontSize: 12, lineHeight: 15, letterSpacing: 0.2, textTransform: 'none' },
+  plate: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
+  tag: {
+    position: 'absolute',
+    right: -6,
+    bottom: -6,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 2,
+    backgroundColor: COLORS.lit,
+    borderWidth: SHAPE.rule,
+    borderColor: COLORS.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tagFound: { backgroundColor: COLORS.ink },
+  tagText: { fontSize: 9, lineHeight: 12 },
+  attribution: {
+    position: 'absolute',
+    left: 6,
+    bottom: 6,
+    paddingHorizontal: 4,
+    backgroundColor: COLORS.lit,
+    borderWidth: SHAPE.rule,
+    borderColor: COLORS.ink,
+  },
+  attributionText: { fontSize: 13, lineHeight: 16 },
 });
 
 export const CourseMap = memo(CourseMapView);

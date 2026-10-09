@@ -2,64 +2,57 @@ import * as Location from 'expo-location';
 import * as Speech from 'expo-speech';
 import { Redirect, router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, PermissionsAndroid, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { PermissionsAndroid, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '../ui/components/AppText';
-import { ControlRow } from '../ui/components/ControlRow';
 import { CourseMap } from '../ui/components/CourseMap';
-import { FlagButton } from '../ui/components/FlagButton';
-import { RuleButton } from '../ui/components/RuleButton';
+import { DialogueBox } from '../ui/components/DialogueBox';
+import { PixelButton } from '../ui/components/PixelButton';
+import { PixelSprite } from '../ui/components/PixelSprite';
+import { StampStrip } from '../ui/components/StampStrip';
 import { mapHeight } from '../ui/model/layout';
+import { fadeSequence } from '../ui/model/palette-fade';
+import { advanceIndex } from '../ui/model/typewriter';
 import { walkingMinutes } from '../ui/model/walking-minutes';
 import { courseStore, useCourse } from '../ui/state/course';
 import { declineBackground, hasDeclinedBackground } from '../ui/state/location-task';
 import { useReducedMotion } from '../ui/state/use-reduced-motion';
-import { SHAPE, useTheme } from '../ui/theme/theme';
+import { useBlink, useTypewriter } from '../ui/state/use-typewriter';
+import { COLORS, SHAPE } from '../ui/theme/theme';
 
-const COLLAPSE_MS = 360;
-const FADE_MS = 240;
-const CUT_MS = 120;
+/** If the speech engine never reports a start, typing begins anyway after this long. */
+const TTS_START_FALLBACK_MS = 1500;
 
-const easeOutExpo = (t: number) => (t >= 1 ? 1 : 1 - 2 ** (-10 * t));
-
-/** Drives `onFrame` from 0 to 1 with exponential ease-out. */
-function runFrames(duration: number, onFrame: (progress: number) => void): Promise<void> {
-  return new Promise((resolve) => {
-    const startedAt = Date.now();
-    const tick = () => {
-      const t = Math.min(1, (Date.now() - startedAt) / duration);
-      onFrame(easeOutExpo(t));
-      if (t < 1) requestAnimationFrame(tick);
-      else resolve();
-    };
-    requestAnimationFrame(tick);
-  });
-}
-
-const animate = (value: Animated.Value, toValue: number, duration: number) =>
-  new Promise<void>((resolve) => Animated.timing(value, { toValue, duration, useNativeDriver: true }).start(() => resolve()));
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export default function MemorizeScreen() {
   const course = useCourse();
-  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { height, fontScale } = useWindowDimensions();
   const reducedMotion = useReducedMotion();
-  const [collapse, setCollapse] = useState(0);
+  const [selected, setSelected] = useState(0);
   const [hiding, setHiding] = useState(false);
+  const [fade, setFade] = useState<string | null>(null);
   const [speaking, setSpeaking] = useState(false);
+  const [armedIndex, setArmedIndex] = useState<number | null>(null);
   const [asking, setAsking] = useState(false);
-  const [mapOpacity] = useState(() => new Animated.Value(1));
-  const [blackout] = useState(() => new Animated.Value(0));
   const speechRun = useRef(0);
+  const startTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const stopSpeech = useCallback(() => {
     speechRun.current += 1;
+    if (startTimer.current) clearTimeout(startTimer.current);
     Speech.stop();
     setSpeaking(false);
   }, []);
 
-  useEffect(() => () => void Speech.stop(), []);
+  useEffect(
+    () => () => {
+      if (startTimer.current) clearTimeout(startTimer.current);
+      void Speech.stop();
+    },
+    [],
+  );
 
   const minutes = useMemo(
     () =>
@@ -73,8 +66,21 @@ export default function MemorizeScreen() {
     [course],
   );
 
+  const fragment = course.phase === 'empty' ? '' : (course.session.fragments[selected] ?? '');
+  // With Read aloud on, the typing waits for that fragment's TTS start event. Off, it starts at once.
+  const armed = !speaking || armedIndex === selected;
+  const typing = useTypewriter(fragment, armed, reducedMotion);
+  const blink = useBlink(reducedMotion);
+
   if (course.phase === 'empty' || !minutes) return <Redirect href="/" />;
   const { plan, start } = course;
+  const total = plan.checkpoints.length;
+  const current = plan.checkpoints[Math.min(selected, total - 1)];
+
+  const jump = (index: number) => {
+    if (speaking) stopSpeech();
+    setSelected(index);
+  };
 
   const readAloud = () => {
     if (speaking) {
@@ -82,22 +88,42 @@ export default function MemorizeScreen() {
       return;
     }
     const run = ++speechRun.current;
-    const lines = [plan.story.title, ...plan.story.fragments.map((f, i) => `Control ${i + 1}. ${f.text}`)];
+    setArmedIndex(null);
     setSpeaking(true);
-    const next = (index: number) => {
+    const speakFragment = (index: number) => {
       if (speechRun.current !== run) return;
-      if (index >= lines.length) {
+      if (index >= plan.story.fragments.length) {
         setSpeaking(false);
         return;
       }
-      Speech.speak(lines[index], {
-        onDone: () => next(index + 1),
+      setSelected(index);
+      if (startTimer.current) clearTimeout(startTimer.current);
+      startTimer.current = setTimeout(() => {
+        if (speechRun.current === run) setArmedIndex(index);
+      }, TTS_START_FALLBACK_MS);
+      Speech.speak(`Control ${index + 1}. ${plan.story.fragments[index].text}`, {
+        onStart: () => {
+          if (speechRun.current !== run) return;
+          if (startTimer.current) clearTimeout(startTimer.current);
+          setArmedIndex(index);
+        },
+        onDone: () => speakFragment(index + 1),
         onError: () => {
           if (speechRun.current === run) setSpeaking(false);
         },
       });
     };
-    next(0);
+    Speech.speak(plan.story.title, {
+      onDone: () => speakFragment(0),
+      onError: () => {
+        if (speechRun.current === run) setSpeaking(false);
+      },
+    });
+  };
+
+  const advance = () => {
+    if (speaking) stopSpeech();
+    setSelected((index) => advanceIndex(index, total));
   };
 
   // Background tracking lets the screen turn off. Explain why before the system asks, and never block the run
@@ -135,117 +161,152 @@ export default function MemorizeScreen() {
     await hideAndStart();
   };
 
+  // The signature: the screen steps through the four greens to ink, then the run begins.
   const hideAndStart = async () => {
     if (hiding) return;
     setHiding(true);
     stopSpeech();
-    if (reducedMotion) {
-      blackout.setValue(1);
-    } else {
-      await runFrames(COLLAPSE_MS, setCollapse);
-      await animate(mapOpacity, 0, FADE_MS);
-      await animate(blackout, 1, CUT_MS);
+    for (const step of fadeSequence(reducedMotion)) {
+      setFade(step.color);
+      await sleep(step.ms);
     }
     courseStore.beginRun(Date.now());
     router.replace('/run');
   };
 
   const mapPx = mapHeight(height, fontScale);
+  const metaLine = `${total} controls, about ${minutes.totalMinutes} min`;
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <Animated.View style={{ height: mapPx, opacity: mapOpacity }}>
+    <View style={styles.root}>
+      <View style={{ height: mapPx }}>
         <CourseMap
           style={styles.fill}
           start={start}
           controls={plan.checkpoints}
-          collapse={collapse}
+          selected={selected}
+          onSelect={jump}
           padding={{ top: insets.top + 56, right: 44, bottom: 72, left: 44 }}
         />
-      </Animated.View>
+      </View>
 
-      <View style={[styles.sheetHeader, { borderColor: colors.outline }]}>
-        <View style={styles.sheetTitle}>
-          <AppText variant="title" numberOfLines={2} accessibilityRole="header">
+      <View style={styles.header}>
+        <View style={styles.headerText}>
+          <AppText variant="title" numberOfLines={2} accessibilityRole="header" style={styles.storyTitle}>
             {plan.story.title}
           </AppText>
-          <AppText variant="label" color={colors.onSurfaceVariant} tabular>
-            {plan.checkpoints.length} controls, about {minutes.totalMinutes} min
-          </AppText>
+          <AppText variant="bodySmall">{metaLine}</AppText>
         </View>
-        <RuleButton
+        <PixelButton
           label={speaking ? 'Stop' : 'Read aloud'}
           onPress={readAloud}
           accessibilityHint="Reads the title and every story fragment out loud"
         />
       </View>
 
-      <ScrollView style={styles.sheet} contentContainerStyle={styles.sheetContent}>
-        {plan.checkpoints.map((landmark, index) => (
-          <ControlRow
-            key={landmark.id}
-            number={index + 1}
-            kind={landmark.kind}
-            name={landmark.name}
-            minutes={minutes.perControl[index]}
-            fragment={course.session.fragments[index]}
-          />
-        ))}
-      </ScrollView>
-
-      <View style={[styles.footer, { borderColor: colors.outline, paddingBottom: Math.max(insets.bottom, 12) + 4 }]}>
-        {asking ? (
-          <View style={styles.ask}>
-            <AppText variant="title" accessibilityRole="header">
-              Track with the screen off?
-            </AppText>
+      {asking ? (
+        <ScrollView style={styles.fill} contentContainerStyle={styles.askContent}>
+          <DialogueBox title="Track with the screen off?">
             <AppText variant="body">
               Loci can keep tracking your location while the screen is off, so controls are punched with the phone
               in your pocket. A notification stays visible during the run. Android will ask you to choose &ldquo;Allow all
               the time&rdquo;. Loci only uses it during a run.
             </AppText>
-            <FlagButton
-              label="Allow background location"
-              onPress={allowBackground}
-              accessibilityHint="Opens the system location setting"
-            />
-            <RuleButton
-              label="Keep screen on instead"
-              onPress={keepScreenOn}
-              accessibilityHint="Tracks only while the screen stays on"
-            />
-          </View>
-        ) : (
-          <FlagButton
+          </DialogueBox>
+          <PixelButton
+            variant="primary"
+            label="Allow background location"
+            onPress={allowBackground}
+            accessibilityHint="Opens the system location setting"
+          />
+          <PixelButton
+            label="Keep screen on instead"
+            onPress={keepScreenOn}
+            accessibilityHint="Tracks only while the screen stays on"
+          />
+        </ScrollView>
+      ) : (
+        <>
+          <StampStrip controls={plan.checkpoints} selected={selected} onSelect={jump} />
+          <ScrollView style={styles.fill} contentContainerStyle={styles.dialogue}>
+            <DialogueBox
+              title={current.name}
+              tone="lit"
+              corner={
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Next place"
+                  accessibilityHint="Shows the next landmark and highlights it on the map"
+                  onPress={advance}
+                  style={styles.next}
+                >
+                  <View style={{ opacity: typing.done && blink ? 1 : 0 }}>
+                    <PixelSprite name="glyph:down" scale={3} />
+                  </View>
+                </Pressable>
+              }
+            >
+              <AppText variant="bodySmall">
+                Control {selected + 1} of {total} · {minutes.perControl[selected]} min
+              </AppText>
+              <Pressable
+                accessibilityLabel={`${current.name}. ${fragment}`}
+                accessibilityHint="Tap to show the whole fragment"
+                onPress={typing.skip}
+                style={styles.fragmentWrap}
+              >
+                {/* The full text holds the box at its final height so typing never makes it jump. */}
+                <AppText variant="body" style={styles.ghost}>
+                  {fragment}
+                </AppText>
+                <AppText variant="body" style={styles.typed}>
+                  {typing.shown}
+                </AppText>
+              </Pressable>
+              <View style={styles.cursorRoom} />
+            </DialogueBox>
+          </ScrollView>
+        </>
+      )}
+
+      {!asking && (
+        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) + 4 }]}>
+          <PixelButton
+            variant="primary"
             label="Hide map & start"
             onPress={startRun}
             loading={hiding}
             accessibilityHint="Hides the map and starts the run"
           />
-        )}
-      </View>
+        </View>
+      )}
 
-      <Animated.View pointerEvents={hiding ? 'auto' : 'none'} style={[styles.blackout, { opacity: blackout }]} />
+      {fade && <View pointerEvents="auto" style={[styles.fade, { backgroundColor: fade }]} />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
+  root: { flex: 1, backgroundColor: COLORS.ground },
   fill: { flex: 1 },
-  sheetHeader: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderTopWidth: SHAPE.rule,
-    borderBottomWidth: SHAPE.rule,
+    borderTopColor: COLORS.ink,
   },
-  sheetTitle: { flex: 1 },
-  sheet: { flex: 1 },
-  sheetContent: { paddingBottom: 8 },
-  ask: { gap: 12, alignItems: 'stretch' },
-  footer: { paddingHorizontal: 16, paddingTop: 10, borderTopWidth: SHAPE.rule },
-  blackout: { ...StyleSheet.absoluteFill, backgroundColor: '#000000' },
+  headerText: { flex: 1 },
+  storyTitle: { fontSize: 20, lineHeight: 26 },
+  dialogue: { paddingHorizontal: 12, paddingVertical: 6 },
+  fragmentWrap: { minHeight: SHAPE.target },
+  ghost: { opacity: 0 },
+  typed: { position: 'absolute', left: 0, right: 0, top: 0 },
+  cursorRoom: { height: 14 },
+  next: { width: SHAPE.target, height: SHAPE.target, alignItems: 'center', justifyContent: 'center' },
+  askContent: { padding: 12, gap: 12 },
+  footer: { paddingHorizontal: 16, paddingTop: 8 },
+  fade: { ...StyleSheet.absoluteFill },
 });
