@@ -107,7 +107,7 @@ export default function SetupScreen() {
           onChangeText={setRequest}
           editable={!busy}
           multiline
-          placeholder="20 min walk, green areas, I remember places better than street names"
+          placeholder="e.g. 20 min walk, green areas, I remember places better than street names"
           placeholderTextColor={colors.onSurfaceVariant}
           selectionColor={colors.onBackground}
           cursorColor={colors.onBackground}

@@ -38,6 +38,7 @@ const styles = StyleSheet.create({
     minHeight: SHAPE.target,
     minWidth: SHAPE.target,
     paddingHorizontal: 16,
+    paddingVertical: 8,
     borderWidth: SHAPE.rule,
     borderRadius: SHAPE.radius,
     alignItems: 'center',
