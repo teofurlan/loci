@@ -1,7 +1,8 @@
+import * as Location from 'expo-location';
 import * as Speech from 'expo-speech';
 import { Redirect, router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Animated, PermissionsAndroid, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '../ui/components/AppText';
 import { ControlRow } from '../ui/components/ControlRow';
@@ -11,6 +12,7 @@ import { RuleButton } from '../ui/components/RuleButton';
 import { mapHeight } from '../ui/model/layout';
 import { walkingMinutes } from '../ui/model/walking-minutes';
 import { courseStore, useCourse } from '../ui/state/course';
+import { declineBackground, hasDeclinedBackground } from '../ui/state/location-task';
 import { useReducedMotion } from '../ui/state/use-reduced-motion';
 import { SHAPE, useTheme } from '../ui/theme/theme';
 
@@ -46,6 +48,7 @@ export default function MemorizeScreen() {
   const [collapse, setCollapse] = useState(0);
   const [hiding, setHiding] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [asking, setAsking] = useState(false);
   const [mapOpacity] = useState(() => new Animated.Value(1));
   const [blackout] = useState(() => new Animated.Value(0));
   const speechRun = useRef(0);
@@ -95,6 +98,41 @@ export default function MemorizeScreen() {
       });
     };
     next(0);
+  };
+
+  // Background tracking lets the screen turn off. Explain why before the system asks, and never block the run
+  // on a "no": the fallback is foreground-only tracking with the screen on.
+  const startRun = async () => {
+    if (hiding) return;
+    if (!hasDeclinedBackground()) {
+      const [foreground, background] = await Promise.all([
+        Location.getForegroundPermissionsAsync(),
+        Location.getBackgroundPermissionsAsync(),
+      ]);
+      if (foreground.granted && !background.granted && background.canAskAgain) {
+        setAsking(true);
+        return;
+      }
+    }
+    await hideAndStart();
+  };
+
+  const allowBackground = async () => {
+    setAsking(false);
+    try {
+      // The run's notification only shows on Android 13+ once this is granted; a "no" never blocks the run.
+      await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+      await Location.requestBackgroundPermissionsAsync();
+    } catch {
+      // A failed request is the same as a "no": the run falls back to foreground tracking.
+    }
+    await hideAndStart();
+  };
+
+  const keepScreenOn = async () => {
+    declineBackground();
+    setAsking(false);
+    await hideAndStart();
   };
 
   const hideAndStart = async () => {
@@ -156,12 +194,35 @@ export default function MemorizeScreen() {
       </ScrollView>
 
       <View style={[styles.footer, { borderColor: colors.outline, paddingBottom: Math.max(insets.bottom, 12) + 4 }]}>
-        <FlagButton
-          label="Hide map & start"
-          onPress={hideAndStart}
-          loading={hiding}
-          accessibilityHint="Hides the map and starts the run"
-        />
+        {asking ? (
+          <View style={styles.ask}>
+            <AppText variant="title" accessibilityRole="header">
+              Track with the screen off?
+            </AppText>
+            <AppText variant="body">
+              Loci can keep tracking your location while the screen is off, so controls are punched with the phone
+              in your pocket. A notification stays visible during the run. Android will ask you to choose &ldquo;Allow all
+              the time&rdquo;. Loci only uses it during a run.
+            </AppText>
+            <FlagButton
+              label="Allow background location"
+              onPress={allowBackground}
+              accessibilityHint="Opens the system location setting"
+            />
+            <RuleButton
+              label="Keep screen on instead"
+              onPress={keepScreenOn}
+              accessibilityHint="Tracks only while the screen stays on"
+            />
+          </View>
+        ) : (
+          <FlagButton
+            label="Hide map & start"
+            onPress={startRun}
+            loading={hiding}
+            accessibilityHint="Hides the map and starts the run"
+          />
+        )}
       </View>
 
       <Animated.View pointerEvents={hiding ? 'auto' : 'none'} style={[styles.blackout, { opacity: blackout }]} />
@@ -184,6 +245,7 @@ const styles = StyleSheet.create({
   sheetTitle: { flex: 1 },
   sheet: { flex: 1 },
   sheetContent: { paddingBottom: 8 },
+  ask: { gap: 12, alignItems: 'stretch' },
   footer: { paddingHorizontal: 16, paddingTop: 10, borderTopWidth: SHAPE.rule },
   blackout: { ...StyleSheet.absoluteFill, backgroundColor: '#000000' },
 });

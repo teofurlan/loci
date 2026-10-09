@@ -1,11 +1,10 @@
-import * as Haptics from 'expo-haptics';
-import { useKeepAwake } from 'expo-keep-awake';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import * as Location from 'expo-location';
 import * as Speech from 'expo-speech';
 import { Redirect, router } from 'expo-router';
 import { NavigationBar } from 'expo-navigation-bar';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Hint } from '../domain/session';
@@ -13,13 +12,14 @@ import type { LatLng } from '../domain/types';
 import { AppText } from '../ui/components/AppText';
 import { RuleButton } from '../ui/components/RuleButton';
 import { formatElapsed, HINT_COST, hintSentence } from '../ui/model/format';
+import { trackingMode, trackingNotice, type TrackingMode } from '../ui/model/tracking-mode';
 import { courseStore, useCourse } from '../ui/state/course';
+import { handleLocations, subscribeRunEvents, tracker } from '../ui/state/location-task';
 import { POCKET, useTheme } from '../ui/theme/theme';
 
 const INVERT_MS = 650;
 
 export default function RunScreen() {
-  useKeepAwake();
   const course = useCourse();
   const insets = useSafeAreaInsets();
   const [now, setNow] = useState(() => Date.now());
@@ -28,7 +28,7 @@ export default function RunScreen() {
   const [hintNote, setHintNote] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [hasFix, setHasFix] = useState(false);
-  const [gpsOff, setGpsOff] = useState(false);
+  const [mode, setMode] = useState<TrackingMode | null>(null);
   const lastPosition = useRef<LatLng | null>(null);
 
   // Two values only: black and white, swapped for one beat on every punch.
@@ -55,44 +55,59 @@ export default function RunScreen() {
     return () => clearInterval(timer);
   }, [running]);
 
-  const onPunch = useCallback(() => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setInverted(true);
-    setTimeout(() => setInverted(false), INVERT_MS);
-  }, []);
+  // The background task and the foreground watcher both feed `handleLocations`, which punches and vibrates.
+  // While this screen is up it only mirrors the result: the last fix and the inversion beat.
+  useEffect(
+    () =>
+      subscribeRunEvents(({ position, punched }) => {
+        if (position) {
+          lastPosition.current = position;
+          setHasFix(true);
+        }
+        if (punched) {
+          setInverted(true);
+          setTimeout(() => setInverted(false), INVERT_MS);
+        }
+      }),
+    [],
+  );
 
   useEffect(() => {
     if (!running) return;
     let cancelled = false;
     let subscription: Location.LocationSubscription | undefined;
     (async () => {
-      const permission = await Location.getForegroundPermissionsAsync();
-      if (!permission.granted) {
-        setGpsOff(true);
-        return;
+      const [foreground, background] = await Promise.all([
+        Location.getForegroundPermissionsAsync(),
+        Location.getBackgroundPermissionsAsync(),
+      ]);
+      if (cancelled) return;
+      let next = trackingMode({ foreground: foreground.granted, background: background.granted });
+      if (next === 'background') {
+        try {
+          await tracker.start();
+        } catch {
+          next = 'foreground';
+        }
       }
+      setMode(next);
+      if (next === 'background' || next === 'off') return;
+      // Foreground-only fallback: the screen has to stay on, so keep it awake.
+      activateKeepAwakeAsync('run').catch(() => {});
       subscription = await Location.watchPositionAsync(
         { accuracy: Location.Accuracy.High, timeInterval: 1000, distanceInterval: 3 },
-        (location) => {
-          const position = { lat: location.coords.latitude, lng: location.coords.longitude };
-          lastPosition.current = position;
-          setHasFix(true);
-          const hit = courseStore.recordFix({
-            position,
-            accuracyMeters: location.coords.accuracy ?? Number.POSITIVE_INFINITY,
-            timestamp: location.timestamp,
-          });
-          if (hit.length > 0) onPunch();
-        },
+        (location) => handleLocations([location]),
       );
       if (cancelled) subscription.remove();
     })();
     return () => {
       cancelled = true;
       subscription?.remove();
+      deactivateKeepAwake('run').catch(() => {});
+      void tracker.stop();
       Speech.stop();
     };
-  }, [running, onPunch]);
+  }, [running]);
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -125,11 +140,7 @@ export default function RunScreen() {
 
   const total = course.session.run.checkpoints.length;
   const punched = course.session.run.visits.length;
-  const status = gpsOff
-    ? 'Location is off. Allow it in system settings to punch controls.'
-    : hasFix
-      ? null
-      : 'Searching for GPS';
+  const status = mode ? trackingNotice(mode, hasFix) : null;
 
   return (
     <View style={[styles.root, { backgroundColor: bg, paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>

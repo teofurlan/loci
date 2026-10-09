@@ -8,6 +8,7 @@ import { SplashScreen, Stack } from 'expo-router';
 import { NavigationBar } from 'expo-navigation-bar';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import '../ui/state/location-task';
 import { useTheme } from '../ui/theme/theme';
 
 SplashScreen.preventAutoHideAsync();
