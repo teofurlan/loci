@@ -228,6 +228,13 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - Queued: mic width equal to the field, richer sprites (the church was too thin), remove palettes A and C.
   - Windows gotcha: native builds from the long worktree path fail (ninja 260-char limit). The writer built from a short temporary copy.
 
+- 2026-10-09: T9 is partial (delegated writer).
+  - Code and tests are in `63e22a5`: `expo-speech-recognition` 57.1.0 pinned (published 2026-09-16; 57.1.1 skipped because it was one day old). The pure dictation reducer was written test-first (RED: module missing, GREEN: 27/27). 308 tests green.
+  - Device unverified: the emulator ANRed after the rebuild, and there are no valid captures.
+  - Gotcha: `expo run:android` with an existing `android/` did not re-apply the new plugin, so RECORD_AUDIO was missing until `npx expo prebuild --platform android`.
+  - Real dictation still needs a check on the phone (the pixel branch includes T9).
+- 2026-10-09: The T10 finish review returned **fix** with 8 items: digit 5 reads as S, dialogue box clipped with ▼ hidden, overlapping markers and loose camera, roads too black and parks missing, placeholder looks like text, © glyph, plurals and cadence and indent, worship and library sprites too similar. The pixel writer is applying them as one batch.
+
 ## Next step
 T8: outdoor walk on the phone (real GPS punches, vibration in the pocket, TTS, collapse animation), clips and screenshots, DEV post draft. MIT LICENSE added (`009d105`, user decision), and main fast-forwarded to it.
 
