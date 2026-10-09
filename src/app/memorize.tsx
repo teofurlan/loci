@@ -89,6 +89,7 @@ export default function MemorizeScreen() {
     }
     const run = ++speechRun.current;
     setArmedIndex(null);
+    setSelected(0);
     setSpeaking(true);
     const speakFragment = (index: number) => {
       if (speechRun.current !== run) return;
@@ -179,14 +180,14 @@ export default function MemorizeScreen() {
 
   return (
     <View style={styles.root}>
-      <View style={{ height: mapPx }}>
+      <View style={{ height: mapPx, paddingTop: insets.top }}>
         <CourseMap
           style={styles.fill}
           start={start}
           controls={plan.checkpoints}
           selected={selected}
           onSelect={jump}
-          padding={{ top: insets.top + 56, right: 44, bottom: 72, left: 44 }}
+          padding={{ top: 56, right: 44, bottom: 72, left: 44 }}
         />
       </View>
 
@@ -195,7 +196,9 @@ export default function MemorizeScreen() {
           <AppText variant="title" numberOfLines={2} accessibilityRole="header" style={styles.storyTitle}>
             {plan.story.title}
           </AppText>
-          <AppText variant="bodySmall">{metaLine}</AppText>
+          <AppText variant="bodySmall" style={styles.meta}>
+            {metaLine}
+          </AppText>
         </View>
         <PixelButton
           label={speaking ? 'Stop' : 'Read aloud'}
@@ -294,13 +297,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 4,
     borderTopWidth: SHAPE.rule,
     borderTopColor: COLORS.ink,
   },
   headerText: { flex: 1 },
-  storyTitle: { fontSize: 20, lineHeight: 26 },
-  dialogue: { paddingHorizontal: 12, paddingVertical: 6 },
+  storyTitle: { fontSize: 18, lineHeight: 22 },
+  meta: { fontSize: 15, lineHeight: 20 },
+  dialogue: { paddingHorizontal: 12, paddingTop: 6, paddingBottom: 14 },
   fragmentWrap: { minHeight: SHAPE.target },
   ghost: { opacity: 0 },
   typed: { position: 'absolute', left: 0, right: 0, top: 0 },

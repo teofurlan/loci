@@ -42,6 +42,6 @@ export function PixelBox({ double, children, ...rest }: Props) {
 }
 
 const styles = StyleSheet.create({
-  inner: { flexGrow: 1 },
+  inner: { flexShrink: 1 },
   notch: { position: 'absolute', width: N, height: N },
 });

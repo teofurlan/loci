@@ -60,7 +60,7 @@ export default function ResultsScreen() {
         <AppText variant="body" style={styles.stats}>
           {plural(score.hintsUsed, 'hint')}, {formatElapsed(course.elapsedMs)}
         </AppText>
-        <AppText variant="body" style={styles.rule}>
+        <AppText variant="label" style={styles.rule} maxFontSizeMultiplier={1.3}>
           {SCORING_RULE}
         </AppText>
 
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 16, paddingBottom: 24 },
   figure: { marginTop: 14 },
   stats: { marginTop: 12 },
-  rule: { marginTop: 2 },
+  rule: { marginTop: 8 },
   sectionLabel: { marginTop: 28, marginBottom: 10 },
   map: { height: 300 },
   sheet: { marginTop: 20 },

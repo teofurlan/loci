@@ -14,7 +14,7 @@ type Props = {
 /** A strip of stamp-sized thumbnails (number plus kind sprite) for jumping between controls. */
 export function StampStrip({ controls, selected, onSelect }: Props) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scroll} contentContainerStyle={styles.row}>
       {controls.map((control, index) => {
         const active = index === selected;
         return (
@@ -41,6 +41,7 @@ export function StampStrip({ controls, selected, onSelect }: Props) {
 }
 
 const styles = StyleSheet.create({
+  scroll: { flexGrow: 0 },
   row: { paddingHorizontal: 12, paddingVertical: 6, gap: 6, alignItems: 'center' },
   stamp: { width: 40, height: 52, alignItems: 'center', justifyContent: 'center', gap: 2 },
   number: { fontSize: 11, lineHeight: 14 },

@@ -70,24 +70,23 @@ function CourseMapView({ start, controls, visited, selected, onSelect, style, pa
           {controls.map((control, index) => {
             const found = visited?.has(index) ?? false;
             const missed = visited !== undefined && !found;
-            const active = index === selected;
             return (
               <ViewAnnotation
                 key={control.id}
                 id={`control-${index}`}
                 lngLat={[control.position.lng, control.position.lat]}
                 anchor="center"
-                selected={active}
+                offset={[-4, -4]}
               >
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`Control ${index + 1}, ${control.name}`}
-                  accessibilityState={{ selected: active }}
                   disabled={!onSelect}
                   onPress={() => onSelect?.(index)}
                   hitSlop={6}
+                  style={styles.marker}
                 >
-                  <PixelBox fill={missed ? COLORS.ground : COLORS.lit} behind={COLORS.ground} double={active}>
+                  <PixelBox fill={missed ? COLORS.ground : COLORS.lit} behind={COLORS.ground}>
                     <View style={styles.plate}>
                       <PixelSprite name={control.kind} scale={2} />
                     </View>
@@ -101,6 +100,19 @@ function CourseMapView({ start, controls, visited, selected, onSelect, style, pa
               </ViewAnnotation>
             );
           })}
+          {selected !== undefined && controls[selected] && (
+            // Highlight by moving one cursor, never by redrawing a sprite: annotations render once to a bitmap.
+            <ViewAnnotation
+              id="cursor"
+              lngLat={[controls[selected].position.lng, controls[selected].position.lat]}
+              anchor="bottom"
+              offset={[0, -22]}
+            >
+              <View accessible={false} pointerEvents="none" style={styles.cursor}>
+                <PixelSprite name="glyph:down" scale={4} />
+              </View>
+            </ViewAnnotation>
+          )}
           <ViewAnnotation id="start" lngLat={[start.lng, start.lat]} anchor="center">
             <View accessible accessibilityLabel="You are here, the start">
               <PixelSprite name="you" scale={2} />
@@ -120,11 +132,12 @@ function CourseMapView({ start, controls, visited, selected, onSelect, style, pa
 const styles = StyleSheet.create({
   root: { backgroundColor: COLORS.ground, overflow: 'hidden' },
   map: { flex: 1 },
+  marker: { paddingRight: 8, paddingBottom: 8 },
   plate: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
   tag: {
     position: 'absolute',
-    right: -6,
-    bottom: -6,
+    right: 0,
+    bottom: 0,
     minWidth: 18,
     height: 18,
     paddingHorizontal: 2,
@@ -134,6 +147,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  cursor: { padding: 2, backgroundColor: COLORS.lit, borderWidth: SHAPE.rule, borderColor: COLORS.ink },
   tagFound: { backgroundColor: COLORS.ink },
   tagText: { fontSize: 9, lineHeight: 12 },
   attribution: {
