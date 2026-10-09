@@ -8,13 +8,12 @@ import { ControlRow } from '../ui/components/ControlRow';
 import { CourseMap } from '../ui/components/CourseMap';
 import { FlagButton } from '../ui/components/FlagButton';
 import { PunchCard } from '../ui/components/PunchCard';
-import { formatElapsed } from '../ui/model/format';
+import { controlsFigure, formatElapsed, formatPoints, SCORING_RULE } from '../ui/model/format';
 import { courseStore, useCourse } from '../ui/state/course';
 import { services } from '../ui/state/services';
 import { SHAPE, useTheme } from '../ui/theme/theme';
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
-const formatPoints = (points: number) => (Number.isInteger(points) ? String(points) : points.toFixed(1));
 
 export default function ResultsScreen() {
   const course = useCourse();
@@ -54,11 +53,17 @@ export default function ResultsScreen() {
         <AppText variant="headline" accessibilityRole="header">
           {completed ? 'Course complete' : 'Course ended'}
         </AppText>
-        <AppText variant="display" tabular style={styles.points}>
-          {formatPoints(score.points)} pts
+        <AppText variant="headline" tabular style={styles.figure} accessibilityLabel={controlsFigure(score.visited, score.total)}>
+          {controlsFigure(score.visited, score.total)}
+        </AppText>
+        <AppText variant="title" tabular style={styles.points}>
+          {formatPoints(score.points)} points
+        </AppText>
+        <AppText variant="body" color={colors.onSurfaceVariant} tabular style={styles.rule}>
+          {SCORING_RULE}
         </AppText>
         <AppText variant="body" color={colors.onSurfaceVariant} tabular>
-          {score.visited} of {score.total} visited, {plural(score.hintsUsed, 'hint')}, {formatElapsed(course.elapsedMs)}
+          {plural(score.hintsUsed, 'hint')}, {formatElapsed(course.elapsedMs)}
         </AppText>
 
         <View style={styles.card}>
@@ -74,7 +79,7 @@ export default function ResultsScreen() {
             start={course.start}
             controls={course.plan.checkpoints}
             visited={visited}
-            padding={{ top: 40, right: 40, bottom: 40, left: 40 }}
+            padding={{ top: 40, right: 40, bottom: 72, left: 40 }}
           />
         </View>
 
@@ -92,7 +97,7 @@ export default function ResultsScreen() {
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) + 4 }]}>
+      <View style={[styles.footer, { borderColor: colors.outline, paddingBottom: Math.max(insets.bottom, 12) + 4 }]}>
         <FlagButton label="New course" onPress={newCourse} />
       </View>
     </View>
@@ -103,10 +108,12 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   fill: { flex: 1 },
   scroll: { paddingHorizontal: 16, paddingBottom: 24 },
+  figure: { marginTop: 4, fontSize: 44, lineHeight: 48 },
   points: { marginTop: 4 },
+  rule: { marginTop: 4 },
   card: { marginTop: 20 },
   sectionLabel: { marginTop: 28, marginBottom: 8 },
   map: { height: 300, borderWidth: SHAPE.rule, borderRadius: SHAPE.radius, overflow: 'hidden' },
   sheet: { marginTop: 20, borderTopWidth: SHAPE.rule },
-  footer: { paddingHorizontal: 16, paddingTop: 10 },
+  footer: { paddingHorizontal: 16, paddingTop: 10, borderTopWidth: SHAPE.rule },
 });

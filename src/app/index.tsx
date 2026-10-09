@@ -1,7 +1,7 @@
 import * as Location from 'expo-location';
 import { Redirect, router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Linking, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { LatLng } from '../domain/types';
 import { AppText } from '../ui/components/AppText';
@@ -124,7 +124,18 @@ export default function SetupScreen() {
         </AppText>
         <View style={styles.examples}>
           {EXAMPLES.map((example) => (
-            <RuleButton key={example} label={example} disabled={busy} onPress={() => setRequest(example)} />
+            <Pressable
+              key={example}
+              accessibilityRole="button"
+              accessibilityLabel={example}
+              accessibilityState={{ disabled: busy }}
+              disabled={busy}
+              onPress={() => setRequest(example)}
+              android_ripple={{ color: `${colors.onBackground}33` }}
+              style={[styles.example, { borderColor: colors.outline, opacity: busy ? 0.45 : 1 }]}
+            >
+              <AppText variant="body">{example}</AppText>
+            </Pressable>
           ))}
         </View>
 
@@ -187,7 +198,15 @@ const styles = StyleSheet.create({
     lineHeight: TYPE.body.lineHeight,
   },
   examplesLabel: { marginTop: 20, marginBottom: 8 },
-  examples: { gap: 8, alignItems: 'flex-start' },
+  examples: { gap: 8, alignSelf: 'stretch' },
+  example: {
+    minHeight: SHAPE.target,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    justifyContent: 'center',
+    borderWidth: SHAPE.rule,
+    borderRadius: SHAPE.radius,
+  },
   panel: { marginTop: 24, borderWidth: SHAPE.rule, borderRadius: SHAPE.radius, padding: 14, gap: 6 },
   panelAction: { marginTop: 8, alignItems: 'flex-start' },
   busy: { marginTop: 24, flexDirection: 'row', alignItems: 'center', gap: 12 },

@@ -1,9 +1,10 @@
 import { Camera, GeoJSONSource, Layer, Map, ViewAnnotation } from '@maplibre/maplibre-react-native';
 import { memo, useMemo } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Polygon } from 'react-native-svg';
 import type { Landmark, LatLng } from '../../domain/types';
 import { useTheme } from '../theme/theme';
+import { AppText } from './AppText';
 
 const STYLE_LIGHT = 'https://tiles.openfreemap.org/styles/positron';
 const STYLE_NIGHT = 'https://tiles.openfreemap.org/styles/dark';
@@ -11,6 +12,8 @@ const STYLE_NIGHT = 'https://tiles.openfreemap.org/styles/dark';
 const RING_RADIUS = 15;
 const RING_WIDTH = 3;
 const MIN_SPAN_DEGREES = 0.004;
+/** Required by the OpenStreetMap and OpenFreeMap licences. Drawn by us in ink, so the stock teal button is off. */
+export const ATTRIBUTION = '© OpenStreetMap contributors, OpenFreeMap';
 
 type Props = {
   start: LatLng;
@@ -64,17 +67,20 @@ function CourseMapView({ start, controls, visited, collapse = 0, style, padding 
 
   const bounds = useMemo(() => boundsOf([start, ...controls.map((c) => c.position)]), [start, controls]);
   const radius = RING_RADIUS * (1 - collapse) + 2 * collapse;
-  const ink = dark ? '#000000' : '#FFFFFF';
+  // The map ground: pure black at night, pure white by day. Unpunched rings are filled with it so
+  // basemap labels never run through the numerals, and the stroke thins to nothing as the rings collapse.
+  const ground = dark ? '#000000' : '#FFFFFF';
+  const ringWidth = RING_WIDTH * (1 - collapse);
 
   return (
+    <View style={style}>
     <Map
-      style={style}
+      style={styles.map}
       mapStyle={dark ? STYLE_NIGHT : STYLE_LIGHT}
       androidView="texture"
       compass={false}
       logo={false}
-      attribution
-      attributionPosition={{ bottom: 6, left: 6 }}
+      attribution={false}
       touchRotate={false}
       touchPitch={false}
     >
@@ -85,9 +91,9 @@ function CourseMapView({ start, controls, visited, collapse = 0, style, padding 
           type="circle"
           paint={{
             'circle-radius': radius,
-            'circle-color': ['case', ['get', 'punched'], colors.overprint, 'rgba(255,255,255,0)'],
+            'circle-color': ['case', ['get', 'punched'], colors.overprint, ground],
             'circle-stroke-color': colors.overprint,
-            'circle-stroke-width': RING_WIDTH,
+            'circle-stroke-width': ringWidth,
           }}
         />
         <Layer
@@ -101,9 +107,9 @@ function CourseMapView({ start, controls, visited, collapse = 0, style, padding 
             'text-ignore-placement': true,
           }}
           paint={{
-            'text-color': ['case', ['get', 'punched'], ink, colors.overprint],
-            'text-halo-color': ['case', ['get', 'punched'], colors.overprint, ink],
-            'text-halo-width': 0.6,
+            'text-color': ['case', ['get', 'punched'], ground, colors.overprint],
+            'text-halo-color': ['case', ['get', 'punched'], colors.overprint, ground],
+            'text-halo-width': 1.5,
           }}
         />
       </GeoJSONSource>
@@ -119,7 +125,19 @@ function CourseMapView({ start, controls, visited, collapse = 0, style, padding 
         </Svg>
       </ViewAnnotation>
     </Map>
+    <View pointerEvents="none" style={[styles.attribution, { backgroundColor: colors.background }]}>
+      <AppText variant="label" color={colors.onSurfaceVariant} style={styles.attributionText} maxFontSizeMultiplier={1.2}>
+        {ATTRIBUTION}
+      </AppText>
+    </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  map: { flex: 1 },
+  attribution: { position: 'absolute', left: 6, bottom: 6, paddingHorizontal: 4, paddingVertical: 1 },
+  attributionText: { fontSize: 12, lineHeight: 15, letterSpacing: 0.2, textTransform: 'none' },
+});
 
 export const CourseMap = memo(CourseMapView);

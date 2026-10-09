@@ -11,7 +11,7 @@ import type { Hint } from '../domain/session';
 import type { LatLng } from '../domain/types';
 import { AppText } from '../ui/components/AppText';
 import { RuleButton } from '../ui/components/RuleButton';
-import { formatElapsed, hintSentence } from '../ui/model/format';
+import { formatElapsed, HINT_COST, hintSentence } from '../ui/model/format';
 import { courseStore, useCourse } from '../ui/state/course';
 import { POCKET } from '../ui/theme/theme';
 
@@ -149,6 +149,9 @@ export default function RunScreen() {
           onPress={askForHint}
           accessibilityHint="Reads the nearest missing control's story, then its direction. Costs half a point."
         />
+        <AppText variant="body" color={fg} style={styles.cost}>
+          {HINT_COST}
+        </AppText>
         {hintNote && (
           <AppText variant="body" color={fg} style={styles.hintText}>
             {hintNote}
@@ -193,6 +196,7 @@ const styles = StyleSheet.create({
   time: { marginTop: 12 },
   status: { marginTop: 12, minHeight: 48 },
   hintBlock: { marginTop: 40, alignItems: 'flex-start' },
+  cost: { marginTop: 8 },
   hintText: { marginTop: 16, gap: 10 },
   direction: { marginTop: 4 },
   spacer: { flex: 1, minHeight: 96 },

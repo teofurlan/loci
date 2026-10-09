@@ -8,12 +8,12 @@ import { ControlRow } from '../ui/components/ControlRow';
 import { CourseMap } from '../ui/components/CourseMap';
 import { FlagButton } from '../ui/components/FlagButton';
 import { RuleButton } from '../ui/components/RuleButton';
+import { mapHeight } from '../ui/model/layout';
 import { walkingMinutes } from '../ui/model/walking-minutes';
 import { courseStore, useCourse } from '../ui/state/course';
 import { useReducedMotion } from '../ui/state/use-reduced-motion';
 import { SHAPE, useTheme } from '../ui/theme/theme';
 
-const MAP_SHARE = 0.55;
 const COLLAPSE_MS = 360;
 const FADE_MS = 240;
 const CUT_MS = 120;
@@ -41,7 +41,7 @@ export default function MemorizeScreen() {
   const course = useCourse();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
+  const { height, fontScale } = useWindowDimensions();
   const reducedMotion = useReducedMotion();
   const [collapse, setCollapse] = useState(0);
   const [hiding, setHiding] = useState(false);
@@ -112,17 +112,17 @@ export default function MemorizeScreen() {
     router.replace('/run');
   };
 
-  const mapHeight = Math.round(height * MAP_SHARE);
+  const mapPx = mapHeight(height, fontScale);
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <Animated.View style={{ height: mapHeight, opacity: mapOpacity }}>
+      <Animated.View style={{ height: mapPx, opacity: mapOpacity }}>
         <CourseMap
           style={styles.fill}
           start={start}
           controls={plan.checkpoints}
           collapse={collapse}
-          padding={{ top: insets.top + 56, right: 44, bottom: 44, left: 44 }}
+          padding={{ top: insets.top + 56, right: 44, bottom: 72, left: 44 }}
         />
       </Animated.View>
 
@@ -155,7 +155,7 @@ export default function MemorizeScreen() {
         ))}
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) + 4 }]}>
+      <View style={[styles.footer, { borderColor: colors.outline, paddingBottom: Math.max(insets.bottom, 12) + 4 }]}>
         <FlagButton
           label="Hide map & start"
           onPress={hideAndStart}
@@ -184,6 +184,6 @@ const styles = StyleSheet.create({
   sheetTitle: { flex: 1 },
   sheet: { flex: 1 },
   sheetContent: { paddingBottom: 8 },
-  footer: { paddingHorizontal: 16, paddingTop: 10 },
+  footer: { paddingHorizontal: 16, paddingTop: 10, borderTopWidth: SHAPE.rule },
   blackout: { ...StyleSheet.absoluteFill, backgroundColor: '#000000' },
 });
