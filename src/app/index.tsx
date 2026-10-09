@@ -11,6 +11,7 @@ import { MicButton } from '../ui/components/MicButton';
 import { PixelBox } from '../ui/components/PixelBox';
 import { PixelButton } from '../ui/components/PixelButton';
 import { PixelSprite } from '../ui/components/PixelSprite';
+import { setupSections } from '../ui/model/setup-view';
 import { dictationReducer, INITIAL_DICTATION } from '../ui/model/dictation';
 import { describePlanError, type PlanErrorDescription } from '../ui/model/errors';
 import { resumeRoute } from '../ui/model/resume-route';
@@ -135,6 +136,8 @@ export default function SetupScreen() {
 
   if (resumeHref) return <Redirect href={resumeHref} />;
 
+  const sections = setupSections({ busy, hasError: !!(dictation.problem || denied || failure) });
+
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <ScrollView
@@ -168,6 +171,7 @@ export default function SetupScreen() {
           />
         </PixelBox>
 
+        {sections.mic && (
         <View style={styles.mic}>
           <MicButton
             listening={dictation.phase !== 'idle'}
@@ -176,6 +180,21 @@ export default function SetupScreen() {
             onPress={toggleDictation}
           />
         </View>
+        )}
+        {sections.loading && (
+          <View style={styles.panel} accessibilityLiveRegion="polite">
+            <DialogueBox title="Planning">
+              <View style={styles.busy}>
+                <Walker still={reducedMotion} />
+                <AppText variant="body" style={styles.busyText}>
+                  Finding places near you and writing the story. This can take a minute or two.
+                </AppText>
+              </View>
+            </DialogueBox>
+          </View>
+        )}
+        {sections.error && (
+          <>
         {dictation.problem && (
           <View style={styles.panel} accessibilityLiveRegion="polite">
             <DialogueBox title="Heads up">
@@ -189,7 +208,35 @@ export default function SetupScreen() {
             </DialogueBox>
           </View>
         )}
-
+        {denied && (
+          <View style={styles.panel} accessibilityLiveRegion="polite">
+            <DialogueBox title="Heads up">
+              <AppText variant="title">Location is off for Loci.</AppText>
+              <AppText variant="body">
+                Loci needs your position to lay out a course around you. Allow location while using the app.
+              </AppText>
+              <View style={styles.panelAction}>
+                {denied.canAskAgain ? (
+                  <PixelButton label="Allow location" onPress={setCourse} />
+                ) : (
+                  <PixelButton label="Open settings" onPress={() => Linking.openSettings()} />
+                )}
+              </View>
+            </DialogueBox>
+          </View>
+        )}
+        {failure && (
+          <View style={styles.panel} accessibilityLiveRegion="polite">
+            <DialogueBox title="Heads up">
+              <AppText variant="title">{failure.problem}</AppText>
+              <AppText variant="body">{failure.recovery}</AppText>
+            </DialogueBox>
+          </View>
+        )}
+          </>
+        )}
+        {sections.examples && (
+          <>
         <AppText variant="label" style={styles.examplesLabel} maxFontSizeMultiplier={1.3}>
           Or pick an example
         </AppText>
@@ -219,41 +266,7 @@ export default function SetupScreen() {
             ))}
           </View>
         </PixelBox>
-
-        {denied && (
-          <View style={styles.panel} accessibilityLiveRegion="polite">
-            <DialogueBox title="Heads up">
-              <AppText variant="title">Location is off for Loci.</AppText>
-              <AppText variant="body">
-                Loci needs your position to lay out a course around you. Allow location while using the app.
-              </AppText>
-              <View style={styles.panelAction}>
-                {denied.canAskAgain ? (
-                  <PixelButton label="Allow location" onPress={setCourse} />
-                ) : (
-                  <PixelButton label="Open settings" onPress={() => Linking.openSettings()} />
-                )}
-              </View>
-            </DialogueBox>
-          </View>
-        )}
-
-        {failure && (
-          <View style={styles.panel} accessibilityLiveRegion="polite">
-            <DialogueBox title="Heads up">
-              <AppText variant="title">{failure.problem}</AppText>
-              <AppText variant="body">{failure.recovery}</AppText>
-            </DialogueBox>
-          </View>
-        )}
-
-        {busy && (
-          <View style={styles.busy} accessibilityLiveRegion="polite">
-            <Walker still={reducedMotion} />
-            <AppText variant="body" style={styles.busyText}>
-              Finding places near you and writing the story. This can take a minute or two.
-            </AppText>
-          </View>
+          </>
         )}
       </ScrollView>
 
@@ -298,7 +311,7 @@ const styles = StyleSheet.create({
   cursor: { width: 30, alignItems: 'center' },
   panel: { marginTop: 24 },
   panelAction: { marginTop: 8, alignItems: 'flex-start' },
-  busy: { marginTop: 24, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  busy: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   busyText: { flex: 1 },
   walker: { width: 48, height: 56, alignItems: 'center', justifyContent: 'flex-end' },
   footer: { paddingHorizontal: 20, paddingTop: 8 },
