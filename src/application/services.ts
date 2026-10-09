@@ -34,16 +34,15 @@ const OVERPASS_MIRRORS = [
   'https://overpass.kumi.systems/api/interpreter',
 ];
 
-/** A model that just failed is skipped for this long, so a plan does not wait out two timeouts. */
+/** A local model that just failed is skipped for this long, so a plan does not wait out two timeouts. */
 const LLM_COOLDOWN_MS = 2 * 60_000;
 
-function buildLlm(env: Env, fetchFn: FetchFn): LlmClient {
+/** Only Ollama is wrapped: a dead local host should be skipped, but each proxy request is tried on its own merits. */
+export function buildLlm(env: Env, fetchFn: FetchFn): LlmClient {
   const config = resolveLlmConfig(env);
-  const client =
-    config.kind === 'proxy'
-      ? new ProxyLlmClient({ fetch: fetchFn, baseUrl: config.baseUrl })
-      : new OllamaClient({ fetch: fetchFn, baseUrl: config.baseUrl, model: config.model });
-  return new CooldownLlmClient(client, { cooldownMs: LLM_COOLDOWN_MS });
+  if (config.kind === 'proxy') return new ProxyLlmClient({ fetch: fetchFn, baseUrl: config.baseUrl });
+  const ollama = new OllamaClient({ fetch: fetchFn, baseUrl: config.baseUrl, model: config.model });
+  return new CooldownLlmClient(ollama, { cooldownMs: LLM_COOLDOWN_MS });
 }
 
 /** Composition root: wires the real adapters into the use cases. Not unit tested on purpose. */
