@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-09T00:00:00Z",
+  "title": "Design System: Loci",
+  "extensions": {
+    "colorMeta": {
+      "paper": { "role": "neutral", "displayName": "Description-Card Paper", "canonical": "#FFFFFF", "tonalRamp": ["#111111", "#2E2E2E", "#4A4A4A", "#767676", "#A6A6A6", "#D0D0D0", "#F1F1F1", "#FFFFFF"] },
+      "ink": { "role": "neutral", "displayName": "Control Ink", "canonical": "#111111", "tonalRamp": ["#000000", "#111111", "#222222", "#333333", "#4A4A4A", "#666666", "#8A8A8A", "#B0B0B0"] },
+      "flag-orange": { "role": "primary", "displayName": "Control-Flag Orange", "canonical": "#F26B1D", "tonalRamp": ["#4D1F05", "#7A330A", "#A94910", "#D45A17", "#F26B1D", "#F58F52", "#F9B58F", "#FCDCCB"] },
+      "overprint-purple": { "role": "secondary", "displayName": "Course-Overprint Purple", "canonical": "#A3238E", "tonalRamp": ["#3A0D33", "#5C1450", "#7E1B6E", "#A3238E", "#BF4FAB", "#D381C3", "#E4B0D9", "#F3DAEE"] },
+      "paper-shade": { "role": "neutral", "displayName": "Paper Shade", "canonical": "#F1F1F1" },
+      "ink-soft": { "role": "neutral", "displayName": "Ink Soft", "canonical": "#4A4A4A" },
+      "error-red": { "role": "error", "displayName": "Error Red", "canonical": "#B3261E" },
+      "night-black": { "role": "neutral", "displayName": "Night Black", "canonical": "#000000" },
+      "night-overprint": { "role": "secondary", "displayName": "Night Overprint", "canonical": "#E066CC" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The results score figure; uppercase Barlow Condensed Bold." },
+      "headline": { "displayName": "Headline", "purpose": "Screen titles and the flag button label; uppercase." },
+      "title": { "displayName": "Title", "purpose": "Place names in control rows and route title." },
+      "label": { "displayName": "Label", "purpose": "Buttons, minutes, section labels, punch numbers; uppercase." },
+      "body": { "displayName": "Body", "purpose": "Story fragments and the request field, Roboto system face." },
+      "body-small": { "displayName": "Body Small", "purpose": "Secondary explanation." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "hide-map", "value": "rings shrink to 2dp radius, map fades, cut to black", "purpose": "Signature transition from memorize to pocket mode." },
+      { "name": "checkpoint-inversion", "value": "one full-frame black/white inversion with vibration", "purpose": "Checkpoint hit feedback on the run screen." }
+    ],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Flag Button",
+      "kind": "button",
+      "refersTo": "button-flag",
+      "description": "The single primary action: orange and white diagonal split with ink label.",
+      "html": "<button class=\"ds-flag\"><span>HIDE MAP &amp; START</span></button>",
+      "css": ".ds-flag { position: relative; height: 64px; width: 320px; border: 2px solid #111111; border-radius: 2px; background: linear-gradient(to bottom right, #F26B1D 0%, #F26B1D 50%, #FFFFFF 50%, #FFFFFF 100%); color: #111111; font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif; font-weight: 700; font-size: 26px; text-transform: uppercase; cursor: pointer; } .ds-flag:hover { filter: brightness(0.95); } .ds-flag:focus-visible { outline: 2px solid #111111; outline-offset: 2px; } .ds-flag:active { filter: brightness(0.88); }"
+    },
+    {
+      "name": "Rule Button",
+      "kind": "button",
+      "refersTo": "button-rule",
+      "description": "Secondary action: 2 dp ink box, no fill.",
+      "html": "<button class=\"ds-rule-btn\">READ ALOUD</button>",
+      "css": ".ds-rule-btn { min-height: 48px; padding: 8px 16px; border: 2px solid #111111; border-radius: 2px; background: transparent; color: #111111; font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif; font-weight: 600; font-size: 17px; letter-spacing: 0.8px; text-transform: uppercase; cursor: pointer; } .ds-rule-btn:hover { background: #F1F1F1; } .ds-rule-btn:focus-visible { outline: 2px solid #111111; outline-offset: 2px; } .ds-rule-btn:active { background: #D9D9D9; }"
+    },
+    {
+      "name": "Control Row",
+      "kind": "custom",
+      "refersTo": "control-row-number",
+      "description": "One row of the control description sheet: number, pictogram, place and minutes, story beneath.",
+      "html": "<div class=\"ds-row\"><div class=\"ds-cells\"><div class=\"ds-num\">1</div><div class=\"ds-icon\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\"><circle cx=\"10\" cy=\"8\" r=\"5\" fill=\"none\" stroke=\"#111111\" stroke-width=\"2\"/><line x1=\"10\" y1=\"13\" x2=\"10\" y2=\"19\" stroke=\"#111111\" stroke-width=\"2\"/></svg></div><div class=\"ds-name\"><div class=\"ds-place\">Plaza de las Americas</div><div class=\"ds-min\">9 min</div></div></div><div class=\"ds-frag\">Picture an absurd, vivid scene you will never forget.</div></div>",
+      "css": ".ds-row { width: 360px; border-bottom: 2px solid #111111; background: #FFFFFF; } .ds-cells { display: flex; min-height: 56px; } .ds-num { width: 52px; display: flex; align-items: center; justify-content: center; border-right: 2px solid #111111; color: #A3238E; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 30px; font-variant-numeric: tabular-nums; } .ds-icon { width: 52px; display: flex; align-items: center; justify-content: center; border-right: 2px solid #111111; } .ds-name { flex: 1; padding: 6px 12px; display: flex; flex-direction: column; justify-content: center; } .ds-place { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 20px; color: #111111; } .ds-min { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 17px; letter-spacing: 0.8px; text-transform: uppercase; color: #4A4A4A; } .ds-frag { border-top: 2px solid #111111; padding: 10px 12px; font-family: Roboto, system-ui, sans-serif; font-size: 16px; line-height: 24px; color: #111111; }"
+    },
+    {
+      "name": "Punch Card",
+      "kind": "card",
+      "refersTo": "punch-box",
+      "description": "One box per control: pin-punched when visited, orange H when hinted, empty when missed.",
+      "html": "<div class=\"ds-punch\"><div class=\"ds-box\"><span class=\"ds-n\">1</span><span class=\"ds-h\">H</span></div><div class=\"ds-box\"><span class=\"ds-n\">2</span></div></div>",
+      "css": ".ds-punch { display: flex; gap: 8px; width: 240px; } .ds-box { position: relative; flex: 1; height: 84px; border: 2px solid #111111; border-radius: 2px; background: #FFFFFF; } .ds-n { position: absolute; top: 2px; left: 5px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 18px; color: #A3238E; } .ds-h { position: absolute; top: 1px; right: 6px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 22px; color: #F26B1D; }"
+    },
+    {
+      "name": "Request Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Multiline free-text request on the setup screen.",
+      "html": "<textarea class=\"ds-field\" placeholder=\"20 min walk, green areas\"></textarea>",
+      "css": ".ds-field { width: 320px; min-height: 112px; padding: 12px; border: 2px solid #111111; border-radius: 2px; background: #FFFFFF; color: #111111; font-family: Roboto, system-ui, sans-serif; font-size: 16px; line-height: 24px; resize: none; } .ds-field:focus-visible { outline: 2px solid #A3238E; outline-offset: 2px; }"
+    },
+    {
+      "name": "Control Ring",
+      "kind": "custom",
+      "refersTo": "control-row-number",
+      "description": "Map overprint: purple ring and number; start triangle with no legs.",
+      "html": "<svg width=\"120\" height=\"50\" viewBox=\"0 0 120 50\"><polygon points=\"17,6 31,40 3,40\" fill=\"none\" stroke=\"#A3238E\" stroke-width=\"2.5\"/><circle cx=\"70\" cy=\"25\" r=\"18\" fill=\"#FFFFFF\" stroke=\"#A3238E\" stroke-width=\"2.5\"/><text x=\"70\" y=\"31\" text-anchor=\"middle\" font-size=\"18\" font-weight=\"700\" fill=\"#A3238E\" font-family=\"sans-serif\">1</text><circle cx=\"108\" cy=\"25\" r=\"11\" fill=\"#A3238E\"/></svg>",
+      "css": "svg { display: block; background: #F1F1F1; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Control Sheet",
+    "overview": "Every walk is an orienteering Score-O course. The app is the paper you are handed at the start: a control description sheet, a map with overprint, and at the end a punch card. It is white, ruled in hard ink, and almost entirely monochrome, so that the two colors it does own carry meaning. Material 3 supplies structure; the brand lives in the theme layer on top of it.",
+    "keyCharacteristics": [
+      "Pure white paper and ink #111111; never cream.",
+      "Color is quarantined: purple is overprint and control numbers, orange is the flag and the one primary action.",
+      "Hard 2 dp rules form the grid; corners are 2 dp.",
+      "Barlow Condensed for sheet voice, the system face for story text.",
+      "Flat: no shadows, no elevation.",
+      "Night-O theme follows the system: white rules on black, lighter purple."
+    ],
+    "rules": [
+      { "name": "The Quarantine Rule", "body": "Purple belongs to overprint and control numbers. Orange belongs to the flag mark and the single primary action. Any other use of either is a defect.", "section": "colors" },
+      { "name": "The Two-Value Pocket Rule", "body": "On the run screen there is black, white, and nothing between: no grey, no accent.", "section": "colors" },
+      { "name": "The Tabular Rule", "body": "Control numbers, minutes, timers and scores use tabular figures so they never jitter.", "section": "typography" },
+      { "name": "The Two Voices Rule", "body": "Barlow Condensed speaks for the sheet; Roboto speaks for the story.", "section": "typography" },
+      { "name": "The Flat-Sheet Rule", "body": "Surfaces stay flat at rest and under touch. Separate with a rule, not a shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do separate content with 2 dp ink rules and keep corners at 2 dp.",
+      "Do reserve orange for the flag button and the \"H\" hint mark, and purple for overprint and control numbers.",
+      "Do use Barlow Condensed uppercase for headings and labels, tabular figures for any number, and Roboto for story text.",
+      "Do keep every touch target at 48 dp or more, and the flag button at 64 dp.",
+      "Do keep the run screen strictly black and white.",
+      "Do resolve colors through the theme roles so night-O comes along for free."
+    ],
+    "donts": [
+      "Don't add shadows, elevation, gradients, or rounded cards.",
+      "Don't introduce cream or tinted paper; the sheet is pure white.",
+      "Don't use orange or purple as general accents, links, or decoration.",
+      "Don't place Give up next to Hint.",
+      "Don't fall back to the generic category layout: a full-bleed map with a bottom sheet and pins."
+    ]
+  }
+}

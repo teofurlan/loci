@@ -34,7 +34,7 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
 - [x] T4 StoryGenerator port. Remote Gemma adapter (Gemini API, Ollama in development) with the mnemonic prompt and a cached-story fallback.
 - [ ] T5 Screens: setup (free-text request), memorize (map plus story text, with optional Android TTS), run (pocket mode with a black overlay, haptics, hints, give up), and results. Hints replay one unvisited checkpoint's story fragment via TTS, then give a direction, and each one costs score; giving up reveals the map. Map uses MapLibre with free OSM-based tiles. Split into:
   - [x] T5a Application layer, test-first: `planRoute` use case (intent → distance → loop → landmarks with snap 250 m and one 400 m retry → select → story), run session with hints and give up, visited-landmark history port, and the composition root config (Ollama in dev, Gemini via env). Route: delegated (writer trigger, 2+ non-trivial files).
-  - [ ] T5b Expo Router screens, MapLibre (OpenFreeMap tiles, no key), expo-speech TTS, expo-haptics, pocket overlay, and foreground location during the run. Development build on the phone, checked manually. Route: delegated (writer trigger).
+  - [x] T5b Expo Router screens, MapLibre (OpenFreeMap tiles, no key), expo-speech TTS, expo-haptics, pocket overlay, and foreground location during the run. Development build on the phone, checked manually. Route: delegated (writer trigger).
 - [x] T4b LLM proxy, decided by the user on 2026-10-09: a Vercel function holds `GEMINI_API_KEY` server-side, with basic rate limiting. The app gets a `ProxyLlmClient` adapter and `resolveLlmConfig` selects it from `EXPO_PUBLIC_LLM_PROXY_URL`. The Gemini key is never embedded in the APK. Deploying needs explicit user authorization for the Vercel account. Route: delegated writer in an isolated git worktree (the user asked for parallel work while the T5b writer holds the main worktree); merged into feat/memory-route afterwards.
   - Parent design defaults:
     - A generic `/api/complete` endpoint with the model fixed server-side, maxTokens and prompt length capped, and best-effort per-IP rate limiting.
@@ -165,7 +165,27 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - Gotcha: with maxTokens 20, Gemma 4 returns empty (`upstream_empty`), because thinking consumes the budget. The app uses 300 and 1200, which works.
   - The repo has no git remote; pushing to GitHub is the user's decision. The CLI deploy does not need it.
 
+- 2026-10-09: Two finish-review fix rounds were done by delegated writers.
+  - Round 1, `80ae9e8` + `da09b52`, the 8 fixes. Verdict: 6 resolved, 2 partial (a U+FFFD glyph in the attribution from a non-UTF-8 save, and the results lead).
+  - Round 2, `4cf2dc4`:
+    - © written as an escape.
+    - Results lead is "N of M controls visited" with the one-line rule "Hinted controls score ½".
+    - Hint copy is "A hint halves that control's score".
+    - Run screen nav bar forced black via expo-navigation-bar (native rebuild; `android/` stays gitignored).
+    - CourseMap remounts on a theme change (root cause unknown).
+  - 235 tests green.
+  - **Finish verdict: ship**, covering the scored items. Unverified: punched and hinted card states, and the collapse animation in motion.
+  - The impeccable documenter was launched for DESIGN.md and `.impeccable/design.json`.
+- The proxy URL is not yet in the app: no root `.env.local` exists (only the Vercel-generated `proxy/.env.local`). The user was told to create the root `.env.local`. Every capture so far used the template story.
+
+- DESIGN.md and `.impeccable/design.json` were written by the impeccable documenter and committed by the parent.
+  - Drift reported, not repaired: the map numerals use the MapLibre font Noto Sans Bold rather than Barlow Condensed, and FlagButton hardcodes ink and white instead of using theme tokens.
+  - T5b is done.
+
 ## Next step
+Verify the real Gemma story through the proxy on the device once the root `.env.local` exists. Then T6.
+
+## Older next step
 Act on the finish review verdict, then the documenter (DESIGN.md). Get the real Gemma path working (proxy deploy or a working Ollama model). Then T6.
 
 ## Previous next step (done)
