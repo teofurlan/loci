@@ -32,7 +32,9 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
 - [x] T3 Landmarks: Overpass adapter behind a LandmarkSource port (query builder, response parser, injected fetch; fixtures, no network in tests) plus a domain `selectCheckpoints` that snaps loop candidates to real landmarks. It weights by user preferences (green areas, recognizable landmarks) and mixes new and already-visited landmarks by ratio. Route: delegated (2+ non-trivial files).
 - [x] T4a Intent parsing: Gemma turns a free-text request ("20 min walk, beginner, green areas, I remember places better than street names") into validated structured params (distance or time, pace, preferences, story style). The domain applies defaults and bounds, and the LLM never invents coordinates.
 - [x] T4 StoryGenerator port. Remote Gemma adapter (Gemini API, Ollama in development) with the mnemonic prompt and a cached-story fallback.
-- [ ] T5 Screens: setup (free-text request), memorize (map plus story text, with optional Android TTS), run (pocket mode with a black overlay, haptics, hints, give up), and results. Hints replay one unvisited checkpoint's story fragment via TTS, then give a direction, and each one costs score; giving up reveals the map. Map uses MapLibre with free OSM-based tiles.
+- [ ] T5 Screens: setup (free-text request), memorize (map plus story text, with optional Android TTS), run (pocket mode with a black overlay, haptics, hints, give up), and results. Hints replay one unvisited checkpoint's story fragment via TTS, then give a direction, and each one costs score; giving up reveals the map. Map uses MapLibre with free OSM-based tiles. Split into:
+  - [x] T5a Application layer, test-first: `planRoute` use case (intent → distance → loop → landmarks with snap 250 m and one 400 m retry → select → story), run session with hints and give up, visited-landmark history port, and the composition root config (Ollama in dev, Gemini via env). Route: delegated (writer trigger, 2+ non-trivial files).
+  - [ ] T5b Expo Router screens, MapLibre (OpenFreeMap tiles, no key), expo-speech TTS, expo-haptics, pocket overlay, and foreground location during the run. Development build on the phone, checked manually. Route: delegated (writer trigger).
 - [ ] T6 Background location: expo-location with task-manager and a foreground service, so GPS keeps working with the screen off.
 - [ ] T7 Stretch, timeboxed to 4 hours: on-device Gemma adapter using llama.rn, with a small Gemma model.
 - [ ] T8 Outdoor test run, screenshots or clips, and a draft of the DEV post.
@@ -94,5 +96,24 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - The Android emulator reaches Ollama at `10.0.2.2:11434`.
 - RDD: the slice from 8e787f9 is due (1902 lines). STATUS still stops with `managed_assets_outdated` (gentle-ai#5141), so the slice stays unreviewed.
 
+- 2026-10-09: Resumed in a new session inside the repo.
+  - Android environment verified: SDK with cmdline-tools, JDK 17, and the phone `ZT322SKLL5` connected over adb.
+  - gentle-ai is still 3.7.0, so the review stays blocked by gentle-ai#5141.
+  - T5 split into T5a (application layer) and T5b (UI).
+  - Parent defaults for T5a, open to change: a checkpoint reached after a hint about it counts 0.5 instead of 1, and giving up ends the run with the current score. In development the phone reaches Ollama through `adb reverse tcp:11434 tcp:11434`. The Gemini key comes from `EXPO_PUBLIC_GEMINI_API_KEY`, which ships inside the APK; a proxy is the alternative and still needs a user decision before release.
+
+- 2026-10-09: T5a done by a delegated writer.
+  - Commits: `290bf99` (domain session, bearing, OverpassHttpError) and `0cf789d` (planRoute, VisitedHistory port, LLM config, createServices).
+  - RED was a missing module or export per behavior. Two plan-route fixture tests were rewritten without code changes.
+  - GREEN is 119/119. Parent spot check: `npx jest` → 19 suites, 119 passed. tsc and lint (`--no-cache`) are clean, as reported by the writer.
+  - About 717 added lines: roughly 330 of production code and 390 of tests, covering four behaviors.
+  - Writer choices:
+    - A single landmark fetch with radius ceil(target/π + 400). The 400 m retry is used only when it yields more checkpoints.
+    - Fewer than 3 checkpoints throws `NotEnoughLandmarksError`.
+    - The session score reports points, visited, total, ratio and hintsUsed; reaching the last checkpoint ends the run as completed.
+    - Writing visited ids back to history is left to T5b.
+  - `.atl/` (the gentle-ai skill-registry cache) is now in `.git/info/exclude` so the review inventory is clean. This is local only; the repo is unchanged.
+- RDD: assess from 8e787f9 (untracked excluded) → medium, slice_budget_reached (2615 lines). Preflight STATUS stopped again with `managed_assets_outdated`. The sync continuation failed the same way (gentle-ai 3.7.0, gentle-ai#5141, already reported), so the slice stays unreviewed.
+
 ## Next step
-Android SDK setup with the user, then T5 and T6 (screens and background location) in a new session inside the repo.
+T5b (screens), then T6. Pending user decision: Gemini key embedded in the APK or behind a proxy.
