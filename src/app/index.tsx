@@ -25,6 +25,7 @@ const EXAMPLES = [
   '20 min walk, green areas',
   '30 min run, I remember places better than street names',
   'Easy walk past recognizable landmarks',
+  '30 min walk, story themed on space exploration',
 ];
 
 /** The device locale, so dictation follows the language the phone is set to. */
@@ -157,30 +158,38 @@ export default function SetupScreen() {
           Course request
         </AppText>
         <PixelBox fill={COLORS.panel} behind={COLORS.ground} double>
-          <TextInput
-            accessibilityLabelledBy="request-label"
-            value={request}
-            onChangeText={setRequest}
-            editable={!busy && dictation.phase === 'idle'}
-            multiline
-            placeholder="e.g. 20 min walk, green areas, I remember places better than street names"
-            placeholderTextColor={COLORS.muted}
-            selectionColor={COLORS.ink}
-            cursorColor={COLORS.ink}
-            style={styles.input}
-          />
+          <View>
+            <TextInput
+              accessibilityLabelledBy="request-label"
+              value={request}
+              onChangeText={setRequest}
+              editable={!busy && dictation.phase === 'idle'}
+              multiline
+              placeholder="e.g. 20 min walk, green areas, I remember places better than street names"
+              placeholderTextColor={COLORS.muted}
+              selectionColor={COLORS.ink}
+              cursorColor={COLORS.ink}
+              style={styles.input}
+            />
+            {/* The mic sits in the corner; the input's bottom padding keeps text from running under it. */}
+            {sections.mic && (
+              <View style={styles.micCorner}>
+                <MicButton
+                  listening={dictation.phase !== 'idle'}
+                  stopping={dictation.phase === 'stopping'}
+                  disabled={busy}
+                  onPress={toggleDictation}
+                />
+              </View>
+            )}
+            {dictation.phase !== 'idle' && (
+              <View style={styles.listening} accessibilityLiveRegion="polite">
+                <AppText variant="bodySmall">{dictation.phase === 'stopping' ? 'Finishing…' : 'Listening… tap the square to stop'}</AppText>
+              </View>
+            )}
+          </View>
         </PixelBox>
 
-        {sections.mic && (
-        <View style={styles.mic}>
-          <MicButton
-            listening={dictation.phase !== 'idle'}
-            stopping={dictation.phase === 'stopping'}
-            disabled={busy}
-            onPress={toggleDictation}
-          />
-        </View>
-        )}
         {sections.loading && (
           <View style={styles.panel} accessibilityLiveRegion="polite">
             <DialogueBox title="Planning">
@@ -295,15 +304,17 @@ const styles = StyleSheet.create({
   lead: { marginTop: 12, maxWidth: 520 },
   fieldLabel: { marginTop: 28, marginBottom: 10 },
   input: {
-    minHeight: 112,
+    minHeight: 132,
     padding: 12,
+    paddingBottom: 62,
     textAlignVertical: 'top',
     color: COLORS.ink,
     fontFamily: TYPE.body.fontFamily,
     fontSize: TYPE.body.fontSize,
     lineHeight: TYPE.body.lineHeight,
   },
-  mic: { marginTop: 12 },
+  micCorner: { position: 'absolute', right: 6, bottom: 6 },
+  listening: { position: 'absolute', left: 12, bottom: 12, right: 66 },
   examplesLabel: { marginTop: 24, marginBottom: 10 },
   example: { minHeight: SHAPE.target, paddingRight: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center' },
   exampleRule: { borderTopWidth: SHAPE.rule, borderTopColor: COLORS.ink },
