@@ -29,9 +29,10 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
 ## Tasks
 - [x] T1 Scaffold the Expo TypeScript app, jest-expo, lint and typecheck scripts, `.gitignore`, and a README stub. Route: delegated (scaffold plus T2, 2+ non-trivial files).
 - [x] T2 Domain core in pure TypeScript, test-first: haversine distance, random checkpoint generation within a target distance, checkpoint hit detection with a radius, and scoring. Route: delegated with T1.
-- [ ] T3 Landmarks adapter: query Overpass for named POIs near candidate points and snap checkpoints to landmarks, test-first with fixtures.
+- [ ] T3 Landmarks: Overpass adapter behind a LandmarkSource port (query builder, response parser, injected fetch; fixtures, no network in tests) plus a domain `selectCheckpoints` that snaps loop candidates to real landmarks. It weights by user preferences (green areas, recognizable landmarks) and mixes new and already-visited landmarks by ratio. Route: delegated (2+ non-trivial files).
+- [ ] T4a Intent parsing: Gemma turns a free-text request ("20 min walk, beginner, green areas, I remember places better than street names") into validated structured params (distance or time, pace, preferences, story style). The domain applies defaults and bounds, and the LLM never invents coordinates.
 - [ ] T4 StoryGenerator port. Remote Gemma adapter (Gemini API, Ollama in development) with the mnemonic prompt and a cached-story fallback.
-- [ ] T5 Screens: setup, memorize (map and story shown once), run (pocket mode with a black overlay and haptics), and results. Map uses MapLibre with free OSM-based tiles.
+- [ ] T5 Screens: setup (free-text request), memorize (map plus story text, with optional Android TTS), run (pocket mode with a black overlay, haptics, hints, give up), and results. Hints replay one unvisited checkpoint's story fragment via TTS, then give a direction, and each one costs score; giving up reveals the map. Map uses MapLibre with free OSM-based tiles.
 - [ ] T6 Background location: expo-location with task-manager and a foreground service, so GPS keeps working with the screen off.
 - [ ] T7 Stretch, timeboxed to 4 hours: on-device Gemma adapter using llama.rn, with a small Gemma model.
 - [ ] T8 Outdoor test run, screenshots or clips, and a draft of the DEV post.
@@ -53,5 +54,18 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
 - Open defaults: hitRadiusMeters ~25 and maxAccuracyMeters ~30, to be decided in T5/T6.
 - Pending product decisions: story delivery (text, TTS, or both), whether checkpoint order matters, default checkpoint count and distance, and the "give up" flow.
 
+- 2026-10-08 product decisions (user):
+  - Story delivered as text and TTS.
+  - Checkpoint order does not matter; ordered or hard modes may come later.
+  - Hints first, and giving up is always available.
+  - Free-text request parsed by Gemma.
+  - Mix new and already-visited landmarks to raise memory interference.
+- Defaults proposed by the parent:
+  - Distance comes from the request (time × pace). Without a request: 3 km walk or 5 km run, clamped to 1-10 km.
+  - About 1 checkpoint per 700 m, clamped to 4-8, default 5.
+  - Familiar ratio 0.4 when history exists.
+  - The user suggested a 4 km minimum, but that conflicts with their own "20 min walk" example (about 1.6 km). Flagged to the user.
+- RDD: assess of 77ac686 against base 8e787f9 → medium, under_budget (395 lines). The slice stays pending.
+
 ## Next step
-Resolve the product decisions, then T3 (landmarks adapter).
+T3 (delegated writer).
