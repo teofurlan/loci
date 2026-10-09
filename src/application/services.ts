@@ -1,6 +1,6 @@
 import { CachedStoryGenerator, InMemoryStoryCache, LlmIntentParser, LlmStoryGenerator } from '../adapters/llm';
 import type { FetchFn } from '../adapters/llm/http';
-import { GeminiApiClient } from '../adapters/llm/gemini';
+import { ProxyLlmClient } from '../adapters/llm/proxy';
 import { OllamaClient } from '../adapters/llm/ollama';
 import { DEFAULT_OVERPASS_ENDPOINT, OverpassLandmarkSource } from '../adapters/overpass';
 import type { LlmClient } from '../domain/ports';
@@ -23,8 +23,8 @@ const USER_AGENT = 'Loci/0.1 (memory route app)';
 
 function buildLlm(env: Env, fetchFn: FetchFn): LlmClient {
   const config = resolveLlmConfig(env);
-  return config.kind === 'gemini'
-    ? new GeminiApiClient({ fetch: fetchFn, apiKey: config.apiKey, model: config.model })
+  return config.kind === 'proxy'
+    ? new ProxyLlmClient({ fetch: fetchFn, baseUrl: config.baseUrl })
     : new OllamaClient({ fetch: fetchFn, baseUrl: config.baseUrl, model: config.model });
 }
 
