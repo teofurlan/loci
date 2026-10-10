@@ -3,7 +3,7 @@ const MIN_MAP = 160;
 // Room the description sheet must keep, in dp at font scale 1: the pinned footer, then the sheet header
 // plus two full control rows with their story. Text grows with the font scale; the footer mostly does not.
 const FOOTER_RESERVE = 130;
-const SHEET_RESERVE = 350;
+const SHEET_RESERVE = 400;
 
 /** Height of the memorize map: 55% of the window, giving way so two story rows stay visible at large fonts. */
 export function mapHeight(windowHeight: number, fontScale: number): number {

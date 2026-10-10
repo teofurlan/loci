@@ -232,7 +232,23 @@ export default function MemorizeScreen() {
         <>
           <StampStrip controls={plan.checkpoints} selected={selected} onSelect={jump} />
           <View style={styles.dialogue}>
-            <DialogueBox title={current.name} stretch>
+            <DialogueBox
+              title={current.name}
+              stretch
+              corner={
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Next place"
+                  accessibilityHint="Shows the next landmark and highlights it on the map"
+                  onPress={advance}
+                  style={styles.next}
+                >
+                  <View style={{ opacity: typing.done && blink ? 1 : 0 }}>
+                    <PixelSprite name="glyph:pointer" scale={3} />
+                  </View>
+                </Pressable>
+              }
+            >
               <ScrollView style={styles.fill} contentContainerStyle={styles.dialogueText}>
                 <AppText variant="bodySmall">
                   Control {selected + 1} of {total} · {minutes.perControl[selected]} min
@@ -251,20 +267,6 @@ export default function MemorizeScreen() {
                   </AppText>
                 </Pressable>
               </ScrollView>
-              {/* Outside the scroll region, so the cursor never hides below the fold. */}
-              <View style={styles.cursorRow}>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Next place"
-                  accessibilityHint="Shows the next landmark and highlights it on the map"
-                  onPress={advance}
-                  style={styles.next}
-                >
-                  <View style={{ opacity: typing.done && blink ? 1 : 0 }}>
-                    <PixelSprite name="glyph:pointer" scale={3} />
-                  </View>
-                </Pressable>
-              </View>
             </DialogueBox>
           </View>
         </>
@@ -303,8 +305,8 @@ const styles = StyleSheet.create({
   storyTitle: { fontSize: 24, lineHeight: 26 },
   meta: { fontSize: 20, lineHeight: 22 },
   dialogue: { flex: 1, paddingHorizontal: 12, paddingTop: 6, paddingBottom: 8 },
-  dialogueText: { gap: 6, paddingBottom: 4 },
-  cursorRow: { alignItems: 'flex-end', minHeight: 40 },
+  /** Bottom room so the last line can scroll clear of the advance cursor in the box corner. */
+  dialogueText: { gap: 6, paddingBottom: SHAPE.target },
   ghost: { opacity: 0 },
   typed: { position: 'absolute', left: 0, right: 0, top: 0 },
   next: { width: SHAPE.target, height: SHAPE.target, alignItems: 'center', justifyContent: 'center' },
