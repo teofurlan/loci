@@ -7,6 +7,14 @@ const FEATURE_FILTERS = [
   '["tourism"~"^(artwork|viewpoint|attraction)$"]',
   '["amenity"~"^(place_of_worship|fountain|library)$"]',
   '["place"="square"]',
+  '["tourism"="museum"]',
+  '["amenity"~"^(theatre|cinema|marketplace)$"]',
+  '["leisure"~"^(playground|stadium|sports_centre|pitch)$"]',
+  '["memorial"="statue"]',
+  '["artwork_type"="statue"]',
+  '["man_made"~"^(tower|lighthouse)$"]',
+  '["railway"="station"]',
+  '["public_transport"="station"]',
 ];
 
 /**

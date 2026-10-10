@@ -1,6 +1,10 @@
 import { FOUND_FRAMES, KIND_SPRITES, SPRITE_NAMES, SPRITE_SIZE, spriteFor, spritePaths, spriteRows } from './sprites';
 
-const ALL_KINDS = ['park', 'water', 'monument', 'artwork', 'worship', 'fountain', 'viewpoint', 'library', 'square', 'other'];
+const NEW_KINDS = ['museum', 'theatre', 'playground', 'stadium', 'statue', 'tower', 'station', 'market'];
+const ALL_KINDS = [
+  'park', 'water', 'monument', 'artwork', 'worship', 'fountain', 'viewpoint', 'library', 'square', 'other',
+  ...NEW_KINDS,
+];
 
 describe('sprite data', () => {
   it.each(SPRITE_NAMES)('%s is exactly 16 x 16 characters of . or 0..3', (name) => {
@@ -41,6 +45,24 @@ describe('sprite data', () => {
   it('gives every kind a different picture', () => {
     const keys = new Set(ALL_KINDS.map((k) => spriteRows(k as (typeof KIND_SPRITES)[number]).join('')));
     expect(keys.size).toBe(ALL_KINDS.length);
+  });
+});
+
+describe('tree (park) sprite', () => {
+  const rows = spriteRows('park');
+  const count = (row: string, ch: string) => [...row].filter((c) => c === ch).length;
+
+  it('has a green two-tone canopy with no trunk-brown shade in it', () => {
+    const canopy = rows.slice(0, 10);
+    expect(canopy.join('')).toContain('2');
+    expect(canopy.join('')).toContain('3');
+    expect(canopy.join('')).not.toContain('1');
+  });
+
+  it('has a light brown trunk: never wider than 4 px, shown in at least 3 rows', () => {
+    const trunkRows = rows.slice(10, 14).filter((row) => row.includes('1'));
+    expect(trunkRows.length).toBeGreaterThanOrEqual(3);
+    for (const row of trunkRows) expect(count(row, '1')).toBeLessThanOrEqual(4);
   });
 });
 

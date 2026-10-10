@@ -25,6 +25,11 @@ const RECOGNIZABLE_KINDS: ReadonlySet<LandmarkKind> = new Set([
   'worship',
   'fountain',
   'square',
+  'museum',
+  'theatre',
+  'statue',
+  'tower',
+  'station',
 ]);
 
 const PREFERENCE_BOOST = 0.5;

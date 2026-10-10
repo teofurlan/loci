@@ -50,13 +50,13 @@ describe('the palette (Sweetie 16)', () => {
     for (const token of ['ground', 'panel', 'ink', 'muted', 'action', 'onAction', 'runField', 'runText'] as const) {
       expect(isGreen(PALETTE.ui[token])).toBe(false);
     }
-    for (const kind of ['water', 'monument', 'artwork', 'worship', 'fountain', 'library', 'square', 'viewpoint', 'other'] as const) {
+    for (const kind of ['water', 'monument', 'artwork', 'worship', 'fountain', 'library', 'square', 'viewpoint', 'other', 'museum', 'theatre', 'playground', 'stadium', 'statue', 'tower', 'station', 'market'] as const) {
       for (const color of PALETTE.sprites[kind]) expect(isGreen(color)).toBe(false);
     }
   });
 
   it('draws each kind sprite with a distinct color set', () => {
     const keys = new Set(KIND_SPRITES.map((k) => PALETTE.sprites[k].join()));
-    expect(keys.size).toBeGreaterThanOrEqual(7);
+    expect(keys.size).toBeGreaterThanOrEqual(12);
   });
 });
