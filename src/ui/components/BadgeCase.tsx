@@ -30,7 +30,7 @@ function Badge({ slot }: { slot: BadgeSlot }) {
     <View accessible accessibilityLabel={label} style={styles.slot}>
       <PixelBox fill={COLORS.found} border={COLORS.found} behind={COLORS.ground} corners="round">
         <View style={styles.badge}>
-          <PixelSprite name={slot.kind} scale={3} />
+          <PixelSprite name={slot.kind} scale={2} />
           <AppText variant="label" color={COLORS.onFound} allowFontScaling={false} style={styles.number}>
             {slot.number}
           </AppText>
@@ -70,9 +70,9 @@ const styles = StyleSheet.create({
   grid: { gap: 8 },
   row: { flexDirection: 'row', gap: 8 },
   slot: { flex: 1 },
-  badge: { height: 84, alignItems: 'center', justifyContent: 'center', gap: 4 },
+  badge: { height: 100, alignItems: 'center', justifyContent: 'center', gap: 4 },
   number: { fontSize: 11, lineHeight: 14 },
   mark: { position: 'absolute', top: 4, right: 4 },
-  empty: { height: 92, borderWidth: SHAPE.rule, borderColor: COLORS.line, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
+  empty: { height: 108, borderWidth: SHAPE.rule, borderColor: COLORS.line, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
   emptyNumber: { fontSize: 11, lineHeight: 14 },
 });

@@ -46,9 +46,9 @@ function FoundFlash({ kind, reducedMotion, onDone }: { kind: LandmarkKind; reduc
     <View pointerEvents="none" style={styles.flash} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       <PixelBox fill={COLORS.plate} border={COLORS.found} behind={COLORS.ground} corners="round">
         <View style={styles.flashPlate}>
-          <PixelSprite name={kind} scale={6} />
+          <PixelSprite name={kind} scale={3} />
           <View style={StyleSheet.absoluteFill}>
-            <PixelSprite name={FOUND_FRAMES[frame]} scale={6} />
+            <PixelSprite name={FOUND_FRAMES[frame]} scale={3} />
           </View>
         </View>
       </PixelBox>

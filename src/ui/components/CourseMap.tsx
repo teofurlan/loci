@@ -117,7 +117,7 @@ function CourseMapView({ start, controls, visited, selected, onSelect, style, pa
                     corners="round"
                   >
                     <View style={styles.plate}>
-                      <PixelSprite name={control.kind} scale={2} />
+                      <PixelSprite name={control.kind} scale={1} />
                     </View>
                   </PixelBox>
                   <View style={[styles.tag, found && styles.tagFound]}>
@@ -149,7 +149,7 @@ function CourseMapView({ start, controls, visited, selected, onSelect, style, pa
             offset={[offsets[controls.length].dx, offsets[controls.length].dy]}
           >
             <View accessible accessibilityLabel="You are here, the start">
-              <PixelSprite name="you" scale={2} />
+              <PixelSprite name="you" scale={1} />
             </View>
           </ViewAnnotation>
         </Map>

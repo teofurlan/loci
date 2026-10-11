@@ -30,7 +30,7 @@ export function StampStrip({ controls, selected, onSelect }: Props) {
                 <AppText variant="label" color={COLORS.onPlate} maxFontSizeMultiplier={1.2} allowFontScaling={false} style={styles.number}>
                   {index + 1}
                 </AppText>
-                <PixelSprite name={control.kind} scale={2} />
+                <PixelSprite name={control.kind} scale={1} />
               </View>
             </PixelBox>
           </Pressable>
