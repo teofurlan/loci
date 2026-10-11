@@ -1,37 +1,17 @@
 /**
- * Regenerates assets/splash-icon.png: the first frame of the opening animation (the left end of the Loci path
- * mark), drawn from the same grid and trace order the app uses, nearest-neighbor 4x in the light trace colour (Harbor Haze #94B0C2) on transparency, for the dark #1A1C2C splash ground.
+ * Regenerates assets/splash-icon.png: the first frame of the opening animation, which draws nothing, so the image is
+ * fully transparent (384 x 448, the 4x mark canvas the splash config sizes against). The native splash then shows only
+ * its ink #1A1C2C ground, the same colour as the JS loading screen that takes over, and the pen starts writing there.
  * Run with `node scripts/generate-splash-icon.js`. Deterministic: same source, same bytes.
  */
 const fs = require('fs');
 const path = require('path');
-const ts = require('typescript');
 const { PNG } = require('pngjs');
 
 const root = path.join(__dirname, '..');
-require.extensions['.ts'] = (module, filename) => {
-  const { outputText } = ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
-  });
-  module._compile(outputText, filename);
-};
-const { MARK_ROWS } = require(path.join(root, 'src/ui/model/mark.ts'));
-const { revealedRows, traceFrame } = require(path.join(root, 'src/ui/model/mark-trace.ts'));
-
 const SCALE = 4;
-const TRACE_COLOUR = [0x94, 0xb0, 0xc2, 0xff];
-const rows = revealedRows(traceFrame(0).revealed);
-const png = new PNG({ width: MARK_ROWS[0].length * SCALE, height: MARK_ROWS.length * SCALE });
-rows.forEach((row, y) => {
-  for (let x = 0; x < row.length; x += 1) {
-    if (row[x] !== '0') continue;
-    for (let dy = 0; dy < SCALE; dy += 1) {
-      for (let dx = 0; dx < SCALE; dx += 1) {
-        const i = ((y * SCALE + dy) * png.width + x * SCALE + dx) * 4;
-        png.data.set(TRACE_COLOUR, i);
-      }
-    }
-  }
-});
+const WIDTH = 96 * SCALE;
+const HEIGHT = 112 * SCALE;
+const png = new PNG({ width: WIDTH, height: HEIGHT }); // zero-filled: every pixel is transparent
 fs.writeFileSync(path.join(root, 'assets/splash-icon.png'), PNG.sync.write(png));
-console.log(`splash-icon.png: ${png.width}x${png.height}, ${rows.join('').split('0').length - 1} ink cells`);
+console.log(`splash-icon.png: ${png.width}x${png.height}, fully transparent`);
