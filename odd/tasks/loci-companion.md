@@ -38,7 +38,7 @@ T5 forecast: ~1,550 authored lines over five sub-slices (T5.1-T5.5). A sub-slice
 - [x] T3 Chat-style home screen (cda770d, captures bacd31d) in `src/app/index.tsx` (+ view model and tests). Route: delegated writer.
 - [ ] T4 (pending go-ahead) Loci clarification question.
 - [ ] T5 Redesign Memorize, Run (pocket), hint and Results around Loci on the black field (authorized 2026-10-11). Sub-slices, each a child branch with its PR to `feat/loci-companion`:
-  - [ ] T5.1 `celebrate` Loci state (branch `feat/loci-t5-celebrate`): pose tracks and chevron closed eyes in `src/ui/model/loci.ts` (+tests), `Loci`/`LociStage` accept `celebrate`. Approved config in `.pi/generated-images/loci-celebrate-study.html` (72 bpm, sway 8, tilt 3.5, rise 9, squash 7%, chevron eyes). Route: delegated writer (model + component). Forecast ~250 lines.
+  - [x] T5.1 (0334348) `celebrate` Loci state (branch `feat/loci-t5-celebrate`): pose tracks and chevron closed eyes in `src/ui/model/loci.ts` (+tests), `Loci`/`LociStage` accept `celebrate`. Approved config in `.pi/generated-images/loci-celebrate-study.html` (72 bpm, sway 8, tilt 3.5, rise 9, squash 7%, chevron eyes). Route: delegated writer (model + component). Forecast ~250 lines.
   - [ ] T5.2 App palette from the chat home: replace the Overworld `ui` palette in `palettes.ts` and `DESIGN.md`, restyle shared components (PixelBox, AppText, PixelButton, DialogueBox, ControlRow, StampStrip, BadgeCase) for the black field, keep the contrast test list. Palette study page for approval first (map colours, call-to-action, found green). Forecast ~400 lines.
   - [ ] T5.3 Memorize: small waiting Loci beside the DialogueBox. Forecast ~250 lines.
   - [ ] T5.4 Run/pocket + hint: centred waiting Loci with aura; listening while the hint is requested; hint while the clue is said (clue in `LociMessage`), then waiting; celebrate on a found control; waiting on the give-up confirmation. Forecast ~400 lines.
@@ -69,6 +69,7 @@ T5 forecast: ~1,550 authored lines over five sub-slices (T5.1-T5.5). A sub-slice
 - 2026-10-11: user approved the chat home and chose feature-branch-chain; the next screens continue in a new session.
 
 - 2026-10-11 (T5 session): user approved the Loci state per moment (Memorize waiting; pocket waiting; hint requested listening; hint shown hint; found control celebrate; give-up confirmation waiting; Results celebrate if completed, waiting if ended) and a new `celebrate` state: gentle dance with closed smiling eyes, look approved in `.pi/generated-images/loci-celebrate-study.html` (Engram `loci/t5-state-mapping`).
+- 2026-10-11: T5.1 done by the delegated writer on `feat/loci-t5-celebrate`, commit 0334348 (226+/14-, `loci.ts`, `loci.test.ts`; `Loci`/`LociStage` take `celebrate` through the `LociState` union, no component edits). RED observed (`lociPose('celebrate')` undefined), then GREEN: `loci.test.ts` 36/36 (parent re-ran), `npm test` 515/515, typecheck and lint clean. Deviation: squash removes whole rows (`1 - round(squash x bodyRows)/bodyRows`) so squash 0 is exactly identity and the other states stay byte-identical; at 7% both give 4 rows. Device: celebrate shown on the phone through the temporary `loci-preview` route (black field + aura), captures show sway, tilt and chevron eyes changing between frames. RDD assess (base `feat/loci-companion`, committed only, untracked excluded): medium (`executable_change`), review_due false (`under_budget`, 240 lines); pending in the slice.
 
 ## Housekeeping before the final PR to main
 - Delete the temporary `src/app/loci-preview.tsx` (untracked dev preview of Loci).
@@ -76,4 +77,4 @@ T5 forecast: ~1,550 authored lines over five sub-slices (T5.1-T5.5). A sub-slice
 - Native review (RDD) was unavailable for every commit on this branch: `gentle-ai sync --agent claude-code` fails probing the Pi CodeGraph MCP adapter (not installed); the user chose to continue without reporting.
 
 ## Next step
-T5.1 `celebrate` state on branch `feat/loci-t5-celebrate`, then T5.2 palette study for approval.
+T5.2: palette study page for approval (black field, chat tokens as the base; map colours, call-to-action and found green on black), then implement on a child branch. User to push `feat/loci-t5-celebrate` and open its PR to `feat/loci-companion` when ready.
