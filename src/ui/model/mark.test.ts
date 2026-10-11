@@ -33,11 +33,11 @@ function components(cells: Grid, wanted: boolean, diagonal: boolean): number {
 }
 
 describe('the Loci path mark', () => {
-  it('keeps the approved 96 x 112 grid of ink and transparency', () => {
-    expect([MARK_WIDTH, MARK_HEIGHT]).toEqual([96, 112]);
-    expect(MARK_ROWS).toHaveLength(112);
+  it('keeps the approved 60 x 70 grid of ink and transparency', () => {
+    expect([MARK_WIDTH, MARK_HEIGHT]).toEqual([60, 70]);
+    expect(MARK_ROWS).toHaveLength(70);
     for (const row of MARK_ROWS) {
-      expect(row).toHaveLength(96);
+      expect(row).toHaveLength(60);
       expect(row).toMatch(/^[.0]+$/);
     }
   });

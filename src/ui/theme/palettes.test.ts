@@ -25,7 +25,7 @@ describe('the palette (night)', () => {
 
   it('has one token set: no panel fill, no separate run field or chat tokens', () => {
     expect(Object.keys(PALETTE.ui).sort()).toEqual(
-      ['accent', 'aura', 'found', 'ground', 'line', 'lineStrong', 'muted', 'onAccent', 'onFound', 'onPlate', 'onPressed', 'plate', 'pressed', 'splash', 'text'].sort(),
+      ['accent', 'aura', 'found', 'ground', 'line', 'lineStrong', 'muted', 'onAccent', 'onFound', 'onPlate', 'onPressed', 'plate', 'pressed', 'text'].sort(),
     );
     expect('chat' in PALETTE).toBe(false);
   });
@@ -45,8 +45,9 @@ describe('the palette (night)', () => {
     expect(PALETTE.ui.onPlate).toBe('#000000');
   });
 
-  it('keeps the opening screen and native splash ground and pen', () => {
-    expect(PALETTE.ui.splash).toBe('#1A1C2C');
+  it('has no separate splash ground: the opening screen draws on the black field', () => {
+    expect('splash' in PALETTE.ui).toBe(false);
+    expect(PALETTE.ui.ground).toBe('#000000');
   });
 
   it('paints the night map: dark land, lavender major roads, muted minor roads', () => {

@@ -33,8 +33,6 @@ export type UiTokens = {
   plate: string;
   /** Text on a `plate`. */
   onPlate: string;
-  /** The opening screen and native splash ground; `app.json` fixes it, so it cannot follow the black field. */
-  splash: string;
 };
 
 /** Terrain colors for the recolored OpenFreeMap style. */
@@ -123,7 +121,6 @@ const B = build(
     onFound: '#000000',
     plate: '#cfc8dc',
     onPlate: '#000000',
-    splash: '#1A1C2C',
   },
   {
     land: '#100d16',
