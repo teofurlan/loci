@@ -1,41 +1,76 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { filledSegments, LOADING_SEGMENTS, SEGMENT_MS } from '../model/loading-bar';
+import { traceFrame } from '../model/mark-trace';
 import { useReducedMotion } from '../state/use-reduced-motion';
-import { COLORS, SHAPE } from '../theme/theme';
-import { AppMark } from './AppMark';
-import { PixelBox } from './PixelBox';
+import { COLORS } from '../theme/theme';
+import { TraceMark } from './TraceMark';
+
+const FRAME_MS = 20;
+/**
+ * dp per mark cell that the Android 12+ splash actually draws the image at (measured on device: the system scales the
+ * 192 dp image to about 0.85 of its size), so the first JS frame lands on the native one. Not an integer, by design.
+ */
+const SPLASH_CELL_DP = 1.7;
+/** With reduced motion the whole mark shows still, held this long (from when the setting is known) so it registers. */
+const REDUCED_HOLD_MS = 500;
+
+type Props = {
+  /** Called once, after the screen first lays out: the cue to drop the native splash. */
+  onShown?: () => void;
+  /** Called once when the opening animation has finished. */
+  onDone?: () => void;
+};
 
 /**
- * Shown after the native splash while fonts and assets load: the mark and a pixel loading bar in the
- * palette. It uses no text, so it can draw before any font is ready.
+ * The opening screen after the native splash: the Loci path mark centred exactly where the splash drew it,
+ * traced from its left end to its right end in pixel steps, ending in the gold found sparkle. The native
+ * splash image is the first frame of this animation, so the hand-over does not jump. It uses no text, so it
+ * can draw before any font is ready.
  */
-export function LoadingScreen() {
+export function LoadingScreen({ onShown, onDone }: Props) {
   const reducedMotion = useReducedMotion();
+  const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [reducedHeld, setReducedHeld] = useState(false);
+  const doneRef = useRef(false);
+
   useEffect(() => {
-    if (reducedMotion) return;
-    const startedAt = Date.now();
-    const timer = setInterval(() => setElapsed(Date.now() - startedAt), SEGMENT_MS);
+    if (startedAt === null) return;
+    const timer = setInterval(() => setElapsed(Date.now() - startedAt), FRAME_MS);
     return () => clearInterval(timer);
+  }, [startedAt]);
+
+  useEffect(() => {
+    if (!reducedMotion) return;
+    const timer = setTimeout(() => setReducedHeld(true), REDUCED_HOLD_MS);
+    return () => clearTimeout(timer);
   }, [reducedMotion]);
-  const lit = filledSegments(elapsed, reducedMotion);
+
+  const frame = traceFrame(elapsed, reducedMotion);
+  const finished = startedAt !== null && frame.done && (!reducedMotion || reducedHeld);
+  useEffect(() => {
+    if (!finished || doneRef.current) return;
+    doneRef.current = true;
+    onDone?.();
+  }, [finished, onDone]);
+
   return (
-    <View style={styles.root} accessible accessibilityLabel="Loading" accessibilityRole="progressbar">
-      <AppMark />
-      <PixelBox fill={COLORS.panel} behind={COLORS.ground} double>
-        <View style={styles.bar}>
-          {Array.from({ length: LOADING_SEGMENTS }, (_, i) => (
-            <View key={i} style={[styles.segment, { backgroundColor: i < lit ? COLORS.action : COLORS.ground }]} />
-          ))}
-        </View>
-      </PixelBox>
+    <View
+      style={styles.root}
+      accessible
+      accessibilityLabel="Loading"
+      accessibilityRole="progressbar"
+      onLayout={() => {
+        if (startedAt !== null) return;
+        setStartedAt(Date.now());
+        onShown?.();
+      }}
+    >
+      <TraceMark scale={SPLASH_CELL_DP} revealed={frame.revealed} sparkle={frame.sparkle} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: COLORS.ground, alignItems: 'center', justifyContent: 'center', gap: 28 },
-  bar: { flexDirection: 'row', gap: 4, padding: 6 },
-  segment: { width: 18, height: 18, borderWidth: SHAPE.rule / 2, borderColor: COLORS.ink },
+  root: { flex: 1, backgroundColor: COLORS.ground, alignItems: 'center', justifyContent: 'center' },
 });

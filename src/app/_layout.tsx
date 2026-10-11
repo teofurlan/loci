@@ -11,14 +11,13 @@ import { COLORS } from '../ui/theme/theme';
 
 SplashScreen.preventAutoHideAsync();
 
-const HOLD_MS = 700;
-
 export default function RootLayout() {
   const [loaded, error] = useFonts({ Jersey10_400Regular, PressStart2P_400Regular });
   const fontsReady = loaded || !!error;
-  // The native splash hands over to the themed loading screen at once, which stays up long enough to register.
-  const [heldLongEnough, setHeldLongEnough] = useState(false);
-  const ready = fontsReady && heldLongEnough;
+  // The native splash shows the first frame of the opening animation; the loading screen plays the rest and
+  // stays until both the fonts and the animation are done.
+  const [introDone, setIntroDone] = useState(false);
+  const ready = fontsReady && introDone;
 
   // Edge-to-edge: the system bars are transparent, so they show the app ground. `style` names the button ink,
   // like StatusBar. The overworld is one fixed palette: the system light or dark setting is ignored.
@@ -26,13 +25,7 @@ export default function RootLayout() {
     NavigationBar.setStyle('dark');
   }, []);
 
-  useEffect(() => {
-    SplashScreen.hideAsync();
-    const timer = setTimeout(() => setHeldLongEnough(true), HOLD_MS);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (!ready) return <LoadingScreen />;
+  if (!ready) return <LoadingScreen onShown={() => SplashScreen.hideAsync()} onDone={() => setIntroDone(true)} />;
 
   return (
     <>
