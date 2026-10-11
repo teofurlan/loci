@@ -17,9 +17,8 @@
     "android": {
       "package": "com.teofurlan.loci",
       "adaptiveIcon": {
-        "backgroundColor": "#94B0C2",
+        "backgroundColor": "#C9D8E1",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
@@ -40,7 +39,7 @@
         {
           "backgroundColor": "#94B0C2",
           "image": "./assets/splash-icon.png",
-          "imageWidth": 128,
+          "imageWidth": 192,
           "resizeMode": "contain",
           "dark": { "backgroundColor": "#94B0C2", "image": "./assets/splash-icon.png" }
         }

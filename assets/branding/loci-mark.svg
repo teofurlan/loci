@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-labelledby="title desc">
+  <title id="title">Loci path mark</title>
+  <desc id="desc">A lowercase looped cursive l with three hollow route checkpoints.</desc>
+  <defs><mask id="node-holes" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200"><rect width="200" height="200" fill="white"/><circle cx="48" cy="151" r="7" fill="black"/><circle cx="117" cy="20" r="7" fill="black"/><circle cx="150" cy="157" r="7" fill="black"/></mask></defs>
+  <g mask="url(#node-holes)">
+  <g fill="none" stroke="currentColor" stroke-width="17" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M48 151 C59 146 67 140 77 132 C78 105 81 72 94 42 C100 28 108 20 117 20 C128 20 133 32 132 47 C130 77 108 105 82 132 C74 145 76 163 88 172 C103 183 125 173 150 157"/>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="8">
+    <circle cx="48" cy="151" r="11"/><circle cx="117" cy="20" r="11"/><circle cx="150" cy="157" r="11"/>
+  </g></g>
+</svg>
