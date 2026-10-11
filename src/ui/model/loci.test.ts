@@ -136,6 +136,142 @@ describe('lociPose', () => {
   });
 });
 
+describe('celebrate pose', () => {
+  const BEAT = 60 / 72;
+
+  it('sits at an end of the swing on the beat: swayed, tilted, raised and unsquashed', () => {
+    const pose = lociPose('celebrate', 0);
+    expect(Math.abs(pose.sway ?? 0)).toBeCloseTo(8, 10);
+    expect(Math.abs(pose.tilt)).toBeCloseTo(3.5, 10);
+    expect(pose.float).toBeCloseTo(-9, 10);
+    expect(pose.squash ?? 0).toBeCloseTo(0, 10);
+    expect(pose.happy).toBe(true);
+    // the two ends of the swing are mirror images, one beat apart
+    const other = lociPose('celebrate', BEAT);
+    expect(other.sway).toBeCloseTo(-(pose.sway ?? 0), 10);
+    expect(other.tilt).toBeCloseTo(-pose.tilt, 10);
+  });
+
+  it('is mid-swing, lowest and squashed half a beat in', () => {
+    const pose = lociPose('celebrate', BEAT / 2);
+    expect(pose.sway ?? 0).toBeCloseTo(0, 10);
+    expect(pose.tilt).toBeCloseTo(0, 10);
+    expect(pose.float).toBeCloseTo(0, 10);
+    expect(pose.squash).toBeCloseTo(0.07, 10);
+  });
+
+  it('repeats every two beats and rises on every beat', () => {
+    for (const t of [0, 0.3, BEAT / 2, 1.1]) {
+      const a = lociPose('celebrate', t);
+      const b = lociPose('celebrate', t + 2 * BEAT);
+      expect(b.sway).toBeCloseTo(a.sway ?? 0, 10);
+      expect(b.tilt).toBeCloseTo(a.tilt, 10);
+      expect(b.float).toBeCloseTo(a.float, 10);
+      expect(b.squash).toBeCloseTo(a.squash ?? 0, 10);
+    }
+    expect(lociPose('celebrate', BEAT).float).toBeCloseTo(-9, 10);
+  });
+
+  it('never tilts past one step either way, and ignores attentive', () => {
+    for (let i = 0; i < 40; i += 1) {
+      const pose = lociPose('celebrate', i * 0.05, { attentive: true });
+      expect(Math.abs(pose.tilt)).toBeLessThanOrEqual(3.5 + 1e-9);
+      expect(pose.blink).toBe(1);
+      expect(pose.eyes).toEqual([0, 0]);
+    }
+  });
+
+  it('holds a still pose under reduced motion: no sway, rise, tilt or squash, but happy eyes', () => {
+    const still = lociPose('celebrate', 0.4, { reducedMotion: true });
+    expect(still).toEqual({ float: 0, blink: 1, tilt: 0, eyes: [0, 0], sway: 0, squash: 0, happy: true });
+    expect(lociPose('celebrate', 1.9, { reducedMotion: true })).toEqual(still);
+  });
+
+  it('leaves the pose of the other states free of celebrate fields', () => {
+    for (const state of ['waiting', 'listening', 'hint'] as const) {
+      const pose = lociPose(state, 2);
+      expect(pose.sway).toBeUndefined();
+      expect(pose.squash).toBeUndefined();
+      expect(pose.happy).toBeUndefined();
+    }
+  });
+});
+
+describe('celebrate grid', () => {
+  const CHEVRON = ['..XX..', '.XXXX.', 'XX..XX', 'X....X'];
+  const still = lociPose('celebrate', 0, { reducedMotion: true });
+  const stillGrid = lociGrid(still);
+  const firstBody = (g: Grid) => g.findIndex((row) => row.some((c) => c !== CELL_EMPTY));
+  const lastBody = (g: Grid) => g.length - 1 - [...g].reverse().findIndex((row) => row.some((c) => c !== CELL_EMPTY));
+  const bodyCols = (g: Grid) => g.map((row) => row.filter((c) => c !== CELL_EMPTY).length);
+
+  it('draws two closed chevron eyes and no pill eyes', () => {
+    const eyes = blocks(stillGrid, CELL_EYE);
+    expect(eyes).toHaveLength(2);
+    for (const eye of eyes) {
+      expect(eye.w).toBe(6);
+      expect(eye.h).toBe(4);
+      expect(eye.cells).toBe(CHEVRON.join('').replace(/\./g, '').length);
+    }
+    const [left] = cellsOf(stillGrid, CELL_EYE).sort((a, b) => a[1] - b[1] || a[0] - b[0]);
+    CHEVRON.forEach((row, y) =>
+      [...row].forEach((ch, x) => {
+        expect(stillGrid[left[1] + y][left[0] - 2 + x] === CELL_EYE).toBe(ch === 'X');
+      }),
+    );
+  });
+
+  it('is the same grid as the rest sprite apart from the eyes', () => {
+    const rest = lociGrid(REST);
+    const strip = (g: Grid) => g.map((row) => row.map((c) => (c === CELL_EYE ? CELL_BASE : c)).join(''));
+    expect(strip(stillGrid)).toEqual(strip(rest));
+  });
+
+  it('moves the body sideways by whole cells with the sway', () => {
+    const left = lociGrid(lociPose('celebrate', 0)); // one end of the swing
+    const right = lociGrid(lociPose('celebrate', 60 / 72)); // the other end
+    const centroid = (g: Grid) => {
+      const pts = cellsOf(g, CELL_BASE);
+      return pts.reduce((s, p) => s + p[0], 0) / pts.length;
+    };
+    expect(Math.abs(centroid(left) - centroid(right))).toBeGreaterThan(3);
+    expect(left).not.toBe(right);
+  });
+
+  it('raises the body on the beat and squashes it half a beat later', () => {
+    const up = lociGrid(lociPose('celebrate', 0));
+    const down = lociGrid(lociPose('celebrate', 60 / 72 / 2));
+    // 9 view units is about 2.4 cells up; the squash keeps the foot on the ground
+    expect(firstBody(up)).toBeLessThan(firstBody(down));
+    expect(lastBody(up)).toBeLessThan(lastBody(down) + 1);
+    const height = (g: Grid) => lastBody(g) - firstBody(g);
+    expect(height(down)).toBeLessThan(height(up));
+    // squash widens the body
+    expect(Math.max(...bodyCols(down))).toBeGreaterThanOrEqual(Math.max(...bodyCols(up)));
+  });
+
+  it('squashes by whole rows only: tiny squash values do not change the grid', () => {
+    const base = lociPose('celebrate', 0);
+    expect(lociGrid({ ...base, squash: 0.005 })).toBe(lociGrid({ ...base, squash: 0 }));
+    expect(lociGrid({ ...base, squash: 0.07 })).not.toBe(lociGrid({ ...base, squash: 0 }));
+  });
+
+  it('snaps the sway to whole cells and returns the identical grid for held poses', () => {
+    const base = lociPose('celebrate', 0);
+    const cell = 1 / SCALE;
+    expect(lociGrid({ ...base, sway: 2 })).toBe(lociGrid({ ...base, sway: cell }));
+    expect(lociGrid({ ...base })).toBe(lociGrid({ ...base }));
+    expect(lociGrid({ ...base, tilt: 3.5 })).toBe(lociGrid({ ...base, tilt: 3 }));
+  });
+
+  it('does not change the pill-eyed states', () => {
+    for (const state of ['waiting', 'listening', 'hint'] as const) {
+      const grid = lociGrid(lociPose(state, 3));
+      expect(JSON.stringify(grid)).toBe(JSON.stringify(lociGrid({ ...lociPose(state, 3), happy: false, squash: 0, sway: 0 })));
+    }
+  });
+});
+
 describe('lociGrid', () => {
   const grid = lociGrid(REST);
 
