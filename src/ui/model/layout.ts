@@ -4,11 +4,13 @@ const MIN_MAP = 160;
 // plus two full control rows with their story. Text grows with the font scale; the footer mostly does not.
 const FOOTER_RESERVE = 130;
 const SHEET_RESERVE = 400;
+// The story box header holds Loci (64 dp wide, 75 dp tall) beside the name, taller than the text alone, and Loci does not scale.
+const LOCI_HEADER_EXTRA = 30;
 
 /** Height of the memorize map: 55% of the window, giving way so two story rows stay visible at large fonts. */
 export function mapHeight(windowHeight: number, fontScale: number): number {
   const share = windowHeight * MAP_SHARE;
-  const room = windowHeight - FOOTER_RESERVE - SHEET_RESERVE * Math.max(1, fontScale);
+  const room = windowHeight - FOOTER_RESERVE - LOCI_HEADER_EXTRA - SHEET_RESERVE * Math.max(1, fontScale);
   return Math.round(Math.max(MIN_MAP, Math.min(share, room)));
 }
 

@@ -1,24 +1,19 @@
-import { FADE_STEP_MS, fadeSequence } from './palette-fade';
+import { FADE_STEP_MS, mapFadeSequence } from './palette-fade';
 
-const GROUND = '#D6E4F0';
-const RUN = '#1D2B53';
-
-describe('palette fade', () => {
-  it('takes four equal steps from near the ground to the run color', () => {
-    const steps = fadeSequence(false, GROUND, RUN);
+describe('map fade', () => {
+  it('takes four equal hard steps, each darker than the last', () => {
+    const steps = mapFadeSequence(false);
     expect(steps).toHaveLength(4);
     expect(steps.every((s) => s.ms === FADE_STEP_MS)).toBe(true);
-    expect(steps[3].color).toBe(RUN);
-    expect(steps[0].color).not.toBe(GROUND);
+    expect(steps.map((s) => s.opacity)).toEqual([0.25, 0.5, 0.75, 1]);
   });
 
-  it('darkens monotonically toward the run color', () => {
-    const red = (hex: string) => parseInt(hex.slice(1, 3), 16);
-    const reds = fadeSequence(false, GROUND, RUN).map((s) => red(s.color));
-    expect([...reds].sort((a, b) => b - a)).toEqual(reds);
+  it('ends fully black so the run starts from a hidden map', () => {
+    const steps = mapFadeSequence(false);
+    expect(steps[steps.length - 1].opacity).toBe(1);
   });
 
-  it('cuts instantly to the run color with reduced motion', () => {
-    expect(fadeSequence(true, GROUND, RUN)).toEqual([{ color: RUN, ms: 0 }]);
+  it('cuts the map to black at once with reduced motion', () => {
+    expect(mapFadeSequence(true)).toEqual([{ opacity: 1, ms: 0 }]);
   });
 });
