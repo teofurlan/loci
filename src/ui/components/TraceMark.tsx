@@ -3,7 +3,6 @@ import Svg, { G, Path } from 'react-native-svg';
 import { MARK_HEIGHT, MARK_WIDTH } from '../model/mark';
 import { frameRows, RING_CENTRE, STAR_FULL, STAR_SMALL, type TraceFrame } from '../model/mark-trace';
 import { parseGrid, spritePaths } from '../model/sprites';
-import { PALETTE } from '../theme/palettes';
 import { COLORS } from '../theme/theme';
 
 type Props = {
@@ -12,9 +11,6 @@ type Props = {
   frame: TraceFrame;
 };
 
-const GOLD = PALETTE.sprites['found-b'][3];
-/** The logo's dim half of the twinkle: gold at about half strength on ink (3.8:1 against `#1A1C2C`). */
-const DIM_GOLD = '#8D7451';
 /** The star's pixels are 4 mark cells, so its plus is about as wide as the right ring it replaces. */
 const STAR_SCALE = 4;
 const starOrigin = (size: number) => ({ x: RING_CENTRE.x - (size * STAR_SCALE) / 2, y: RING_CENTRE.y - (size * STAR_SCALE) / 2 });
@@ -33,12 +29,12 @@ const FULL = { origin: starOrigin(5), paths: spritePaths(parseGrid(STAR_FULL)) }
 const SMALL = { origin: starOrigin(3), paths: spritePaths(parseGrid(STAR_SMALL)) };
 
 /**
- * The Loci path mark drawn part way along its stroke, in a light ink-on-ink colour; at the end the right ring gives
- * way to the gold found star, the whole mark turns gold and the logo and star twinkle together (gold + full star, dim gold + small star). Meant for the ink run-field colour:
- * the star's ink outline is invisible there, so the small frame (found-a's ink cross) is drawn light instead.
+ * The Loci path mark written part way along its stroke, in a light ink-on-ink colour; at the end the right ring gives
+ * way to the found star, the whole mark turns gold and the logo and star twinkle together. The star is always drawn in
+ * the logo's own colour (`frame.logoColour`: gold with the full star, dim gold with the small cross). Meant for the ink
+ * run-field ground: the full star's ink outline is invisible there.
  */
 function TraceMarkView({ scale = 2, frame }: Props) {
-  const gold = frame.gold;
   const star = frame.star === 'full' ? FULL : frame.star === 'small' ? SMALL : null;
   return (
     <Svg
@@ -48,11 +44,11 @@ function TraceMarkView({ scale = 2, frame }: Props) {
       accessible={false}
       importantForAccessibility="no-hide-descendants"
     >
-      <Path d={markPathFor(frame)} fill={gold ? (frame.dim ? DIM_GOLD : GOLD) : COLORS.ground} />
+      <Path d={markPathFor(frame)} fill={frame.logoColour} />
       {star ? (
         <G transform={`translate(${star.origin.x} ${star.origin.y}) scale(${STAR_SCALE})`}>
-          {star.paths[0] ? <Path d={star.paths[0]} fill={frame.star === 'full' ? COLORS.runField : COLORS.ground} /> : null}
-          {star.paths[3] ? <Path d={star.paths[3]} fill={GOLD} /> : null}
+          {star.paths[0] ? <Path d={star.paths[0]} fill={frame.star === 'full' ? COLORS.runField : (frame.starColour ?? frame.logoColour)} /> : null}
+          {star.paths[3] ? <Path d={star.paths[3]} fill={frame.starColour ?? frame.logoColour} /> : null}
         </G>
       ) : null}
     </Svg>

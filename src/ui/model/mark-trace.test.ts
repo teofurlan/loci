@@ -1,19 +1,30 @@
 import { MARK_ROWS } from './mark';
 import {
+  DIM_GOLD,
   FINALE_MS,
+  GOLD,
+  LEFT_RING_BOX,
+  END_RING_MS,
+  LEFT_RING_COUNT,
   MAX_ADVANCE_MS,
-  advanceElapsed,
-  MARK_TRACE,
+  PEN_CELLS_PER_MS,
   RING_BOX,
+  RIGHT_RING_START,
+  RING_MS,
   STAR_FULL,
   STAR_SMALL,
+  STROKE_LENGTH,
+  STROKE_MS,
+  TRACE_COLOUR,
+  TRACE_END,
   TRACE_MS,
-  TRACE_STEPS,
+  MARK_TRACE,
+  advanceElapsed,
   frameRows,
   revealedRows,
+  strokePoint,
   traceCells,
   traceFrame,
-  TRACE_END,
 } from './mark-trace';
 import { FOUND_FRAMES, FOUND_FRAME_MS, spriteRows } from './sprites';
 
@@ -21,14 +32,66 @@ const inkCells = MARK_ROWS.flatMap((row, y) => Array.from(row, (ch, x) => (ch ==
   (cell): cell is string => cell !== null,
 );
 
+const key = (c: { x: number; y: number }) => `${c.x},${c.y}`;
+
+/** Number of 8-connected groups among the first `count` traced cells. */
+function groupsOf(count: number): number {
+  const cells = new Set(MARK_TRACE.slice(0, count).map(key));
+  const seen = new Set<string>();
+  let groups = 0;
+  for (const start of cells) {
+    if (seen.has(start)) continue;
+    groups += 1;
+    const stack = [start];
+    seen.add(start);
+    while (stack.length) {
+      const [x, y] = (stack.pop() as string).split(',').map(Number);
+      for (let dx = -1; dx <= 1; dx += 1) {
+        for (let dy = -1; dy <= 1; dy += 1) {
+          const next = `${x + dx},${y + dy}`;
+          if (cells.has(next) && !seen.has(next)) {
+            seen.add(next);
+            stack.push(next);
+          }
+        }
+      }
+    }
+  }
+  return groups;
+}
+
+/** How many traced cells are drawn when the pen has written `length` cells of the stroke (after the ring). */
+const countAtPen = (length: number): number => {
+  let n = LEFT_RING_COUNT;
+  while (n < RIGHT_RING_START && MARK_TRACE[n].d <= length + 1e-9) n += 1;
+  return n;
+};
+
 describe('the mark trace order', () => {
   it('orders every ink cell exactly once and nothing else', () => {
     expect(MARK_TRACE).toHaveLength(inkCells.length);
-    expect(new Set(MARK_TRACE.map((c) => `${c.x},${c.y}`))).toEqual(new Set(inkCells));
+    expect(new Set(MARK_TRACE.map(key))).toEqual(new Set(inkCells));
   });
 
-  it('is monotonic: distances never decrease along the order', () => {
-    for (let i = 1; i < MARK_TRACE.length; i += 1) expect(MARK_TRACE[i].d).toBeGreaterThanOrEqual(MARK_TRACE[i - 1].d);
+  it('draws the left checkpoint ring first, and only the ring, before the stroke; the right ring last', () => {
+    const inLeft = (c: { x: number; y: number }) =>
+      c.x >= LEFT_RING_BOX.x0 && c.x <= LEFT_RING_BOX.x1 && c.y >= LEFT_RING_BOX.y0 && c.y <= LEFT_RING_BOX.y1;
+    const inRight = (c: { x: number; y: number }) =>
+      c.x >= RING_BOX.x0 && c.x <= RING_BOX.x1 && c.y >= RING_BOX.y0 && c.y <= RING_BOX.y1;
+    expect(LEFT_RING_COUNT).toBeGreaterThan(40);
+    expect(MARK_TRACE.slice(0, LEFT_RING_COUNT).every(inLeft)).toBe(true);
+    expect(MARK_TRACE.slice(LEFT_RING_COUNT).some(inLeft)).toBe(false);
+    expect(MARK_TRACE.slice(RIGHT_RING_START).every(inRight)).toBe(true);
+    expect(MARK_TRACE.slice(LEFT_RING_COUNT, RIGHT_RING_START).some(inRight)).toBe(false);
+    expect(MARK_TRACE.length - RIGHT_RING_START).toBeGreaterThan(40);
+    // the ring is hollow: its centre is not ink
+    expect(MARK_ROWS[95][18]).toBe('.');
+  });
+
+  it('is monotonic: along the stroke, distances never decrease', () => {
+    const stroke = MARK_TRACE.slice(LEFT_RING_COUNT, RIGHT_RING_START);
+    for (let i = 1; i < stroke.length; i += 1) expect(stroke[i].d).toBeGreaterThanOrEqual(stroke[i - 1].d);
+    expect(stroke[stroke.length - 1].d).toBeLessThanOrEqual(STROKE_LENGTH + 1e-9);
   });
 
   it('is deterministic', () => {
@@ -39,10 +102,8 @@ describe('the mark trace order', () => {
     const xs = inkCells.map((cell) => Number(cell.split(',')[0]));
     const leftmost = Math.min(...xs);
     const rightmost = Math.max(...xs);
-    // The first cell is in the left checkpoint ring; the very last cell belongs to the right checkpoint ring.
-    expect(MARK_TRACE[0].x).toBeLessThanOrEqual(leftmost + 6);
-    expect(MARK_TRACE[MARK_TRACE.length - 1].x).toBeGreaterThanOrEqual(rightmost - 10);
-    // Nothing at the far right is drawn before most of the stroke, nothing at the far left is drawn late.
+    expect(MARK_TRACE[0].x).toBeLessThanOrEqual(leftmost + 14);
+    expect(MARK_TRACE[MARK_TRACE.length - 1].x).toBeGreaterThanOrEqual(rightmost - 14);
     const rank = (x: number) => MARK_TRACE.findIndex((c) => c.x === x) / MARK_TRACE.length;
     expect(rank(leftmost)).toBeLessThan(0.05);
     expect(rank(rightmost)).toBeGreaterThan(0.9);
@@ -52,38 +113,93 @@ describe('the mark trace order', () => {
     const topY = Math.min(...MARK_TRACE.map((c) => c.y));
     const top = MARK_TRACE.find((c) => c.y === topY) as { d: number };
     const stem = MARK_TRACE.find((c) => c.y === 60 && c.x >= 38 && c.x <= 44) as { d: number };
-    const end = MARK_TRACE[MARK_TRACE.length - 1];
     expect(stem.d).toBeLessThan(top.d);
-    expect(top.d).toBeLessThan(end.d);
+    expect(top.d).toBeLessThan(STROKE_LENGTH - 20);
+  });
+});
+
+describe('the pen: the stroke grows like handwriting', () => {
+  it('never leaves a detached fragment: every prefix of the order is one connected stroke', () => {
+    // every 3rd prefix keeps the test quick; the order is fixed, so this samples the whole growth
+    for (let n = 1; n <= MARK_TRACE.length; n += 3) expect({ n, groups: groupsOf(n) }).toEqual({ n, groups: 1 });
+    expect(groupsOf(MARK_TRACE.length)).toBe(1);
+  });
+
+  it('the pen tip walks the centre line at even speed: the point at length L is L cells from the start', () => {
+    let previous = strokePoint(0);
+    for (let length = 1; length <= STROKE_LENGTH; length += 1) {
+      const point = strokePoint(length);
+      const step = Math.hypot(point.x - previous.x, point.y - previous.y);
+      expect(step).toBeGreaterThan(0.3);
+      expect(step).toBeLessThanOrEqual(1.0001);
+      previous = point;
+    }
+  });
+
+  it('everything newly drawn as the pen advances lies at the tip, not ahead of it', () => {
+    const REACH = 8; // half a stroke width plus the tip's step, in mark cells
+    for (let length = 1; length <= STROKE_LENGTH + 1; length += 1) {
+      const tip = strokePoint(Math.min(length, STROKE_LENGTH));
+      for (let i = countAtPen(length - 1); i < countAtPen(length); i += 1) {
+        const c = MARK_TRACE[i];
+        const away = Math.hypot(c.x + 0.5 - tip.x, c.y + 0.5 - tip.y);
+        expect({ length, cell: key(c), ok: away <= REACH }).toEqual({ length, cell: key(c), ok: true });
+      }
+    }
+  });
+
+  it('reveals a bounded amount per frame: about one stroke width of cells for each cell of pen travel', () => {
+    const PER_FRAME = 2.5; // at most ~2.5 cells of pen length in a 60 Hz frame
+    expect(PEN_CELLS_PER_MS * (1000 / 60)).toBeLessThanOrEqual(PER_FRAME);
+    let most = 0;
+    for (let length = PER_FRAME; length <= STROKE_LENGTH + PER_FRAME; length += PER_FRAME) {
+      most = Math.max(most, countAtPen(length) - countAtPen(length - PER_FRAME));
+    }
+    expect(most).toBeLessThanOrEqual(PER_FRAME * 8 * 2);
   });
 });
 
 describe('the trace frames', () => {
   const total = TRACE_MS + FINALE_MS;
 
-  it('starts with only the lead-in of the path, ink-light, no star', () => {
+  it('draws nothing at t = 0: the native splash is plain ink and the first frame matches it', () => {
     const first = traceFrame(0);
-    expect(first.step).toBe(0);
-    expect(first.revealed).toBeGreaterThan(0);
-    expect(first.revealed).toBeLessThan(MARK_TRACE.length / 10);
+    expect(first.revealed).toBe(0);
     expect(first.star).toBe('none');
     expect(first.gold).toBe(false);
     expect(first.ringHidden).toBe(false);
     expect(first.done).toBe(false);
+    expect(revealedRows(0).every((row) => /^\.+$/.test(row))).toBe(true);
   });
 
-  it('advances in whole steps, never backwards', () => {
-    let previous = -1;
-    const seen = new Set<number>();
-    for (let t = 0; t < TRACE_MS; t += 5) {
+  it('takes 1.6 to 2.0 s to write: the left ring first (quickly), then the stroke, then the right ring', () => {
+    expect(TRACE_MS).toBe(RING_MS + STROKE_MS + END_RING_MS);
+    expect(TRACE_MS).toBeGreaterThanOrEqual(1600);
+    expect(TRACE_MS).toBeLessThanOrEqual(2000);
+    expect(RING_MS).toBeLessThanOrEqual(250);
+    expect(END_RING_MS).toBeLessThanOrEqual(250);
+    expect(traceFrame(RING_MS).revealed).toBe(LEFT_RING_COUNT);
+    // while the ring is drawn, nothing but the ring shows
+    for (let t = 0; t <= RING_MS; t += 10) expect(traceFrame(t).revealed).toBeLessThanOrEqual(LEFT_RING_COUNT);
+    expect(traceFrame(RING_MS + 100).revealed).toBeGreaterThan(LEFT_RING_COUNT);
+  });
+
+  it('only grows, from the ring to the whole mark, in fine increments, with no star or gold while tracing', () => {
+    let previous = 0;
+    let biggestJump = 0;
+    for (let t = 0; t < TRACE_MS; t += 1000 / 60) {
       const frame = traceFrame(t);
       expect(frame.revealed).toBeGreaterThanOrEqual(previous);
+      biggestJump = Math.max(biggestJump, frame.revealed - previous);
       previous = frame.revealed;
-      seen.add(frame.step);
       expect(frame.star).toBe('none');
       expect(frame.gold).toBe(false);
+      expect(frame.logoColour).toBe(TRACE_COLOUR);
+      expect(frame.starColour).toBeNull();
     }
-    expect(seen.size).toBe(TRACE_STEPS);
+    // a 60 Hz frame adds well under a tenth of the mark (no block renders)
+    expect(biggestJump).toBeLessThan(MARK_TRACE.length / 10);
+    expect(previous).toBeGreaterThan(MARK_TRACE.length * 0.9);
   });
 
   it('when the trace ends, the star replaces the right ring and the logo turns gold, bright', () => {
@@ -96,47 +212,71 @@ describe('the trace frames', () => {
   });
 
   it('the finale blinks logo and star together: gold logo with the full star, dim logo with the small star', () => {
-    // Frame i of the finale lasts FOUND_FRAME_MS; the star alternates full (found-b) and small (found-a), starting full like the found flash.
     const at = (i: number) => traceFrame(TRACE_MS + i * FOUND_FRAME_MS + 1);
     expect([0, 1, 2, 3, 4].map((i) => at(i).star)).toEqual(['full', 'small', 'full', 'small', 'full']);
     expect(FOUND_FRAMES[1]).toBe('found-b');
     for (let i = 0; i < 5; i += 1) {
       expect(at(i).gold).toBe(true);
       expect(at(i).ringHidden).toBe(true);
-      // in phase: the logo is dim exactly when the star is small, never the other way round
       expect(at(i).dim).toBe(at(i).star === 'small');
     }
+  });
+
+  it('the star is always the logo colour in the finale, and gold only: bright #FFCD75, dim #8D7451, never blue', () => {
+    expect(GOLD).toBe('#FFCD75');
+    expect(DIM_GOLD).toBe('#8D7451');
+    expect(TRACE_COLOUR).not.toBe(GOLD);
+    const seen = new Set<string>();
+    for (let t = TRACE_MS; t <= TRACE_MS + FINALE_MS + 50; t += 7) {
+      const frame = traceFrame(t);
+      expect(frame.starColour).not.toBeNull();
+      expect(frame.starColour).toBe(frame.logoColour);
+      expect(frame.logoColour).toBe(frame.dim ? DIM_GOLD : GOLD);
+      expect([GOLD, DIM_GOLD]).toContain(frame.starColour);
+      expect(frame.starColour).not.toBe(TRACE_COLOUR);
+      seen.add(frame.starColour as string);
+    }
+    expect(seen).toEqual(new Set([GOLD, DIM_GOLD]));
+    // the reduced-motion still is the bright state
+    const still = traceFrame(0, true);
+    expect(still.logoColour).toBe(GOLD);
+    expect(still.starColour).toBe(GOLD);
   });
 
   it('never dims while tracing', () => {
     for (let t = 0; t < TRACE_MS; t += 20) expect(traceFrame(t).dim).toBe(false);
   });
 
-  it('advanceElapsed follows the clock but never moves more than one trace step at a time', () => {
-    expect(MAX_ADVANCE_MS).toBe(TRACE_MS / TRACE_STEPS);
-    expect(advanceElapsed(0, 20)).toBe(20);
+  it('advanceElapsed follows the clock but never moves more than about one frame at a time', () => {
+    expect(MAX_ADVANCE_MS).toBeGreaterThanOrEqual(1000 / 60);
+    expect(MAX_ADVANCE_MS).toBeLessThanOrEqual(25);
+    expect(advanceElapsed(0, 10)).toBe(10);
     expect(advanceElapsed(100, 100)).toBe(100);
     expect(advanceElapsed(0, 700)).toBe(MAX_ADVANCE_MS);
     expect(advanceElapsed(500, 480)).toBe(500);
   });
 
-  it('a busy thread (ticks 300 ms apart) still shows every trace step', () => {
+  it('a busy thread (ticks 300 ms apart) slows the pen, never jumps it ahead: bounded growth every tick', () => {
     let shown = 0;
-    const seen = new Set<number>();
-    for (let wall = 0; wall < 20000 && !traceFrame(shown).done; wall += 300) {
+    let before = 0;
+    let ticks = 0;
+    for (let wall = 0; wall < 60000 && !traceFrame(shown).done; wall += 300) {
       shown = advanceElapsed(shown, wall);
-      seen.add(traceFrame(shown).step);
+      const now = traceFrame(shown).revealed;
+      // one tick moves the pen at most MAX_ADVANCE_MS of travel, so at most that many stroke widths of cells
+      expect(now - before).toBeLessThanOrEqual(Math.ceil(MAX_ADVANCE_MS * PEN_CELLS_PER_MS) * 8 * 2);
+      before = now;
+      ticks += 1;
     }
-    // with ticks 300 ms apart every step is at most 40 ms from the last shown, so none is skipped
-    const steps = [...seen].sort((x, y) => x - y);
-    expect(steps.slice(0, TRACE_STEPS)).toEqual(Array.from({ length: TRACE_STEPS }, (_, i) => i));
+    expect(traceFrame(shown).done).toBe(true);
+    expect(ticks).toBeGreaterThan(total / MAX_ADVANCE_MS - 5);
   });
 
   it('twinkles at least twice and fits the cold-start budget', () => {
     const smalls = [0, 1, 2, 3, 4].filter((i) => traceFrame(TRACE_MS + i * FOUND_FRAME_MS + 1).star === 'small').length;
     expect(smalls).toBeGreaterThanOrEqual(2);
     expect(FINALE_MS).toBeLessThanOrEqual(1000);
-    expect(total).toBeLessThanOrEqual(2200);
+    expect(total).toBeLessThanOrEqual(3000);
   });
 
   it('ends done on the last frame, bright: gold with the full star', () => {
@@ -209,8 +349,8 @@ describe('revealed rows', () => {
     expect(some.join('').split('0').length - 1).toBe(10);
   });
 
-  it('keeps the first frame inside the left end of the mark', () => {
-    const first = revealedRows(traceFrame(0).revealed);
+  it('keeps the ring frame inside the left end of the mark', () => {
+    const first = revealedRows(traceFrame(RING_MS).revealed);
     const xs = first.flatMap((row) => Array.from(row, (ch, x) => (ch === '0' ? x : -1))).filter((x) => x >= 0);
     expect(Math.max(...xs)).toBeLessThan(30);
   });

@@ -6,7 +6,6 @@ import { useReducedMotion } from '../state/use-reduced-motion';
 import { COLORS } from '../theme/theme';
 import { TraceMark } from './TraceMark';
 
-const FRAME_MS = 20;
 /**
  * dp per mark cell that the Android 12+ splash actually draws the image at (measured on device: the system scales the
  * 192 dp image to about 0.85 of its size), so the first JS frame lands on the native one. Not an integer, by design.
@@ -24,9 +23,9 @@ type Props = {
 
 /**
  * The opening screen after the native splash: the Loci path mark centred exactly where the splash drew it,
- * traced from its left end to its right end in pixel steps on the dark run-field ground, then the right
+ * written like handwriting (the left ring, then one continuous stroke at an even speed, then the right ring) on the dark run-field ground, then the right
  * ring gives way to the gold found star, the whole mark turns gold and the logo and star twinkle together. The native splash
- * image (same ground) is the first frame of this animation, so the hand-over does not jump. It uses no text,
+ * image is fully transparent (plain ink, the same ground) and nothing is drawn at t = 0, so the hand-over does not flash. It uses no text,
  * so it can draw before any font is ready.
  */
 export function LoadingScreen({ onShown, onDone }: Props) {
@@ -39,9 +38,17 @@ export function LoadingScreen({ onShown, onDone }: Props) {
 
   useEffect(() => {
     if (startedAt === null) return;
-    // Follow the clock, but never skip a trace step if the thread was busy: advanceElapsed caps each tick at one step.
-    const timer = setInterval(() => setElapsed((shown) => advanceElapsed(shown, Date.now() - startedAt)), FRAME_MS);
-    return () => clearInterval(timer);
+    // The pen advances every frame, at the wall clock's pace, but never jumps ahead if the thread was busy:
+    // advanceElapsed caps each tick at about one 60 Hz frame, so a slow frame delays the stroke instead of skipping it.
+    let shown = 0;
+    let frameId = 0;
+    const tick = () => {
+      shown = advanceElapsed(shown, Date.now() - startedAt);
+      setElapsed(shown);
+      if (!traceFrame(shown).done) frameId = requestAnimationFrame(tick);
+    };
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
   }, [startedAt]);
 
   useEffect(() => {
