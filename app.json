@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#94B0C2",
+    "backgroundColor": "#000000",
     "platforms": [
       "android"
     ],
@@ -17,7 +17,7 @@
     "android": {
       "package": "com.teofurlan.loci",
       "adaptiveIcon": {
-        "backgroundColor": "#C9D8E1",
+        "backgroundColor": "#4a4160",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
