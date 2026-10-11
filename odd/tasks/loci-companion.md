@@ -15,7 +15,6 @@ The user wants the app's dynamic and aesthetics to centre on a calm companion. C
 
 ## Out of scope for now (follow-up tasks, need their own go-ahead)
 - Loci asking a clarification question (needs a domain change: `RouteIntent` has no ask-back field).
-- Loci on the pocket, hint and results screens.
 - Landmark sprites redrawn at 32x32 (22 grids, sprite tests, ~10 scale call sites).
 
 ## Constraints
@@ -31,13 +30,19 @@ Mode: strict (source: user global CLAUDE.md "Strict TDD Mode: enabled"). Runner:
 ## Delivery
 Strategy: ask-on-risk. Chain strategy chosen by the user on 2026-10-11: **feature-branch-chain**. Each new slice (T4, T5, T6, ...) is a child branch cut from `feat/loci-companion` with its PR targeting `feat/loci-companion`; when the feature is ready, one PR from `feat/loci-companion` to `main`. Push, PR creation and merge stay the user's decisions.
 Slices so far (committed directly on `feat/loci-companion`, before the strategy was chosen): T1+T2 84d8623; T3 cda770d, cd64f64, a4e3259, 9a2bd04 (+ captures and docs). `feat/loci-companion` pushed to origin on 2026-10-11.
+T5 forecast: ~1,550 authored lines over five sub-slices (T5.1-T5.5). A sub-slice that needs an unmerged sibling is cut from that sibling and retargeted to `feat/loci-companion` once the sibling merges. No tracker PR: the user opens one PR to `main` at the end.
 
 ## Tasks
 - [x] T1 Loci model (84d8623): pure pose sampler (keyframes, 12 fps, snapping) and rasterizer (body mask from the concept B path, corner light shading, axis-aligned pill eyes, blink) returning a pixel grid; run-length SVG paths; memoized by quantized pose. Route: delegated writer (2+ non-trivial files).
 - [x] T2 `Loci` component (84d8623): renders the grid with `react-native-svg`, frame clock, `state` prop (waiting / listening / hint), optional attention toward the input, reduced motion. Route: delegated writer (same writer as T1).
 - [x] T3 Chat-style home screen (cda770d, captures bacd31d) in `src/app/index.tsx` (+ view model and tests). Route: delegated writer.
 - [ ] T4 (pending go-ahead) Loci clarification question.
-- [ ] T5 (pending go-ahead) Loci on pocket/hint/results screens.
+- [ ] T5 Redesign Memorize, Run (pocket), hint and Results around Loci on the black field (authorized 2026-10-11). Sub-slices, each a child branch with its PR to `feat/loci-companion`:
+  - [ ] T5.1 `celebrate` Loci state (branch `feat/loci-t5-celebrate`): pose tracks and chevron closed eyes in `src/ui/model/loci.ts` (+tests), `Loci`/`LociStage` accept `celebrate`. Approved config in `.pi/generated-images/loci-celebrate-study.html` (72 bpm, sway 8, tilt 3.5, rise 9, squash 7%, chevron eyes). Route: delegated writer (model + component). Forecast ~250 lines.
+  - [ ] T5.2 App palette from the chat home: replace the Overworld `ui` palette in `palettes.ts` and `DESIGN.md`, restyle shared components (PixelBox, AppText, PixelButton, DialogueBox, ControlRow, StampStrip, BadgeCase) for the black field, keep the contrast test list. Palette study page for approval first (map colours, call-to-action, found green). Forecast ~400 lines.
+  - [ ] T5.3 Memorize: small waiting Loci beside the DialogueBox. Forecast ~250 lines.
+  - [ ] T5.4 Run/pocket + hint: centred waiting Loci with aura; listening while the hint is requested; hint while the clue is said (clue in `LociMessage`), then waiting; celebrate on a found control; waiting on the give-up confirmation. Forecast ~400 lines.
+  - [ ] T5.5 Results: celebrate above the score when the route was completed, waiting when it was ended with Give up; close line "You finished the route. See you next time." (variant for an ended route). Forecast ~250 lines.
 - [ ] T6 (pending go-ahead) 32x32 landmark sprites.
 
 ## Acceptance criteria
@@ -63,10 +68,12 @@ Slices so far (committed directly on `feat/loci-companion`, before the strategy 
 
 - 2026-10-11: user approved the chat home and chose feature-branch-chain; the next screens continue in a new session.
 
+- 2026-10-11 (T5 session): user approved the Loci state per moment (Memorize waiting; pocket waiting; hint requested listening; hint shown hint; found control celebrate; give-up confirmation waiting; Results celebrate if completed, waiting if ended) and a new `celebrate` state: gentle dance with closed smiling eyes, look approved in `.pi/generated-images/loci-celebrate-study.html` (Engram `loci/t5-state-mapping`).
+
 ## Housekeeping before the final PR to main
 - Delete the temporary `src/app/loci-preview.tsx` (untracked dev preview of Loci).
-- `.pi/generated-images/` holds the design studies (untracked): `loci-pixel-motion-study-v2.html` (approved Loci), `loci-aura-study.html` (approved chat home: aura, corners, buttons). Decide whether to keep them in the repo.
+- `.pi/generated-images/` holds the design studies (untracked): `loci-pixel-motion-study-v2.html` (approved Loci), `loci-aura-study.html` (approved chat home: aura, corners, buttons), `loci-celebrate-study.html` (approved celebrate state). Decide whether to keep them in the repo.
 - Native review (RDD) was unavailable for every commit on this branch: `gentle-ai sync --agent claude-code` fails probing the Pi CodeGraph MCP adapter (not installed); the user chose to continue without reporting.
 
 ## Next step
-T5 in a new session: Loci on the pocket (run), hint and results screens. Start from this document and Engram topic `odd/loci-companion/tasks`. Decided by the user (2026-10-11): every other screen (memorize, run/pocket, hint, results) shares the chat home's black field, and the palette is redefined from the chat home, which is now the reference screen (replacing the Overworld ground palette in DESIGN.md / `palettes.ts`). Still to decide with the user: which Loci state each moment uses (brief: Loci appears at transitions — start, hide map, finish — and when a hint is requested; hint = brief orientation cue; close = "You finished the route. See you next time.").
+T5.1 `celebrate` state on branch `feat/loci-t5-celebrate`, then T5.2 palette study for approval.
