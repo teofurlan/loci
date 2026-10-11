@@ -9,6 +9,10 @@ Memory route: an Android app that generates a loop route through real landmarks,
 - `npm run lint` runs `expo lint`.
 - `npm run android` starts the dev server (a development build is required for native modules).
 
+## Architecture
+
+![Loci architecture: online route planning with OpenStreetMap and Gemma, followed by a local screen-off GPS memory run.](docs/diagrams/export-excalidraw.png)
+
 ## Structure
 
 - `src/domain/` pure TypeScript domain core (no React Native imports).
