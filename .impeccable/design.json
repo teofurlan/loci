@@ -280,14 +280,6 @@
       "description": "Results badge: found-green fill, double border, kind sprite and number. Missed slots are dashed ink outlines.",
       "html": "<div class=\"ds-badge\">1</div><div class=\"ds-badge-missed\">3</div>",
       "css": ".ds-badge,.ds-badge-missed{display:inline-flex;align-items:flex-end;justify-content:center;width:96px;height:84px;margin-right:8px;font-family:'Press Start 2P',monospace;font-size:11px;color:#1A1C2C;border-radius:0;box-sizing:border-box}.ds-badge{background:#38B764;border:2px solid #1A1C2C;box-shadow:inset 0 0 0 2px #38B764,inset 0 0 0 4px #1A1C2C}.ds-badge-missed{border:2px dashed #1A1C2C;align-items:center}"
-    },
-    {
-      "name": "Loading Bar",
-      "kind": "custom",
-      "refersTo": "loading-bar",
-      "description": "Loading screen: the Loci mark above a panel box of eight 18 px segments; lit segments are action-filled.",
-      "html": "<div class=\"ds-bar\"><i class=\"on\"></i><i class=\"on\"></i><i></i><i></i><i></i></div>",
-      "css": ".ds-bar{display:inline-flex;gap:4px;padding:6px;background:#C9D8E1;border:2px solid #1A1C2C;border-radius:0}.ds-bar i{width:18px;height:18px;border:1px solid #1A1C2C;background:#94B0C2;box-sizing:border-box}.ds-bar i.on{background:#B13E53}"
     }
   ],
   "narrative": {
@@ -309,7 +301,7 @@
       },
       {
         "name": "The One Action Colour Rule",
-        "body": "Crimson #B13E53 appears only on pressable primary actions (and the loading-bar fill); it flips to ink when pressed.",
+        "body": "Crimson #B13E53 appears only on pressable primary actions; it flips to ink when pressed.",
         "section": "colors"
       },
       {
@@ -341,7 +333,7 @@
       "Do keep green (#38B764, #A7F070) for parks, woods, the park sprite and the found state, and give every other element colours suited to what it is.",
       "Do use the action colour (#B13E53) only on pressable primary actions, with #F4F4F4 text.",
       "Do keep targets at 48 dp or more, sp text, and cap label scaling with maxFontSizeMultiplier where wide Press Start 2P would break layout.",
-      "Do collapse animation under reduced motion: the palette fade becomes one instant cut, and the blink and loading bar stop."
+      "Do collapse animation under reduced motion: the palette fade becomes one instant cut, and the blink stops and the opening animation shows its final gold state still."
     ],
     "donts": [
       "Don't add radii, anti-aliased or blurred shadows, gradients or glass; depth is outline, double border and a dithered ground shadow inside the sprite.",
