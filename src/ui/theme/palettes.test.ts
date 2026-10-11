@@ -9,6 +9,7 @@ describe('the palette (Sweetie 16)', () => {
     const values = [
       ...Object.values(PALETTE.ui),
       ...Object.values(PALETTE.map),
+      ...Object.values(PALETTE.loci),
       ...Object.values(PALETTE.sprites).flat(),
     ];
     for (const value of values) expect(value).toMatch(HEX);

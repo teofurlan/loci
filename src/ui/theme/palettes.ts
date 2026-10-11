@@ -41,10 +41,14 @@ export type MapTokens = {
 /** Four colors per sprite: [outline, shade, base, highlight]; the sprite grids index into this. */
 export type SpriteColors = readonly [string, string, string, string];
 
+/** Loci the companion: body base, upper-left light, lower-right shade, and the eyes. */
+export type LociColors = { base: string; light: string; shade: string; eye: string };
+
 export type Palette = {
   name: string;
   ui: UiTokens;
   map: MapTokens;
+  loci: LociColors;
   sprites: Record<SpriteName, SpriteColors>;
 };
 
@@ -55,6 +59,7 @@ function build(ui: UiTokens, map: MapTokens, kinds: Record<string, SpriteColors>
     name,
     ui,
     map,
+    loci: { base: '#9182ac', light: '#a99cc2', shade: '#7a6d97', eye: '#292333' },
     sprites: {
       park: k('park'),
       water: k('water'),
