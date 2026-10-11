@@ -313,6 +313,14 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - Verified on the phone: no flash at the handoff, and the reduce-motion path. The release APK was rebuilt and installed. Captures: `dist/logo-anim.mp4` and `dist/logo-anim-*.png`.
   - Not verified: other Android versions and densities.
   - `.impeccable/design.json` still mentions `loading-bar` (stale).
+- 2026-10-10: T14 revised after a user clarification: the gold star REPLACES the last ring, then the logo turns gold and twinkles. Commits `835fa5e` and `c60ff0e` (DESIGN.md; design.json no longer mentions the loading bar).
+  - Ink `#1A1C2C` background for both the native splash and the JS screen.
+  - The trace is drawn in `#94B0C2` (7.42:1 on ink), then the logo turns gold `#FFCD75` (11.43:1).
+  - Finale: 5 frames × 200 ms, with `FOUND_FRAME_MS` shared with `run.tsx`. Only the star blinks; the logo stays gold.
+  - Reduce motion shows the final gold state, still.
+  - RED: 12 failing tests; GREEN: 432 passing. Parent spot check: jest 432 passed.
+  - Verified on the phone: same bounding box and background at the handoff, the reduce-motion path, and the release APK reinstalled. Captures in `dist/logo-anim2*`.
+  - Known issue: on a cold start the trace looks shorter (~0.7 s instead of 1.2 s), because the animation is clock-based and a busy JS thread at startup eats the first steps.
 
 ## Next step
 Resume in one session, from the repo `C:/Users/teofu/Code/loci` (main checkout on `feat/memory-route`). The pixel work lives in the worktree `C:/Users/teofu/Code/loci-worktrees/pixel-world`.
