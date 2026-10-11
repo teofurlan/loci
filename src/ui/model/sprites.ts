@@ -440,6 +440,8 @@ export const KIND_SPRITES = [
 
 /** The two frames of the "found" flash, in play order. */
 export const FOUND_FRAMES = ['found-a', 'found-b'] as const;
+/** How long each "found" frame shows before the flash flips to the other one. */
+export const FOUND_FRAME_MS = 200;
 
 const parsed = new Map<SpriteName, Sprite>();
 

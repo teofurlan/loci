@@ -1,6 +1,6 @@
 /**
  * Regenerates assets/splash-icon.png: the first frame of the opening animation (the left end of the Loci path
- * mark), drawn from the same grid and trace order the app uses, nearest-neighbor 4x in palette ink on transparency.
+ * mark), drawn from the same grid and trace order the app uses, nearest-neighbor 4x in the light trace colour (Harbor Haze #94B0C2) on transparency, for the dark #1A1C2C splash ground.
  * Run with `node scripts/generate-splash-icon.js`. Deterministic: same source, same bytes.
  */
 const fs = require('fs');
@@ -19,7 +19,7 @@ const { MARK_ROWS } = require(path.join(root, 'src/ui/model/mark.ts'));
 const { revealedRows, traceFrame } = require(path.join(root, 'src/ui/model/mark-trace.ts'));
 
 const SCALE = 4;
-const INK = [0x1a, 0x1c, 0x2c, 0xff];
+const TRACE_COLOUR = [0x94, 0xb0, 0xc2, 0xff];
 const rows = revealedRows(traceFrame(0).revealed);
 const png = new PNG({ width: MARK_ROWS[0].length * SCALE, height: MARK_ROWS.length * SCALE });
 rows.forEach((row, y) => {
@@ -28,7 +28,7 @@ rows.forEach((row, y) => {
     for (let dy = 0; dy < SCALE; dy += 1) {
       for (let dx = 0; dx < SCALE; dx += 1) {
         const i = ((y * SCALE + dy) * png.width + x * SCALE + dx) * 4;
-        png.data.set(INK, i);
+        png.data.set(TRACE_COLOUR, i);
       }
     }
   }

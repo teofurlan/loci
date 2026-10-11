@@ -1,5 +1,5 @@
 import { MARK_ROWS } from './mark';
-import { spriteRows } from './sprites';
+import { FOUND_FRAME_MS, spriteRows } from './sprites';
 
 /**
  * The centre line of the mark's stroke, from the left checkpoint ring to the right one, in 96 x 112 mark cells.
@@ -91,12 +91,28 @@ export const MARK_TRACE: readonly TraceCell[] = traceCells(MARK_ROWS);
 
 /** The last cell drawn: the far side of the right checkpoint ring, where the place is reached. */
 export const TRACE_END: TraceCell = MARK_TRACE[MARK_TRACE.length - 1];
-/** Centre of the right checkpoint ring in mark cells, where the sparkle pops. */
-export const RING_CENTRE = { x: WAYPOINTS[WAYPOINTS.length - 1][0], y: WAYPOINTS[WAYPOINTS.length - 1][1] } as const;
+/**
+ * The right checkpoint ring in mark cells (inclusive): ink on all four edges, hollow inside. The stroke runs into
+ * it from the lower left; its end is below this box. The star replaces everything inside it.
+ */
+export const RING_BOX = { x0: 70, y0: 73, x1: 83, y1: 84 } as const;
+/** Centre of the right checkpoint ring in mark cells, where the star sits. */
+export const RING_CENTRE = { x: (RING_BOX.x0 + RING_BOX.x1 + 1) / 2, y: (RING_BOX.y0 + RING_BOX.y1 + 1) / 2 } as const;
 
 export const TRACE_MS = 1200;
-export const SPARKLE_MS = 400;
 export const TRACE_STEPS = 30;
+/**
+ * After the trace: the star replaces the ring and the logo turns gold, then the star twinkles. Each frame lasts one
+ * found-flash frame (FOUND_FRAME_MS) and alternates full / small starting full, exactly like the star over a reached place.
+ */
+const FINALE: readonly { star: 'full' | 'small'; gold: boolean }[] = [
+  { star: 'full', gold: false },
+  { star: 'small', gold: true },
+  { star: 'full', gold: true },
+  { star: 'small', gold: true },
+  { star: 'full', gold: true },
+];
+export const FINALE_MS = FINALE.length * FOUND_FRAME_MS;
 /** The first frame already shows this much of the stroke (the left ring), so the native splash can match it. */
 const LEAD_IN = 8;
 
@@ -107,8 +123,12 @@ export type TraceFrame = {
   step: number;
   /** How many cells of MARK_TRACE are drawn. */
   revealed: number;
-  /** 0 none, 1 small gold plus, 2 the full gold sparkle. */
-  sparkle: 0 | 1 | 2;
+  /** `none` while tracing, then the found star: `full` (found-b) or `small` (found-a) as it twinkles. */
+  star: 'none' | 'full' | 'small';
+  /** The whole logo is gold (after the star replaces the ring). */
+  gold: boolean;
+  /** The right checkpoint ring is replaced by the star. */
+  ringHidden: boolean;
   done: boolean;
 };
 
@@ -120,14 +140,29 @@ const revealedAt = (step: number): number => {
 };
 const REVEALED_BY_STEP: readonly number[] = Array.from({ length: TRACE_STEPS + 1 }, (_, s) => revealedAt(s));
 
-/** The opening animation at `elapsedMs`: the path draws in pixel steps, then the sparkle pops. Reduced motion skips it. */
+/**
+ * The opening animation at `elapsedMs`: the path draws in pixel steps, the star replaces the right ring, the logo
+ * turns gold and the star twinkles. Reduced motion shows the final state at once.
+ */
 export function traceFrame(elapsedMs: number, reducedMotion = false): TraceFrame {
-  if (reducedMotion) return { step: TRACE_STEPS, revealed: MARK_TRACE.length, sparkle: 0, done: true };
+  if (reducedMotion) {
+    return { step: TRACE_STEPS, revealed: MARK_TRACE.length, star: 'full', gold: true, ringHidden: true, done: true };
+  }
   const t = Math.max(0, elapsedMs);
-  const step = Math.min(TRACE_STEPS, Math.floor((t / TRACE_MS) * TRACE_STEPS));
-  const after = t - TRACE_MS;
-  const sparkle = after < 0 ? 0 : after < SPARKLE_MS * 0.3 ? 1 : 2;
-  return { step, revealed: REVEALED_BY_STEP[step], sparkle, done: t >= TRACE_MS + SPARKLE_MS };
+  if (t < TRACE_MS) {
+    const step = Math.floor((t / TRACE_MS) * TRACE_STEPS);
+    return { step, revealed: REVEALED_BY_STEP[step], star: 'none', gold: false, ringHidden: false, done: false };
+  }
+  const index = Math.min(FINALE.length - 1, Math.floor((t - TRACE_MS) / FOUND_FRAME_MS));
+  const { star, gold } = FINALE[index];
+  return {
+    step: TRACE_STEPS,
+    revealed: MARK_TRACE.length,
+    star,
+    gold,
+    ringHidden: true,
+    done: t >= TRACE_MS + FINALE_MS,
+  };
 }
 
 /** The mark grid with only the first `count` traced cells drawn. */
@@ -137,8 +172,21 @@ export function revealedRows(count: number): string[] {
   return grid.map((row) => row.join(''));
 }
 
-/** The found sparkle (`found-b` corner, 5 x 5: ink `0`, gold `3`) and its small first frame. */
-export const SPARKLE_FULL: readonly string[] = spriteRows('found-b')
+/** The mark grid of a frame: the traced cells, minus the right ring once the star replaces it. */
+export function frameRows(frame: TraceFrame): string[] {
+  const rows = revealedRows(frame.revealed);
+  if (!frame.ringHidden) return rows;
+  return rows.map((row, y) =>
+    y < RING_BOX.y0 || y > RING_BOX.y1
+      ? row
+      : row.slice(0, RING_BOX.x0) + '.'.repeat(RING_BOX.x1 - RING_BOX.x0 + 1) + row.slice(RING_BOX.x1 + 1),
+  );
+}
+
+/** The found star: the corner of `found-b` (5 x 5, gold plus in an ink outline) and of `found-a` (3 x 3, a small cross). */
+export const STAR_FULL: readonly string[] = spriteRows('found-b')
   .slice(0, 5)
   .map((row) => row.slice(0, 5));
-export const SPARKLE_SMALL: readonly string[] = ['.....', '..3..', '.333.', '..3..', '.....'];
+export const STAR_SMALL: readonly string[] = spriteRows('found-a')
+  .slice(0, 3)
+  .map((row) => row.slice(0, 3));

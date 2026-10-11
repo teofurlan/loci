@@ -1,4 +1,4 @@
-import { FOUND_FRAMES, KIND_SPRITES, SPRITE_NAMES, SPRITE_SIZE, spriteFor, spritePaths, spriteRows } from './sprites';
+import { FOUND_FRAMES, FOUND_FRAME_MS, KIND_SPRITES, SPRITE_NAMES, SPRITE_SIZE, spriteFor, spritePaths, spriteRows } from './sprites';
 
 const NEW_KINDS = ['museum', 'theatre', 'playground', 'stadium', 'statue', 'tower', 'station', 'market'];
 const ALL_KINDS = [
@@ -84,5 +84,11 @@ describe('spritePaths', () => {
     let area = 0;
     for (const d of Object.values(paths)) for (const m of d.matchAll(/h(\d+)v1/g)) area += Number(m[1]);
     expect(area).toBe(sprite.flat().filter((p) => p !== null).length);
+  });
+});
+
+describe('the found cadence', () => {
+  it('flips every 200 ms', () => {
+    expect(FOUND_FRAME_MS).toBe(200);
   });
 });

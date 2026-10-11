@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
 import { traceFrame } from '../model/mark-trace';
 import { useReducedMotion } from '../state/use-reduced-motion';
@@ -23,9 +24,10 @@ type Props = {
 
 /**
  * The opening screen after the native splash: the Loci path mark centred exactly where the splash drew it,
- * traced from its left end to its right end in pixel steps, ending in the gold found sparkle. The native
- * splash image is the first frame of this animation, so the hand-over does not jump. It uses no text, so it
- * can draw before any font is ready.
+ * traced from its left end to its right end in pixel steps on the dark run-field ground, then the right
+ * ring gives way to the gold found star, the whole mark turns gold and the star twinkles. The native splash
+ * image (same ground) is the first frame of this animation, so the hand-over does not jump. It uses no text,
+ * so it can draw before any font is ready.
  */
 export function LoadingScreen({ onShown, onDone }: Props) {
   const reducedMotion = useReducedMotion();
@@ -66,11 +68,12 @@ export function LoadingScreen({ onShown, onDone }: Props) {
         onShown?.();
       }}
     >
-      <TraceMark scale={SPLASH_CELL_DP} revealed={frame.revealed} sparkle={frame.sparkle} />
+      <StatusBar style="light" />
+      <TraceMark scale={SPLASH_CELL_DP} frame={frame} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: COLORS.ground, alignItems: 'center', justifyContent: 'center' },
+  root: { flex: 1, backgroundColor: COLORS.runField, alignItems: 'center', justifyContent: 'center' },
 });

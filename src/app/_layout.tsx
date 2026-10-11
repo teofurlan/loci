@@ -21,9 +21,10 @@ export default function RootLayout() {
 
   // Edge-to-edge: the system bars are transparent, so they show the app ground. `style` names the button ink,
   // like StatusBar. The overworld is one fixed palette: the system light or dark setting is ignored.
+  // The opening screen is dark (the run-field ground), so the buttons are light there.
   useEffect(() => {
-    NavigationBar.setStyle('dark');
-  }, []);
+    NavigationBar.setStyle(ready ? 'dark' : 'light');
+  }, [ready]);
 
   if (!ready) return <LoadingScreen onShown={() => SplashScreen.hideAsync()} onDone={() => setIntroDone(true)} />;
 

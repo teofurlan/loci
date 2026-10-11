@@ -18,13 +18,13 @@ import { formatElapsed, HINT_COST, hintSentence } from '../ui/model/format';
 import { trackingMode, trackingNotice, type TrackingMode } from '../ui/model/tracking-mode';
 import { courseStore, useCourse } from '../ui/state/course';
 import { handleLocations, subscribeRunEvents, tracker } from '../ui/state/location-task';
-import { FOUND_FRAMES } from '../ui/model/sprites';
+import { FOUND_FRAMES, FOUND_FRAME_MS } from '../ui/model/sprites';
 import { useReducedMotion } from '../ui/state/use-reduced-motion';
 import { useTypewriter } from '../ui/state/use-typewriter';
 import { COLORS } from '../ui/theme/theme';
 
 const FLASH_MS = 1400;
-const FRAME_MS = 200;
+const FRAME_MS = FOUND_FRAME_MS;
 /** If the speech engine never reports a start, the hint types out anyway after this long. */
 const TTS_START_FALLBACK_MS = 1500;
 

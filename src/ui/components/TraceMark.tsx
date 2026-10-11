@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import Svg, { G, Path } from 'react-native-svg';
 import { MARK_HEIGHT, MARK_WIDTH } from '../model/mark';
-import { RING_CENTRE, revealedRows, SPARKLE_FULL, SPARKLE_SMALL } from '../model/mark-trace';
+import { frameRows, RING_CENTRE, STAR_FULL, STAR_SMALL, type TraceFrame } from '../model/mark-trace';
 import { parseGrid, spritePaths } from '../model/sprites';
 import { PALETTE } from '../theme/palettes';
 import { COLORS } from '../theme/theme';
@@ -9,32 +9,35 @@ import { COLORS } from '../theme/theme';
 type Props = {
   /** Integer multiple of the native 96 x 112 grid, like AppMark. */
   scale?: number;
-  /** How many traced cells are drawn (see `traceFrame`). */
-  revealed: number;
-  /** 0 none, 1 small gold plus, 2 the full gold sparkle. */
-  sparkle: 0 | 1 | 2;
+  frame: TraceFrame;
 };
 
 const GOLD = PALETTE.sprites['found-b'][3];
-/** One sparkle pixel is two mark cells; its centre sits just up and right of the right checkpoint ring. */
-const SPARKLE_SCALE = 2;
-const SPARKLE_X = RING_CENTRE.x + 12 - (5 * SPARKLE_SCALE) / 2;
-const SPARKLE_Y = RING_CENTRE.y - 12 - (5 * SPARKLE_SCALE) / 2;
+/** The star's pixels are 4 mark cells, so its plus is about as wide as the right ring it replaces. */
+const STAR_SCALE = 4;
+const starOrigin = (size: number) => ({ x: RING_CENTRE.x - (size * STAR_SCALE) / 2, y: RING_CENTRE.y - (size * STAR_SCALE) / 2 });
 
-const markPaths = new Map<number, string>();
-const markPathFor = (revealed: number): string => {
-  let d = markPaths.get(revealed);
+const markPaths = new Map<string, string>();
+const markPathFor = (frame: TraceFrame): string => {
+  const key = `${frame.revealed}:${frame.ringHidden}`;
+  let d = markPaths.get(key);
   if (d === undefined) {
-    d = spritePaths(parseGrid(revealedRows(revealed)))[0] ?? '';
-    markPaths.set(revealed, d);
+    d = spritePaths(parseGrid(frameRows(frame)))[0] ?? '';
+    markPaths.set(key, d);
   }
   return d;
 };
-const SPARKLES = [null, spritePaths(parseGrid(SPARKLE_SMALL)), spritePaths(parseGrid(SPARKLE_FULL))] as const;
+const FULL = { origin: starOrigin(5), paths: spritePaths(parseGrid(STAR_FULL)) };
+const SMALL = { origin: starOrigin(3), paths: spritePaths(parseGrid(STAR_SMALL)) };
 
-/** The Loci path mark drawn part way along its stroke, with the found sparkle at the right end. Ink stays ink; only the sparkle is gold. */
-function TraceMarkView({ scale = 2, revealed, sparkle }: Props) {
-  const spark = SPARKLES[sparkle];
+/**
+ * The Loci path mark drawn part way along its stroke, in a light ink-on-ink colour; at the end the right ring gives
+ * way to the gold found star, the whole mark turns gold and the star twinkles. Meant for the ink run-field colour:
+ * the star's ink outline is invisible there, so the small frame (found-a's ink cross) is drawn light instead.
+ */
+function TraceMarkView({ scale = 2, frame }: Props) {
+  const gold = frame.gold;
+  const star = frame.star === 'full' ? FULL : frame.star === 'small' ? SMALL : null;
   return (
     <Svg
       width={MARK_WIDTH * scale}
@@ -43,11 +46,11 @@ function TraceMarkView({ scale = 2, revealed, sparkle }: Props) {
       accessible={false}
       importantForAccessibility="no-hide-descendants"
     >
-      <Path d={markPathFor(revealed)} fill={COLORS.ink} />
-      {spark ? (
-        <G transform={`translate(${SPARKLE_X} ${SPARKLE_Y}) scale(${SPARKLE_SCALE})`}>
-          {spark[0] ? <Path d={spark[0]} fill={COLORS.ink} /> : null}
-          {spark[3] ? <Path d={spark[3]} fill={GOLD} /> : null}
+      <Path d={markPathFor(frame)} fill={gold ? GOLD : COLORS.ground} />
+      {star ? (
+        <G transform={`translate(${star.origin.x} ${star.origin.y}) scale(${STAR_SCALE})`}>
+          {star.paths[0] ? <Path d={star.paths[0]} fill={frame.star === 'full' ? COLORS.runField : COLORS.ground} /> : null}
+          {star.paths[3] ? <Path d={star.paths[3]} fill={GOLD} /> : null}
         </G>
       ) : null}
     </Svg>
