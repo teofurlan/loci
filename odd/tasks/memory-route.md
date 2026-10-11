@@ -42,15 +42,15 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
     - The app-side `EXPO_PUBLIC_GEMINI_API_KEY` path is removed.
 - [x] T6 Background location: expo-location with task-manager and a foreground service, so GPS keeps working with the screen off.
 - [ ] T9 Voice request (user request on 2026-10-09): a mic button on setup that dictates the course request through on-device speech-to-text (`expo-speech-recognition`), feeding the same text path to Gemma. Research: the served Gemma 4 (26B-A4B) takes no audio, since audio is E2B/E4B/12B only per the model card, so audio-to-Gemma is not viable. Route: delegated writer, verified on the emulator `Medium_Phone_API_37.0` while the phone is away.
-- [ ] T10 Pixel world redesign (user request on 2026-10-09: less black, green map areas, avoid an orange-on-black look; pixel art in the spirit of the first Game Boy RPGs).
+- [x] T10 Pixel world redesign (user request on 2026-10-09: less black, green map areas, avoid an orange-on-black look; pixel art in the spirit of the first Game Boy RPGs).
   - Impeccable replacement world: the user first chose Dungeon Floor, then switched to **Overworld** (the pick card, seed d6ecdf53, code-led) because in the method of loci the place is the memory hook. It has a 4-green handheld LCD palette, original 16×16 landmark sprites that "speak" their fragment in a typewriter dialogue box, a badge-case results screen and a palette-fade start.
   - Route: delegated writer on branch `feat/pixel-world` in a git worktree, branched after T9. `feat/memory-route` stays shippable for T8 and the post; merge only if it is finished in time.
-- [ ] T11 More landmark kinds and sprites, IN SCOPE for the challenge (user decision on 2026-10-09: evaluators in big cities would otherwise see mostly "other").
+- [x] T11 More landmark kinds and sprites, IN SCOPE for the challenge (user decision on 2026-10-09: evaluators in big cities would otherwise see mostly "other").
   - The user picked 8 kinds: museum, theatre/cinema, playground, stadium/sports, statue/memorial, tower/lighthouse, train station, market.
   - Sprites stay original. Guidance comes from the opusgamelabs `game-assets` skill (MIT in its frontmatter; reviewed by the parent): only its Sprite Design Rules and archetype catalog. It was NOT installed globally, because it also scrapes real-person photos and brand logos (IP and likeness risk) and targets Phaser.
   - Optional 2-frame idle animations (water, fountain, flag, avatar walk) if time allows.
   - Route: ONE fresh delegated writer in the pixel-world worktree that does T11 and T13 together, after the T10 batches land. It is the sole owner of phone builds while it runs.
-- [ ] T13 Logo integration (the user's logo is approved on 2026-10-09, made in the user-owned `loci-logo` worktree with gentle-shell).
+- [x] T13 Logo integration (the user's logo is approved on 2026-10-09, made in the user-owned `loci-logo` worktree with gentle-shell).
   - Read `C:/Users/teofu/Code/loci-worktrees/loci-logo/assets/branding/loci/README.md`; the files there are UNTRACKED on `feat/loci-logo`.
   - Copy only the runtime assets into the pixel-world worktree (for example `assets/branding/`):
     - `loci-mark-pixel.svg`: the approved pixel symbol, recolorable through its fill.
@@ -281,6 +281,20 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
     - Install on `ZT322SKLL5`, set `debug_http_host` to `localhost:8082`, and run Metro on 8082.
     - Delete the temp folder afterwards.
   - The opusgamelabs skill copy (reviewed) and the pixel brief draft are kept in `C:/Users/teofu/Code/loci-worktrees/_refs/`.
+
+- 2026-10-10: Resumed. The user owns the time budget. One delegated writer (sole phone owner) launched in the pixel-world worktree for T10 verification and the tree fix, then T11, then T13. Route: delegated (writer trigger, 2+ non-trivial files).
+- 2026-10-10: The pixel writer finished (status done) on `feat/pixel-world`:
+  - `267de19` T10: tree with a thin `#8A4A3A` trunk and two-green canopy; the story box shows the full fragment with ▼ in the box corner (`SHEET_RESERVE` 350 → 400), test-first. At font scale 1.3, 7-line fragments still scroll.
+  - `02b6e6d` T11: OSM tag classification for the 8 kinds (specific kind beats generic `historic`), new Overpass filters, recognizable kinds feed `preferRecognizable`, 8 original sprites. RED 12 failing cases, then GREEN. Risk: the bigger query may time out in big cities (one 504 seen; the mirror retry worked). 2-frame animations not done.
+  - `fcf5dd1` T13: 4 assets copied to `assets/branding/` (`loci-mark.svg` SHA256-identical); the mark as a tested grid in `src/ui/model/mark.ts`, drawn by `AppMark` at integer scale; loading screen at scale 2; native splash with the mark; adaptive icon on `#C9D8E1` with a monochrome layer (`backgroundImage` removed because it overrode `backgroundColor`). Not in the setup header: scale 1 is too tall and smaller scales are non-integer or lose the checkpoint holes.
+  - Verified on the phone with real Gemma via the proxy: splash, loading, setup (busy, font 1.3), memorize (font 1, 1.15, 1.3), run, hint, found, results, sprites, themed launcher icon. Captures `.impeccable/review/px-*`.
+  - Not verified on the phone: a real GPS punch, the hinted badge on results, the non-themed launcher variant. The `found-a` frame is ink and only `found-b` is gold (a one-line palette change if both should be gold).
+  - Writer checks: jest 416 passed, tsc clean, lint clean, expo-doctor 21/21. Parent spot check: `npx jest` → 49 suites, 416 passed; worktree clean; `C:\lw-px` deleted; loci-logo worktree untouched.
+- 2026-10-10: Impeccable finish reviewer launched for the T10 verdict pass (read-only). In parallel the user runs Codex on `docs/dev-post-draft.md` (docs only, no commits).
+- 2026-10-10: T10 verdict **fix**, but only for documentation: all 8 earlier items resolved, and the visuals are shippable. The other material item is a real GPS punch outdoors, which moves to T8.
+  - Minor, not blocking: scrolled text runs under the status-bar clock; the adaptive-icon mark is small (could be regenerated at 6–7×); Jersey 10 "1" resembles "l"; the map ▼ uses the action colour without being pressable.
+  - The documenter rewrote DESIGN.md and `.impeccable/design.json` for the Overworld; committed as `e278e49`. Deviations it recorded: the body font is Jersey 10, not Pixelify Sans (which failed on 5 and ©); the found frames differ by shape, not colour; the action colour also fills the loading bar. It could not confirm the hinted "?" badge in any capture.
+- 2026-10-10: Merged `feat/pixel-world` into `feat/memory-route` as `050c802` (no conflicts). The main checkout needed `npm ci` for the new font and splash packages. Parent checks on the merge: jest 416 passed, tsc clean, lint clean, expo-doctor 21/21. T10 done.
 
 ## Next step
 Resume in one session, from the repo `C:/Users/teofu/Code/loci` (main checkout on `feat/memory-route`). The pixel work lives in the worktree `C:/Users/teofu/Code/loci-worktrees/pixel-world`.
