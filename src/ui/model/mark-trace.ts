@@ -102,15 +102,16 @@ export const RING_CENTRE = { x: (RING_BOX.x0 + RING_BOX.x1 + 1) / 2, y: (RING_BO
 export const TRACE_MS = 1200;
 export const TRACE_STEPS = 30;
 /**
- * After the trace: the star replaces the ring and the logo turns gold, then the star twinkles. Each frame lasts one
- * found-flash frame (FOUND_FRAME_MS) and alternates full / small starting full, exactly like the star over a reached place.
+ * After the trace: the star replaces the ring, the logo turns gold and the two twinkle together, in phase. Each frame
+ * lasts one found-flash frame (FOUND_FRAME_MS): bright is the full star over the gold logo, dim is the small star over a
+ * dimmer logo. It starts and ends bright.
  */
-const FINALE: readonly { star: 'full' | 'small'; gold: boolean }[] = [
-  { star: 'full', gold: false },
-  { star: 'small', gold: true },
-  { star: 'full', gold: true },
-  { star: 'small', gold: true },
-  { star: 'full', gold: true },
+const FINALE: readonly { star: 'full' | 'small' }[] = [
+  { star: 'full' },
+  { star: 'small' },
+  { star: 'full' },
+  { star: 'small' },
+  { star: 'full' },
 ];
 export const FINALE_MS = FINALE.length * FOUND_FRAME_MS;
 /** The first frame already shows this much of the stroke (the left ring), so the native splash can match it. */
@@ -127,6 +128,8 @@ export type TraceFrame = {
   star: 'none' | 'full' | 'small';
   /** The whole logo is gold (after the star replaces the ring). */
   gold: boolean;
+  /** The twinkle's dim half: the logo is drawn in a dimmer gold, exactly while the star is the small one. */
+  dim: boolean;
   /** The right checkpoint ring is replaced by the star. */
   ringHidden: boolean;
   done: boolean;
@@ -146,23 +149,32 @@ const REVEALED_BY_STEP: readonly number[] = Array.from({ length: TRACE_STEPS + 1
  */
 export function traceFrame(elapsedMs: number, reducedMotion = false): TraceFrame {
   if (reducedMotion) {
-    return { step: TRACE_STEPS, revealed: MARK_TRACE.length, star: 'full', gold: true, ringHidden: true, done: true };
+    return { step: TRACE_STEPS, revealed: MARK_TRACE.length, star: 'full', gold: true, dim: false, ringHidden: true, done: true };
   }
   const t = Math.max(0, elapsedMs);
   if (t < TRACE_MS) {
     const step = Math.floor((t / TRACE_MS) * TRACE_STEPS);
-    return { step, revealed: REVEALED_BY_STEP[step], star: 'none', gold: false, ringHidden: false, done: false };
+    return { step, revealed: REVEALED_BY_STEP[step], star: 'none', gold: false, dim: false, ringHidden: false, done: false };
   }
   const index = Math.min(FINALE.length - 1, Math.floor((t - TRACE_MS) / FOUND_FRAME_MS));
-  const { star, gold } = FINALE[index];
+  const { star } = FINALE[index];
   return {
     step: TRACE_STEPS,
     revealed: MARK_TRACE.length,
     star,
-    gold,
+    gold: true,
+    dim: star === 'small',
     ringHidden: true,
     done: t >= TRACE_MS + FINALE_MS,
   };
+}
+
+/** The most the shown clock may move in one tick: one trace step, so a busy thread can slow the trace but never skip a step. */
+export const MAX_ADVANCE_MS = TRACE_MS / TRACE_STEPS;
+
+/** The next shown time: it follows the wall clock, but never moves ahead by more than MAX_ADVANCE_MS and never backwards. */
+export function advanceElapsed(shownMs: number, wallMs: number): number {
+  return Math.max(shownMs, Math.min(wallMs, shownMs + MAX_ADVANCE_MS));
 }
 
 /** The mark grid with only the first `count` traced cells drawn. */

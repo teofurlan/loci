@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
-import { traceFrame } from '../model/mark-trace';
+import { advanceElapsed, traceFrame } from '../model/mark-trace';
 import { useReducedMotion } from '../state/use-reduced-motion';
 import { COLORS } from '../theme/theme';
 import { TraceMark } from './TraceMark';
@@ -25,7 +25,7 @@ type Props = {
 /**
  * The opening screen after the native splash: the Loci path mark centred exactly where the splash drew it,
  * traced from its left end to its right end in pixel steps on the dark run-field ground, then the right
- * ring gives way to the gold found star, the whole mark turns gold and the star twinkles. The native splash
+ * ring gives way to the gold found star, the whole mark turns gold and the logo and star twinkle together. The native splash
  * image (same ground) is the first frame of this animation, so the hand-over does not jump. It uses no text,
  * so it can draw before any font is ready.
  */
@@ -35,10 +35,12 @@ export function LoadingScreen({ onShown, onDone }: Props) {
   const [elapsed, setElapsed] = useState(0);
   const [reducedHeld, setReducedHeld] = useState(false);
   const doneRef = useRef(false);
+  const laidOutRef = useRef(false);
 
   useEffect(() => {
     if (startedAt === null) return;
-    const timer = setInterval(() => setElapsed(Date.now() - startedAt), FRAME_MS);
+    // Follow the clock, but never skip a trace step if the thread was busy: advanceElapsed caps each tick at one step.
+    const timer = setInterval(() => setElapsed((shown) => advanceElapsed(shown, Date.now() - startedAt)), FRAME_MS);
     return () => clearInterval(timer);
   }, [startedAt]);
 
@@ -63,9 +65,12 @@ export function LoadingScreen({ onShown, onDone }: Props) {
       accessibilityLabel="Loading"
       accessibilityRole="progressbar"
       onLayout={() => {
-        if (startedAt !== null) return;
-        setStartedAt(Date.now());
+        if (laidOutRef.current) return;
+        laidOutRef.current = true;
         onShown?.();
+        // Start the clock only once the first frame has been painted (two animation frames after layout), so
+        // a busy start-up does not eat the first steps of the trace.
+        requestAnimationFrame(() => requestAnimationFrame(() => setStartedAt(Date.now())));
       }}
     >
       <StatusBar style="light" />

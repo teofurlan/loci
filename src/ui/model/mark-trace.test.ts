@@ -1,6 +1,8 @@
 import { MARK_ROWS } from './mark';
 import {
   FINALE_MS,
+  MAX_ADVANCE_MS,
+  advanceElapsed,
   MARK_TRACE,
   RING_BOX,
   STAR_FULL,
@@ -84,21 +86,50 @@ describe('the trace frames', () => {
     expect(seen.size).toBe(TRACE_STEPS);
   });
 
-  it('when the trace ends, the star replaces the right ring and the logo is still not gold', () => {
+  it('when the trace ends, the star replaces the right ring and the logo turns gold, bright', () => {
     const frame = traceFrame(TRACE_MS);
     expect(frame.revealed).toBe(MARK_TRACE.length);
     expect(frame.star).toBe('full');
     expect(frame.ringHidden).toBe(true);
-    expect(frame.gold).toBe(false);
+    expect(frame.gold).toBe(true);
+    expect(frame.dim).toBe(false);
   });
 
-  it('then the whole logo turns gold and the star twinkles on the found cadence', () => {
+  it('the finale blinks logo and star together: gold logo with the full star, dim logo with the small star', () => {
     // Frame i of the finale lasts FOUND_FRAME_MS; the star alternates full (found-b) and small (found-a), starting full like the found flash.
     const at = (i: number) => traceFrame(TRACE_MS + i * FOUND_FRAME_MS + 1);
     expect([0, 1, 2, 3, 4].map((i) => at(i).star)).toEqual(['full', 'small', 'full', 'small', 'full']);
-    expect([0, 1, 2, 3, 4].map((i) => at(i).gold)).toEqual([false, true, true, true, true]);
     expect(FOUND_FRAMES[1]).toBe('found-b');
-    for (let i = 0; i < 5; i += 1) expect(at(i).ringHidden).toBe(true);
+    for (let i = 0; i < 5; i += 1) {
+      expect(at(i).gold).toBe(true);
+      expect(at(i).ringHidden).toBe(true);
+      // in phase: the logo is dim exactly when the star is small, never the other way round
+      expect(at(i).dim).toBe(at(i).star === 'small');
+    }
+  });
+
+  it('never dims while tracing', () => {
+    for (let t = 0; t < TRACE_MS; t += 20) expect(traceFrame(t).dim).toBe(false);
+  });
+
+  it('advanceElapsed follows the clock but never moves more than one trace step at a time', () => {
+    expect(MAX_ADVANCE_MS).toBe(TRACE_MS / TRACE_STEPS);
+    expect(advanceElapsed(0, 20)).toBe(20);
+    expect(advanceElapsed(100, 100)).toBe(100);
+    expect(advanceElapsed(0, 700)).toBe(MAX_ADVANCE_MS);
+    expect(advanceElapsed(500, 480)).toBe(500);
+  });
+
+  it('a busy thread (ticks 300 ms apart) still shows every trace step', () => {
+    let shown = 0;
+    const seen = new Set<number>();
+    for (let wall = 0; wall < 20000 && !traceFrame(shown).done; wall += 300) {
+      shown = advanceElapsed(shown, wall);
+      seen.add(traceFrame(shown).step);
+    }
+    // with ticks 300 ms apart every step is at most 40 ms from the last shown, so none is skipped
+    const steps = [...seen].sort((x, y) => x - y);
+    expect(steps.slice(0, TRACE_STEPS)).toEqual(Array.from({ length: TRACE_STEPS }, (_, i) => i));
   });
 
   it('twinkles at least twice and fits the cold-start budget', () => {
@@ -108,12 +139,13 @@ describe('the trace frames', () => {
     expect(total).toBeLessThanOrEqual(2200);
   });
 
-  it('ends done on the last frame, still gold with the full star', () => {
+  it('ends done on the last frame, bright: gold with the full star', () => {
     expect(traceFrame(total).done).toBe(true);
     expect(traceFrame(total - 1).done).toBe(false);
     const last = traceFrame(total);
     expect(last.gold).toBe(true);
     expect(last.star).toBe('full');
+    expect(last.dim).toBe(false);
   });
 
   it('clamps negative and huge times', () => {

@@ -13,6 +13,8 @@ type Props = {
 };
 
 const GOLD = PALETTE.sprites['found-b'][3];
+/** The logo's dim half of the twinkle: gold at about half strength on ink (3.8:1 against `#1A1C2C`). */
+const DIM_GOLD = '#8D7451';
 /** The star's pixels are 4 mark cells, so its plus is about as wide as the right ring it replaces. */
 const STAR_SCALE = 4;
 const starOrigin = (size: number) => ({ x: RING_CENTRE.x - (size * STAR_SCALE) / 2, y: RING_CENTRE.y - (size * STAR_SCALE) / 2 });
@@ -32,7 +34,7 @@ const SMALL = { origin: starOrigin(3), paths: spritePaths(parseGrid(STAR_SMALL))
 
 /**
  * The Loci path mark drawn part way along its stroke, in a light ink-on-ink colour; at the end the right ring gives
- * way to the gold found star, the whole mark turns gold and the star twinkles. Meant for the ink run-field colour:
+ * way to the gold found star, the whole mark turns gold and the logo and star twinkle together (gold + full star, dim gold + small star). Meant for the ink run-field colour:
  * the star's ink outline is invisible there, so the small frame (found-a's ink cross) is drawn light instead.
  */
 function TraceMarkView({ scale = 2, frame }: Props) {
@@ -46,7 +48,7 @@ function TraceMarkView({ scale = 2, frame }: Props) {
       accessible={false}
       importantForAccessibility="no-hide-descendants"
     >
-      <Path d={markPathFor(frame)} fill={gold ? GOLD : COLORS.ground} />
+      <Path d={markPathFor(frame)} fill={gold ? (frame.dim ? DIM_GOLD : GOLD) : COLORS.ground} />
       {star ? (
         <G transform={`translate(${star.origin.x} ${star.origin.y}) scale(${STAR_SCALE})`}>
           {star.paths[0] ? <Path d={star.paths[0]} fill={frame.star === 'full' ? COLORS.runField : COLORS.ground} /> : null}
