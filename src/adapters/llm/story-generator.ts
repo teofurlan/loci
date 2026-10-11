@@ -13,7 +13,10 @@ export function buildStoryPrompt({ landmarks, style, language }: StoryInput): st
     'Write one vivid, absurd, sensory mini-image per place so each one is easy to remember, and let the images follow one another like a single story.',
     'Tie every image to the place NAME and KIND (a monument, a park, a fountain...). Use recognizable imagery, not street names or directions.',
     `Write in ${languageName}. The text will be read aloud, so use short natural sentences, no lists, no emojis, no markdown.`,
-    style ? `Story style requested by the user: ${style}` : 'Story style: playful and surreal.',
+    'The real place is the memory hook: every fragment must say the NAME of the real place and tie the image to what that place is.',
+    style
+      ? `Story theme or style requested by the user: ${style}. Weave this theme through every fragment: borrow its characters, ideas and vocabulary, but keep each image vivid and the place unmistakable. The theme decorates the image; it never replaces the place.`
+      : 'Story style: playful and surreal.',
     'Each fragment must be 1 to 2 sentences.',
     'Reply with ONLY one JSON object, no prose and no code fences, with exactly this schema:',
     '{ "title": string, "fragments": [ { "landmarkId": string, "text": string } ] }',

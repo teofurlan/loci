@@ -46,6 +46,14 @@ export type LandmarkKind =
   | 'viewpoint'
   | 'library'
   | 'square'
+  | 'museum'
+  | 'theatre'
+  | 'playground'
+  | 'stadium'
+  | 'statue'
+  | 'tower'
+  | 'station'
+  | 'market'
   | 'other';
 
 export type Landmark = {

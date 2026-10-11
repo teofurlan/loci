@@ -96,6 +96,21 @@ describe('selectCheckpoints', () => {
     expect(out.checkpoints[0].id).toBe('fountain');
   });
 
+  it.each(['museum', 'theatre', 'statue', 'tower', 'station'] as const)(
+    'counts %s as recognizable when preferRecognizable is set',
+    (kind) => {
+      const landmarks = [lm('plain', 10, 0, 'other'), lm('known', 60, 0, kind)];
+      const out = selectCheckpoints({
+        ...base,
+        candidates: [origin],
+        landmarks,
+        preferences: { preferGreen: false, preferRecognizable: true },
+        rng: seeded(1),
+      });
+      expect(out.checkpoints[0].id).toBe('known');
+    },
+  );
+
   it('mixes familiar and new landmarks by the requested ratio', () => {
     const candidates = Array.from({ length: 5 }, () => origin);
     const landmarks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'].map((id, i) =>

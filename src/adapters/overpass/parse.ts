@@ -18,8 +18,16 @@ function kindFromTags(tags: Tags): LandmarkKind {
   if (tags.amenity === 'library') return 'library';
   if (tags.leisure === 'park' || tags.leisure === 'garden') return 'park';
   if (tags.natural === 'water') return 'water';
-  if (tags.tourism === 'artwork') return 'artwork';
   if (tags.tourism === 'viewpoint') return 'viewpoint';
+  if (tags.tourism === 'artwork' && tags.artwork_type !== 'statue') return 'artwork';
+  if (tags.tourism === 'museum') return 'museum';
+  if (tags.amenity === 'theatre' || tags.amenity === 'cinema') return 'theatre';
+  if (tags.leisure === 'playground') return 'playground';
+  if (tags.leisure === 'stadium' || tags.leisure === 'sports_centre' || tags.leisure === 'pitch') return 'stadium';
+  if (tags.memorial === 'statue' || tags.artwork_type === 'statue' || tags.historic === 'memorial') return 'statue';
+  if (tags.man_made === 'tower' || tags.man_made === 'lighthouse') return 'tower';
+  if (tags.railway === 'station' || tags.public_transport === 'station') return 'station';
+  if (tags.amenity === 'marketplace') return 'market';
   if (tags.historic) return 'monument';
   return 'other';
 }

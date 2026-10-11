@@ -1,213 +1,276 @@
 ---
 name: Loci
-description: A Score-O control sheet for a memory walk. White card paper, ink rules, one orange flag, purple overprint.
+description: Your neighborhood as a Game Boy-era RPG overworld. Original 16x16 landmark sprites, a handheld dialogue box that speaks each story fragment, Sweetie 16 colour, pixel type.
 colors:
-  paper: "#FFFFFF"
-  ink: "#111111"
-  flag-orange: "#F26B1D"
-  overprint-purple: "#A3238E"
-  paper-shade: "#F1F1F1"
-  ink-soft: "#4A4A4A"
-  error-red: "#B3261E"
-  night-black: "#000000"
-  night-paper-shade: "#1B1B1B"
-  night-ink-soft: "#C4C4C4"
-  night-overprint: "#E066CC"
-  night-error: "#FFB4AB"
-  night-on-error: "#690005"
-  on-error: "#FFFFFF"
+  ground: "#94B0C2"
+  panel: "#C9D8E1"
+  ink: "#1A1C2C"
+  muted: "#333C57"
+  action: "#B13E53"
+  on-action: "#F4F4F4"
+  run-field: "#1A1C2C"
+  run-text: "#F4F4F4"
+  found: "#38B764"
+  grass: "#A7F070"
+  trunk: "#8A4A3A"
+  water: "#41A6F6"
+  gold: "#FFCD75"
+  boundary: "#566C86"
 typography:
   display:
-    fontFamily: "BarlowCondensed_700Bold"
-    fontSize: "56px"
-    fontWeight: 700
-    lineHeight: "60px"
-  headline:
-    fontFamily: "BarlowCondensed_700Bold"
-    fontSize: "32px"
-    fontWeight: 700
-    lineHeight: "36px"
-  title:
-    fontFamily: "BarlowCondensed_600SemiBold"
+    fontFamily: "Press Start 2P, monospace"
     fontSize: "22px"
-    fontWeight: 600
-    lineHeight: "26px"
-    letterSpacing: "0.4px"
-  label:
-    fontFamily: "BarlowCondensed_600SemiBold"
-    fontSize: "17px"
-    fontWeight: 600
-    lineHeight: "20px"
-    letterSpacing: "0.8px"
-  body:
-    fontFamily: "Roboto, system-ui, sans-serif"
+    fontWeight: 400
+    lineHeight: "32px"
+  headline:
+    fontFamily: "Press Start 2P, monospace"
     fontSize: "16px"
     fontWeight: 400
-    lineHeight: "24px"
-    letterSpacing: "0.15px"
-  body-small:
-    fontFamily: "Roboto, system-ui, sans-serif"
-    fontSize: "14px"
+    lineHeight: "26px"
+  title:
+    fontFamily: "Jersey 10, monospace"
+    fontSize: "30px"
+    fontWeight: 400
+    lineHeight: "34px"
+  label:
+    fontFamily: "Press Start 2P, monospace"
+    fontSize: "12px"
     fontWeight: 400
     lineHeight: "20px"
-    letterSpacing: "0.25px"
+  body:
+    fontFamily: "Jersey 10, monospace"
+    fontSize: "26px"
+    fontWeight: 400
+    lineHeight: "30px"
+  body-small:
+    fontFamily: "Jersey 10, monospace"
+    fontSize: "22px"
+    fontWeight: 400
+    lineHeight: "26px"
 rounded:
-  rule: "2px"
+  none: "0px"
 spacing:
-  xs: "8px"
-  sm: "12px"
-  md: "16px"
-  lg: "20px"
+  rule: "2px"
+  xs: "4px"
+  sm: "8px"
+  md: "12px"
+  lg: "16px"
   xl: "24px"
-  section: "28px"
   target: "48px"
 components:
-  button-flag:
-    backgroundColor: "{colors.flag-orange}"
-    textColor: "{colors.ink}"
+  button-primary:
+    backgroundColor: "{colors.action}"
+    textColor: "{colors.on-action}"
     typography: "{typography.headline}"
-    rounded: "{rounded.rule}"
-    height: "64px"
-    padding: "0 16px"
-  button-rule:
-    backgroundColor: "{colors.paper}"
-    textColor: "{colors.ink}"
-    typography: "{typography.label}"
-    rounded: "{rounded.rule}"
-    height: "48px"
-    padding: "8px 16px"
-  control-row-number:
-    textColor: "{colors.overprint-purple}"
-    typography: "{typography.headline}"
-    width: "52px"
+    rounded: "{rounded.none}"
+    padding: "8px 14px"
     height: "56px"
-  punch-box:
-    backgroundColor: "{colors.paper}"
-    textColor: "{colors.overprint-purple}"
+  button-primary-pressed:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.on-action}"
+  button-secondary:
+    backgroundColor: "{colors.action}"
+    textColor: "{colors.on-action}"
     typography: "{typography.label}"
-    rounded: "{rounded.rule}"
-    height: "84px"
-  field:
-    backgroundColor: "{colors.paper}"
+    rounded: "{rounded.none}"
+    padding: "6px 14px"
+    height: "44px"
+  button-on-ink:
+    backgroundColor: "{colors.run-field}"
+    textColor: "{colors.run-text}"
+    typography: "{typography.label}"
+    rounded: "{rounded.none}"
+    padding: "6px 14px"
+  button-on-ink-pressed:
+    backgroundColor: "{colors.run-text}"
+    textColor: "{colors.run-field}"
+  dialogue-box:
+    backgroundColor: "{colors.panel}"
     textColor: "{colors.ink}"
     typography: "{typography.body}"
-    rounded: "{rounded.rule}"
-    padding: "12px"
-    height: "112px"
+    rounded: "{rounded.none}"
+    padding: "10px 12px"
+  stamp:
+    backgroundColor: "{colors.panel}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.none}"
+    width: "40px"
+    height: "52px"
+  badge-found:
+    backgroundColor: "{colors.found}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.none}"
+    height: "84px"
 ---
 
-# Design System: Loci
+# Design System: Loci (Overworld)
+
+Recorded from the shipped build at `fcf5dd1` on `feat/pixel-world` (seed d6ecdf53, code-led). Tokens come from `src/ui/theme/theme.ts` and `palettes.ts`; where the earlier direction contract and the code differ, the code wins and the difference is noted.
 
 ## Overview
 
-**Creative North Star: "The Control Sheet"**
+**Creative North Star: "The Overworld"**
 
-Every walk is an orienteering Score-O course. The app is the paper you are handed at the start: a control description sheet, a map with overprint, and at the end a punch card. It is white, ruled in hard ink, and almost entirely monochrome, so that the two colors it does own carry meaning. Material 3 supplies structure (insets, system Back, 48 dp targets, role-based type scale); the brand lives in the theme layer on top of it.
+The walker's neighborhood becomes an RPG overworld. Every control is a real landmark drawn as a 16x16 sprite on a recolored map, and each landmark speaks its story fragment in a handheld dialogue box. In the method of loci the place is the memory hook, so the place is the hero of every screen. The era is the first Game Boy monster-RPGs; the homage is to the hardware and the genre, never to a game's content.
 
-The density is that of a printed form: rows divided by 2 dp rules, condensed uppercase labels, tabular numerals, near-square corners. Nothing is soft. It is built for glare and one hand, so contrast is maximal and decoration is absent. The memorable moment is hiding the map: the overprint rings shrink to their numbers, the map fades, and the screen cuts to black pocket mode.
+The system is one flat scheme (the system light/dark setting is ignored): a blue-grey ground, pale panel paper, deep ink, and a single crimson action colour. Everything is hard-edged with 0 radius and 2 dp rules. Type is pixel faces only. The run screen drops to a deep ink field with light text. The signature moment is the 4-step palette fade from ground to run field when the walker taps "Hide map & start".
+
+Provenance: every sprite is original, drawn from scratch following generic sprite design rules (no copied or traced assets). The Loci path mark comes from the user's own logo work; `assets/branding/loci-mark.svg` is the vector master and `loci-mark-pixel.png` / `.svg` its pixel adaptation, which `src/ui/model/mark.ts` reads cell by cell. The palette is Sweetie 16 by GrafxKid (free to use), chosen by the user from three captured options. Fonts are OFL via `@expo-google-fonts`.
 
 **Key Characteristics:**
-- Pure white paper and ink `#111111`; never cream, never tinted grey surfaces beyond one pale variant.
-- Color is quarantined: purple is overprint and control numbers, orange is the flag and the one primary action.
-- Hard 2 dp rules form the grid; corners are 2 dp.
-- Barlow Condensed for sheet voice, the system face for story text.
-- Flat: no shadows, no elevation. Depth is rules and the black cut of pocket mode.
-- Night-O theme follows the system: white rules on black, lighter purple.
+- One Sweetie 16 scheme, no dark mode.
+- Pixel boxes: 2 dp ink rules, stepped (notched) corners, a double border for emphasis.
+- 18 landmark sprites plus a "you" sprite, in one shared 3/4 top-down view.
+- Jersey 10 speaks, Press Start 2P labels.
+- Green only where it means nature or "found".
+- Mobile-first, one-handed, outdoors: 48 dp targets, sp text, English only.
 
 ## Colors
 
-A printed-sheet palette: white, ink, one orange, one purple. Both light and night themes resolve the same Material roles.
+A cool blue-grey world with crimson as the only call to action and green rationed to nature and success.
 
 ### Primary
-- **Control-Flag Orange** (`{colors.flag-orange}`): the diagonal half of the flag button and the orange "H" on a hinted punch. Identical in light and night. Nothing else is orange.
+- **Crimson Button** (`action`): the pressable fill for primary and secondary buttons, and the lit segments of the loading bar. Text on it is Screen White (`on-action`). Never used on non-pressable elements.
 
 ### Secondary
-- **Course-Overprint Purple** (`{colors.overprint-purple}`): map rings, start triangle, and control numbers in the sheet and on the punch card. In night theme it becomes **Night Overprint** (`{colors.night-overprint}`) so it reads on black.
+- **Found Green** (`found`): the found state only: badge fill on results, found tags. Ink text on it.
+- **Park Lime** (`grass`): parks, gardens and plazas on the map; the highlight of the park sprite.
+
+### Tertiary (map and sprite colours, not UI chrome)
+- **Map Water Blue** (`water`): water polygons and waterways on the map, water sprite base.
+- **Trunk Brown** (`trunk`): the park sprite's trunk shade.
+- **Spark Gold** (`gold`): the gold of the found sparkle and the warm highlights of artwork, library, square and statue sprites.
+- Further sprite tones come from Sweetie 16 and live in `palettes.ts`: reds and corals (`#B13E53`, `#EF7D57`) for worship, artwork, theatre, stadium, tower; blues (`#3B5DC9`, `#29366F`) for playground and station; slate (`#566C86`) for monument, museum, viewpoint; purple (`#5D275D`) for the theatre shade.
 
 ### Neutral
-- **Description-Card Paper** (`{colors.paper}`): background and surface in light theme. In night theme the ground is **Night Black** (`{colors.night-black}`).
-- **Control Ink** (`{colors.ink}`): text, every rule, outlines, the flag label. In night theme the ink is paper white (`#FFFFFF`).
-- **Paper Shade** (`{colors.paper-shade}`) and **Ink Soft** (`{colors.ink-soft}`): the variant surface and secondary text such as minutes and attributions. Night counterparts: `{colors.night-paper-shade}` and `{colors.night-ink-soft}`.
-- **Error Red** (`{colors.error-red}`, night `{colors.night-error}`): error states only; text on it uses `{colors.on-error}` (night `{colors.night-on-error}`).
-- **Pocket values:** the run screen ignores the theme and uses only pure `#000000` and `#FFFFFF`, swapping them on a checkpoint hit.
+- **Harbor Haze** (`ground`): the screen ground on setup, memorize and results, and the native splash.
+- **Paper Mist** (`panel`): dialogue boxes, stamps, menu rows, map plates and map land.
+- **Night Ink** (`ink`): all text and lines on ground or panel, roads, sprite outlines. Also the run field (`run-field`) with `run-text` (#F4F4F4).
+- **Dusk Slate** (`muted`): secondary text and minor roads.
+- Map-only: boundary `#566C86`, label halo `#F4F4F4`, buildings and wide-road fill `#94B0C2`.
 
 ### Named Rules
-**The Quarantine Rule.** Purple belongs to overprint and control numbers. Orange belongs to the flag mark and the single primary action. Any other use of either is a defect.
+**The Meaningful Green Rule.** Green marks parks, woods, the park sprite and the found state, and nothing else. Every other element takes colours suited to what it is. The map is not all green; it is green where there is green.
 
-**The Two-Value Pocket Rule.** On the run screen there is black, white, and nothing between: no grey, no accent.
+**The One Action Colour Rule.** Crimson belongs to pressable primary actions. It flips to ink when pressed. No other element wears it.
+
+**The No-Black-Slab Rule.** Grounds are never pure black or white. The deepest field is Night Ink `#1A1C2C`, used for the run screen and nothing larger.
 
 ## Typography
 
-**Display / Sheet Font:** Barlow Condensed (Medium 500, SemiBold 600, Bold 700 bundled)
-**Body Font:** Roboto, the Android system face, with system fallback
+**Display / Label Font:** Press Start 2P (with monospace fallback)
+**Body Font:** Jersey 10 (with monospace fallback)
 
-**Character:** A condensed, printed-form voice for anything that is structure (headings, numbers, labels) against a plain, readable face for the story the walker must absorb. Sizes follow system font scale; the flag, number and label roles cap their growth (`maxFontSizeMultiplier` 1.2 to 1.4) to protect the grid.
+**Character:** Jersey 10 is a warm, legible pixel face that carries the story; Press Start 2P is the wide, chunky console face for names, buttons and numbers.
+
+Deviation from the contract: the contract named Pixelify Sans for body. The build ships Jersey 10 because Pixelify Sans failed two checks (its 5 read as an S, and it lacks the (c) sign needed for map attribution). Both faces load in `src/app/_layout.tsx` via `useFonts`; there is only one weight (400), so `bodyBold` aliases the same face.
 
 ### Hierarchy
-- **Display** (Bold 700, 56/60, uppercase): the results score figure.
-- **Headline** (Bold 700, 32/36, uppercase): screen titles and the flag button label (set at 26/32 inside the flag).
-- **Title** (SemiBold 600, 22/26, +0.4): place names in sheet rows (set at 20/24 in rows) and the route title.
-- **Label** (SemiBold 600, 17/20, +0.8, uppercase): buttons, minutes, section labels, punch numbers.
-- **Body** (Roboto 400, 16/24, +0.15): story fragments and the request field.
-- **Body Small** (Roboto 400, 14/20, +0.25): secondary explanation.
+- **Display** (Press Start 2P 400, 22/32): rare large headings.
+- **Headline** (Press Start 2P 400, 16/26): the primary button label and screen headings.
+- **Title** (Jersey 10 400, 30/34): course and screen titles.
+- **Body** (Jersey 10 400, 26/30): the story fragment in the dialogue box.
+- **Body Small** (Jersey 10 400, 22/26): metadata lines such as "Control 1 of 4 · 8 min".
+- **Label** (Press Start 2P 400, 12/20): speaker names, secondary buttons, the run counter. Badge and stamp numbers use 11/14 with font scaling off.
 
 ### Named Rules
-**The Tabular Rule.** Control numbers, minutes, timers and scores use tabular figures so they never jitter.
+**The Two Faces Rule.** Jersey 10 speaks; Press Start 2P labels. Press Start 2P is wide, so keep it short and sparse. All text scales with the system font size, and wide labels cap it with `maxFontSizeMultiplier` (1.2 to 1.3).
 
-**The Two Voices Rule.** Barlow Condensed speaks for the sheet; Roboto speaks for the story. Do not set story text in the condensed face or labels in Roboto.
+**The No System Face Rule.** No default sans or serif appears in the UI. MapLibre map labels cannot use the pixel font; they use the style's glyph font, kept sparse, in ink with a light halo.
 
 ## Layout
 
-A stacked, full-width sheet. Screens use 16 to 20 dp horizontal margins (24 on the run screen, which has no sheet), an 8 dp-based rhythm (8, 12, 16, 20, 24, 28), and a pinned footer for the primary action, divided from content by a 2 dp top rule. Memorize splits the screen: the real map above (the contract specifies about 55% of the height; the ratio was not verified in source), the control description sheet below. The sheet row is a three-cell grid: 52 dp number cell, 52 dp pictogram cell, flexible name and minutes cell, with the story fragment on a full-width row beneath, all separated by 2 dp rules. Results use a punch-card grid with 8 dp gaps and a column count chosen from the control total. Minimum touch target is 48 dp. Setup copy is capped near 520 dp line width.
+Mobile, single column, Expo Router screens in `src/app`. Spacing is a small hand-set rhythm on a 2 dp rule: 4, 8, 12, 16 and 24 dp, with 48 dp as the minimum touch target (`SHAPE.target`).
+
+- **Memorize** (first viewport): the real MapLibre map takes 55% of window height (minimum 160 dp), yielding at large font scales so two story rows stay visible. Below it: a header row (title, Read aloud), a horizontal stamp strip (40x52 dp stamps, 6 dp gap), the dialogue box filling the remaining height, and the primary "Hide map & start" button in the footer.
+- **Run**: a full-height ink field, 24 dp side padding. "N/M PLACES" counter, timer, Hint button, a scrolling hint dialogue, and an isolated Give up.
+- **Results**: ground, score line, badge case, then the map and the per-control list, with "New course" pinned at the bottom. Badge rows are one row up to four controls, otherwise two balanced rows.
+- **Loading**: the mark centered above a loading bar, text-free so it draws before fonts load.
+
+### Known limits
+- At font scale 1.3 a 7-line story fragment scrolls inside the dialogue box instead of fitting.
+- The mark is not in the setup header: at the integer scale it is too tall (96x112 at 1x).
 
 ## Elevation & Depth
 
-Flat. There are no shadows and no elevation anywhere in the build. Depth is carried by 2 dp ink rules, the map-to-sheet division, and tonal contrast between paper and black in pocket mode. Press feedback is the Android ripple at 20% ink (`#00000033` on the flag, ink at `33` alpha on rule buttons).
+Flat. There are no shadows, gradients or blur anywhere. Depth is conveyed by the 2 dp ink outline, the double border (two rules with a gap of fill) on emphasis, tone steps within a sprite, and a 2-row dithered ground shadow drawn as pixels at the foot of each landmark sprite. Pressed buttons flip fill (crimson to ink; on the run field, dark to light).
 
 ### Named Rules
-**The Flat-Sheet Rule.** Surfaces stay flat at rest and under touch. Separate with a rule, not a shadow.
+**The No-Soft-Edges Rule.** No radius, no anti-aliased or blurred or offset shadow. The corner of a pixel box is stepped by painting a rule-sized notch in the colour behind it.
 
 ## Shapes
 
-Near-square: every box, field, button and punch cell has a 2 dp radius and a 2 dp ink border. The recurring silhouettes are the circle (control ring), the triangle (start), and the diagonal split of the flag, drawn as two SVG triangles. Control pictograms are line glyphs drawn in the sheet's ink in the 52 dp pictogram cell; they are part of the description-sheet notation, not decoration.
+Hard pixel geometry. Radius is always 0. Borders are 2 dp ink (light on the run field), with corners notched one rule wide (`PixelBox`). The double border is two rules separated by a rule of fill. Missed badge slots are dashed 2 dp ink outlines.
+
+Sprites are 16x16 grids with four colours indexed [outline, shade, base, highlight]: a 1 px ink outline, a shade and base tone, one highlight, and a dithered ground shadow in the last two rows, all in one 3/4 top-down view. They draw as crisp rects at integer scales (2x on stamps, 3x on badges and glyph buttons, 6x for the found flash). Small icons are drawn pixel glyphs (`glyphs.ts`: pointer, mic, stop, mark and arrows), never font or emoji glyphs.
+
+The 18 landmark kinds: park, water, monument, artwork, worship, fountain, viewpoint, library, square, other, plus the eight newer museum, theatre, playground, stadium, statue, tower, station, market. Support sprites: you, unknown, found-a, found-b.
+
+The Loci mark is a 96x112 grid rendered nearest-neighbor at integer multiples (`AppMark`, default 2x), recoloured to ink. Below roughly 48 dp the checkpoint holes fill in, so never draw it below scale 1.
+
+### Named Rules
+**The Integer Scale Rule.** Sprites and the mark render at whole-number multiples of their native grid. Never stretch or smooth.
 
 ## Components
 
 ### Buttons
-- **Flag (primary):** the one primary action per screen. 64 dp tall, 2 dp ink border, 2 dp radius, orange upper-left triangle and white lower-right triangle split on the diagonal, centered ink Headline label (uppercase). Disabled at 45% opacity; loading appends an ellipsis.
-- **Rule (secondary):** transparent fill, 2 dp ink border, 2 dp radius, 48 dp minimum, Label text in ink, 16 dp horizontal padding. On the run screen it takes the pocket ink. Give up sits alone, separated from Hint by space, never beside it.
+- **Shape:** 0 radius, 2 dp ink border; the primary button gets the double border.
+- **Primary** (`PixelButton`, "Hide map & start", "New course"): crimson fill, Screen White headline label, minimum 56 dp tall.
+- **Secondary** ("Read aloud"): single border, crimson fill, label type, 44 dp minimum content plus rules to reach the 48 dp target.
+- **On-ink** (run screen: Hint, Give up): run-field fill with light border and text; pressed or selected inverts to a light fill with dark text.
+- **Pressed / selected:** flips to an ink fill. Disabled drops to 50% opacity. Loading appends an ellipsis.
 
-### Control Row
-Number in overprint purple (Headline at 30), pictogram, place name (Title) with minutes beneath (Label, Ink Soft), story fragment (Body) in a full-width row below. On results the minutes slot can read a short status such as "Punched".
+### Dialogue box
+The double-bordered handheld box (`DialogueBox`) on a Paper Mist fill, headed with the landmark name in label type. A `dark` tone exists for the run screen. The fragment types out at 70 ms per character, one cadence with or without speech (Read aloud). A pixel pointer glyph (ink outline with a crimson fill) sits bottom-right, shows only after typing finishes, and blinks every 500 ms; tapping it advances to the next landmark and highlights its sprite on the map. Tapping the text reveals the whole fragment. The full text reserves height so the box never jumps while typing.
 
-### Punch Card
-One 84 dp box per control, 2 dp ink border. The control number sits top-left in purple. A visited box carries a pin-punch pattern of ink dots (radius 2.6 on a grid); a hinted punch also shows an orange "H" top-right; a missed box stays empty; surplus grid slots are borderless.
+### Stamps and stamp strip
+Number above a 2x kind sprite on a 40x52 panel box; the selected stamp takes the double border. The strip scrolls horizontally and jumps between controls.
 
-### Inputs / Fields
-Multiline request field, 112 dp minimum, 2 dp ink border, 12 dp padding, Body type, 2 dp radius. Example prompts below it are 48 dp rule boxes with 12 by 10 dp padding.
+### Map
+The OpenFreeMap style is recoloured by `pixel-style.ts` into one terrain language: land Paper Mist, parks Park Lime and woods Found Green (the only large green on screen), water Map Water Blue, major roads ink, minor roads Dusk Slate, wide-road fill and buildings Harbor Haze. A 16x16 landmark sprite on a panel plate with a number tag marks each control; a "you" sprite marks the start. Attribution stays visible. Labels are sparse ink with a light halo.
 
-### Map Overprint
-IOF-style: purple ring (stroke ~2 dp, filled with ground so labels do not cross the numeral), purple number inside, a start triangle at the user, no legs. On Hide map the rings shrink to a 2 dp radius and the stroke thins to nothing as the map fades. Punched controls invert: purple fill, ground-colored number. The basemap is a muted light OpenFreeMap style by day and a night style on black.
+### Palette fade (signature)
+On "Hide map & start" the screen steps through four tones from ground to run field, one hard cut per tone, 140 ms each (`fadeSequence`). Reduced motion is a single instant cut.
 
-### Navigation
-System Back and Android insets govern. No custom tab bar; flow is linear: setup, memorize, run, results. The run screen owns the system bars (light on black, dark while inverted).
+### Run screen
+Deep ink field with light text: "N/M PLACES", the timer, Hint, and an isolated Give up behind a confirm step. A hint speaks the nearest missing fragment and shows it in a dark dialogue box with a direction; hinted finds score half. A find plays a two-frame flash (`found-a`, `found-b`, 6x on a 96x96 plate) with vibration.
 
-### Pocket Run (signature)
-Black ground, white text, no theme. A checkpoint hit inverts the whole frame to white for a beat with vibration. Hint and Give up are separated by space.
+### Results badge case
+One slot per control. Found: Found Green box with double border, kind sprite at 3x and the number. Hinted: the same with a small pixel "?" in the corner. Missed: a dashed ink outline with the number. Score line: "N of M controls visited · P points".
+
+### Loading screen
+Mark at 2x above a panel box of eight 18 dp segments; lit segments fill crimson, unlit take Harbor Haze. Static under reduced motion.
+
+### Launcher icon and native splash
+`app.json` sets the splash background to Harbor Haze `#94B0C2` (light and dark), image `splash-icon.png` at 192 dp wide, resizeMode contain. The adaptive icon background is Paper Mist `#C9D8E1` with the ink mark as foreground and a black monochrome layer. `icon.png`, the splash, and both adaptive layers are generated from `loci-mark-pixel.png`, nearest-neighbor 4x (5x for `icon.png`), recoloured to ink, centered on a 1024 canvas; provenance is in `assets/splash-icon.source.txt`. The app is light-only (`userInterfaceStyle: light`).
+
+### Named Rules
+**The One Cadence Rule.** Every typed fragment uses the same 70 ms per character; speech is matched to it, never the reverse.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** separate content with 2 dp ink rules (`{colors.ink}` in light, white in night) and keep corners at 2 dp.
-- **Do** reserve orange for the flag button and the "H" hint mark, and purple for overprint and control numbers.
-- **Do** use Barlow Condensed uppercase for headings and labels, tabular figures for any number, and Roboto for story text.
-- **Do** keep every touch target at 48 dp or more, and the flag button at 64 dp.
-- **Do** keep the run screen strictly black and white.
-- **Do** resolve colors through the theme roles so night-O comes along for free.
+- **Do** use the one Sweetie 16 palette in a single scheme, ignoring the system theme.
+- **Do** build every box from `PixelBox`: 2 dp ink rule, 0 radius, stepped corners.
+- **Do** set story text in Jersey 10 and labels and numbers in Press Start 2P, at the sizes in the ramp.
+- **Do** draw new landmark kinds as original 16x16 grids with a 1 px ink outline, base plus shade, one highlight, and the dithered shadow, then add them to `palettes.ts`.
+- **Do** render sprites and the mark at integer scales only.
+- **Do** keep green for parks, woods, the park sprite and the found state.
+- **Do** reserve crimson for pressable primary actions, and keep targets at 48 dp or more.
+- **Do** honour reduced motion: the fade becomes one cut and blinks and the loading bar stop.
 
 ### Don't:
-- **Don't** add shadows, elevation, gradients, or rounded cards.
-- **Don't** introduce cream or tinted paper; the sheet is pure white.
-- **Don't** use orange or purple as general accents, links, or decoration.
-- **Don't** place Give up next to Hint.
-- **Don't** fall back to the generic category layout: a full-bleed map with a bottom sheet and pins.
+- **Don't** add radii, blurred or offset shadows, gradients or glass.
+- **Don't** use pure black or white grounds, or orange on black.
+- **Don't** copy another game's sprites, creatures, fonts, badges, place names or UI text; assets stay original or the user's own logo work.
+- **Don't** put green on anything that is not nature or found.
+- **Don't** use emoji, font glyphs or a system face for icons or display text.
+- **Don't** stretch, smooth or shrink the mark below scale 1.
+- **Don't** inherit the recorded drift below as a rule for new surfaces.
+
+### Recorded drift and limits (not rules)
+- Seven-line fragments scroll at font scale 1.3.
+- The mark is absent from the setup header because it is too tall at integer scale.
+- The `found-a` flash frame is drawn only in ink (corner brackets) and `found-b` adds gold (corner sparkles); the two frames differ in colour as well as shape.
+- The adaptive-icon mark is small inside the safe zone, so it reads small on some launcher masks.
+- Pixelify Sans from the contract was replaced by Jersey 10 (see Typography).

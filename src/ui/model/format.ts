@@ -36,6 +36,9 @@ export const hintSentence = (hint: Hint): string => `${compassWord(hint.compass)
 
 export const formatPoints = (points: number): string => (Number.isInteger(points) ? String(points) : points.toFixed(1));
 
+/** "1 point", "2 points", "0.5 points". */
+export const pointsLabel = (points: number): string => `${formatPoints(points)} point${points === 1 ? '' : 's'}`;
+
 /** The primary results figure: controls visited out of the course total. */
 export const controlsFigure = (visited: number, total: number): string =>
   `${visited} of ${total} control${total === 1 ? '' : 's'}`;

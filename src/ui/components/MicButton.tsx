@@ -1,8 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
-import { MIC_PICTOGRAM, STOP_PICTOGRAM } from '../model/pictograms';
-import { SHAPE, useTheme } from '../theme/theme';
-import { AppText } from './AppText';
+import { useReducedMotion } from '../state/use-reduced-motion';
+import { useBlink } from '../state/use-typewriter';
+import { COLORS, SHAPE } from '../theme/theme';
+import { PixelBox } from './PixelBox';
+import { PixelSprite } from './PixelSprite';
 
 type Props = {
   listening: boolean;
@@ -12,56 +13,33 @@ type Props = {
   onPress: () => void;
 };
 
-/** Dictation control: a 2 dp ink rule box (RuleButton family) with a drawn mic, or a stop square while listening. */
+/**
+ * Dictation: a square, icon-only button (48 dp) meant for the bottom-right corner of the request box.
+ * Listening swaps the mic for a stop square and blinks the fill; the screen adds a "Listening…" line.
+ */
 export function MicButton({ listening, stopping, disabled, onPress }: Props) {
-  const { colors } = useTheme();
-  const ink = colors.onBackground;
-  const label = stopping ? 'Finishing…' : listening ? 'Listening… tap to stop' : 'Speak your request';
-  const paths = listening ? STOP_PICTOGRAM : MIC_PICTOGRAM;
+  const reducedMotion = useReducedMotion();
+  const blink = useBlink(reducedMotion, 450);
+  const lit = listening && blink;
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={listening ? 'Stop dictation' : 'Dictate course request'}
+      accessibilityLabel={listening ? 'Stop dictation' : 'Speak your request'}
       accessibilityState={{ disabled: !!disabled || !!stopping, selected: listening }}
       disabled={disabled || stopping}
       onPress={onPress}
-      android_ripple={{ color: `${ink}33` }}
-      style={[styles.root, { borderColor: ink, opacity: disabled ? 0.45 : 1 }]}
+      style={[styles.root, { opacity: disabled ? 0.5 : 1 }]}
     >
-      <View style={[styles.icon, listening && { backgroundColor: ink }]}>
-        <Svg width={24} height={24} viewBox="0 0 24 24" fill="none" accessible={false}>
-          {paths.map((d, i) => (
-            <Path
-              key={i}
-              d={d}
-              stroke={listening ? colors.background : ink}
-              fill={listening ? colors.background : 'none'}
-              strokeWidth={1.75}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          ))}
-        </Svg>
-      </View>
-      <AppText variant="label" color={ink} maxFontSizeMultiplier={1.4} accessibilityLiveRegion="polite">
-        {label}
-      </AppText>
+      <PixelBox fill={listening && !lit ? COLORS.ink : COLORS.action} behind={COLORS.panel} stretch>
+        <View style={styles.icon}>
+          <PixelSprite name={listening ? 'glyph:stop' : 'glyph:mic'} scale={3} inkColor={COLORS.onAction} />
+        </View>
+      </PixelBox>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    minHeight: SHAPE.target,
-    minWidth: SHAPE.target,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: SHAPE.rule,
-    borderRadius: SHAPE.radius,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    alignSelf: 'flex-start',
-  },
-  icon: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderRadius: SHAPE.radius },
+  root: { width: SHAPE.target, height: SHAPE.target },
+  icon: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });

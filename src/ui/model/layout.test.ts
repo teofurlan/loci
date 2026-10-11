@@ -14,6 +14,10 @@ describe('mapHeight', () => {
     expect(921 - mapHeight(921, 1.3)).toBeGreaterThanOrEqual(585);
   });
 
+  it('leaves the story box room for five lines at the default font scale on a 921 dp window', () => {
+    expect(921 - mapHeight(921, 1)).toBeGreaterThanOrEqual(520);
+  });
+
   it('never collapses below a usable map', () => {
     expect(mapHeight(400, 2)).toBe(160);
   });

@@ -16,6 +16,21 @@
     { "type": "node", "id": 118, "lat": -34.6090, "lon": -58.3870, "tags": { "name": "Casa Antigua", "historic": "building" } },
     { "type": "node", "id": 119, "lat": -34.6095, "lon": -58.3875, "tags": { "name": "Museo Curioso", "tourism": "attraction" } },
     { "type": "node", "id": 112, "lat": -34.6033, "lon": -58.3814, "tags": { "name": "Obelisco de Buenos Aires", "historic": "memorial" } },
+    { "type": "node", "id": 131, "lat": -34.6101, "lon": -58.3901, "tags": { "name": "Museo de Arte", "tourism": "museum", "historic": "building" } },
+    { "type": "node", "id": 132, "lat": -34.6102, "lon": -58.3902, "tags": { "name": "Teatro Colon", "amenity": "theatre" } },
+    { "type": "node", "id": 133, "lat": -34.6103, "lon": -58.3903, "tags": { "name": "Cine Gaumont", "amenity": "cinema" } },
+    { "type": "node", "id": 134, "lat": -34.6104, "lon": -58.3904, "tags": { "name": "Plaza de Juegos", "leisure": "playground" } },
+    { "type": "way", "id": 231, "center": { "lat": -34.6105, "lon": -58.3905 }, "tags": { "name": "Estadio Chico", "leisure": "stadium" } },
+    { "type": "way", "id": 232, "center": { "lat": -34.6106, "lon": -58.3906 }, "tags": { "name": "Polideportivo Norte", "leisure": "sports_centre" } },
+    { "type": "way", "id": 233, "center": { "lat": -34.6107, "lon": -58.3907 }, "tags": { "name": "Cancha del Barrio", "leisure": "pitch" } },
+    { "type": "node", "id": 135, "lat": -34.6108, "lon": -58.3908, "tags": { "name": "Estatua del General", "memorial": "statue", "historic": "memorial" } },
+    { "type": "node", "id": 136, "lat": -34.6109, "lon": -58.3909, "tags": { "name": "Monumento a los Caidos", "historic": "memorial" } },
+    { "type": "node", "id": 137, "lat": -34.6110, "lon": -58.3910, "tags": { "name": "Bronce del Poeta", "tourism": "artwork", "artwork_type": "statue" } },
+    { "type": "node", "id": 138, "lat": -34.6111, "lon": -58.3911, "tags": { "name": "Torre del Reloj", "man_made": "tower" } },
+    { "type": "node", "id": 139, "lat": -34.6112, "lon": -58.3912, "tags": { "name": "Faro del Puerto", "man_made": "lighthouse" } },
+    { "type": "node", "id": 140, "lat": -34.6113, "lon": -58.3913, "tags": { "name": "Estacion Retiro", "railway": "station" } },
+    { "type": "node", "id": 141, "lat": -34.6114, "lon": -58.3914, "tags": { "name": "Terminal Sur", "public_transport": "station" } },
+    { "type": "way", "id": 234, "center": { "lat": -34.6115, "lon": -58.3915 }, "tags": { "name": "Mercado de San Telmo", "amenity": "marketplace" } },
     { "type": "way", "id": 224, "tags": { "name": "Way without geometry", "leisure": "park" } }
   ]
 }

@@ -1,5 +1,5 @@
 import { fakeLlm } from './fakes';
-import { LlmIntentParser } from './intent-parser';
+import { buildIntentPrompt, LlmIntentParser } from './intent-parser';
 
 const request = '20 min walk, beginner, green areas';
 
@@ -51,5 +51,21 @@ describe('LlmIntentParser', () => {
     const intent = await new LlmIntentParser(llm).parse('   ');
     expect(llm.calls).toHaveLength(0);
     expect(intent.targetDistanceMeters).toBe(3000);
+  });
+});
+
+describe('buildIntentPrompt', () => {
+  const prompt = buildIntentPrompt('30 min walk, story themed on The Lord of the Rings');
+
+  it('asks for a theme or a tone in storyStyle, with examples of both', () => {
+    expect(prompt).toMatch(/"storyStyle": string \| null,\s+\/\/ theme or tone/);
+    expect(prompt).toContain('The Lord of the Rings');
+    expect(prompt).toMatch(/physics/i);
+    expect(prompt).toMatch(/Bible/);
+    expect(prompt).toMatch(/spooky/);
+  });
+
+  it('tells the model to keep the theme out of the route parameters', () => {
+    expect(prompt).toMatch(/theme.*never.*(place|route)/is);
   });
 });
