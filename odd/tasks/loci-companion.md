@@ -30,7 +30,7 @@ Mode: strict (source: user global CLAUDE.md "Strict TDD Mode: enabled"). Runner:
 
 ## Delivery
 Strategy: ask-on-risk. Chain strategy chosen by the user on 2026-10-11: **feature-branch-chain**. Each new slice (T4, T5, T6, ...) is a child branch cut from `feat/loci-companion` with its PR targeting `feat/loci-companion`; when the feature is ready, one PR from `feat/loci-companion` to `main`. Push, PR creation and merge stay the user's decisions.
-Slices so far (committed directly on `feat/loci-companion`, before the strategy was chosen): T1+T2 84d8623; T3 cda770d, cd64f64, a4e3259, 9a2bd04 (+ captures and docs). `feat/loci-companion` is NOT pushed yet: it must be pushed before the first child PR can target it.
+Slices so far (committed directly on `feat/loci-companion`, before the strategy was chosen): T1+T2 84d8623; T3 cda770d, cd64f64, a4e3259, 9a2bd04 (+ captures and docs). `feat/loci-companion` pushed to origin on 2026-10-11.
 
 ## Tasks
 - [x] T1 Loci model (84d8623): pure pose sampler (keyframes, 12 fps, snapping) and rasterizer (body mask from the concept B path, corner light shading, axis-aligned pill eyes, blink) returning a pixel grid; run-length SVG paths; memoized by quantized pose. Route: delegated writer (2+ non-trivial files).
@@ -69,4 +69,4 @@ Slices so far (committed directly on `feat/loci-companion`, before the strategy 
 - Native review (RDD) was unavailable for every commit on this branch: `gentle-ai sync --agent claude-code` fails probing the Pi CodeGraph MCP adapter (not installed); the user chose to continue without reporting.
 
 ## Next step
-T5 in a new session: Loci on the pocket (run), hint and results screens. Start from this document and Engram topic `odd/loci-companion/tasks`. Before writing, decide with the user how each screen adopts the new look (black field + aura, or keep the Overworld ground) and which Loci state each moment uses (brief: Loci appears at transitions — start, hide map, finish — and when a hint is requested; hint = brief orientation cue; close = "You finished the route. See you next time.").
+T5 in a new session: Loci on the pocket (run), hint and results screens. Start from this document and Engram topic `odd/loci-companion/tasks`. Decided by the user (2026-10-11): every other screen (memorize, run/pocket, hint, results) shares the chat home's black field, and the palette is redefined from the chat home, which is now the reference screen (replacing the Overworld ground palette in DESIGN.md / `palettes.ts`). Still to decide with the user: which Loci state each moment uses (brief: Loci appears at transitions — start, hide map, finish — and when a hint is requested; hint = brief orientation cue; close = "You finished the route. See you next time.").
