@@ -11,6 +11,8 @@ export type ChatViewInput = {
   focused: boolean;
   /** The request input holds text. */
   hasText: boolean;
+  /** The software keyboard is showing. */
+  keyboardOpen: boolean;
 };
 
 export type ChatView = {
@@ -21,7 +23,7 @@ export type ChatView = {
   examples: boolean;
   /** The dictation button. */
   mic: boolean;
-  /** Loci's problem panel above the input. */
+  /** Loci says a problem in the caption slot instead of the caption. */
   message: boolean;
   sendEnabled: boolean;
   sendBusy: boolean;
@@ -39,12 +41,12 @@ const STOPPING_CAPTION = 'Finishing…';
  * Decides what the chat home shows. Planning takes over (Loci listens, chips and mic step aside); otherwise Loci
  * waits and turns attentive while the user is writing or dictating. The request is optional, so send stays on.
  */
-export function chatView({ busy, hasError, dictation, focused, hasText }: ChatViewInput): ChatView {
+export function chatView({ busy, hasError, dictation, focused, hasText, keyboardOpen }: ChatViewInput): ChatView {
   const dictating = dictation !== 'idle';
   return {
     lociState: busy ? 'listening' : 'waiting',
     attentive: !busy && (focused || hasText || dictating),
-    examples: !busy,
+    examples: !busy && !keyboardOpen,
     mic: !busy,
     message: !busy && hasError,
     sendEnabled: !busy,

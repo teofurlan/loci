@@ -1,5 +1,5 @@
 import { contrastRatio } from '../theme/palette';
-import { AURA_LEVELS, AURA_SCENE, LOCI_OFFSET, auraColors, auraStageSize, auraGrid, auraPaths } from './loci-aura';
+import { AURA_LEVELS, AURA_SCENE, LOCI_OFFSET, auraColors, auraGrid, auraPaths } from './loci-aura';
 import { CELL_EMPTY, LOCI_COLS, lociGrid, lociPose, lociRows } from './loci';
 
 const BG = '#000000';
@@ -97,17 +97,5 @@ describe('auraPaths', () => {
       for (const m of d.matchAll(/M(\d+) (\d+)h(\d+)v1h-(\d+)z/g)) area += Number(m[3]);
     }
     expect(area).toBe(auraGrid().flat().filter((c) => c > 0).length);
-  });
-});
-
-describe('auraStageSize', () => {
-  it('gives every cell a whole number of dp', () => {
-    expect(auraStageSize(360)).toBe(360);
-    expect(auraStageSize(359)).toBe(240);
-    expect(auraStageSize(500)).toBe(480);
-  });
-
-  it('never drops below one dp per cell', () => {
-    expect(auraStageSize(50)).toBe(120);
   });
 });

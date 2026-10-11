@@ -14,7 +14,7 @@ import {
   StyleSheet,
   TextInput,
   View,
-  type LayoutChangeEvent,
+  useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { LatLng } from "../domain/types";
@@ -31,7 +31,7 @@ import {
   describePlanError,
   type PlanErrorDescription,
 } from "../ui/model/errors";
-import { auraStageSize } from "../ui/model/loci-aura";
+import { CAPTION_SLOT, stageSize } from "../ui/model/chat-layout";
 import { resumeRoute } from "../ui/model/resume-route";
 import { courseStore } from "../ui/state/course";
 import { services } from "../ui/state/services";
@@ -76,7 +76,8 @@ export default function SetupScreen() {
   const [request, setRequest] = useState("");
   const [busy, setBusy] = useState(false);
   const [focused, setFocused] = useState(false);
-  const [stageArea, setStageArea] = useState({ width: 0, height: 0 });
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const window = useWindowDimensions();
   const [denied, setDenied] = useState<LocationProblem | null>(null);
   const [failure, setFailure] = useState<PlanErrorDescription | null>(null);
   const [dictation, dispatch] = useReducer(dictationReducer, INITIAL_DICTATION);
@@ -97,6 +98,15 @@ export default function SetupScreen() {
     if (isFocused) NavigationBar.setStyle("light");
     return () => NavigationBar.setStyle("dark");
   }, [isFocused]);
+
+  useEffect(() => {
+    const show = Keyboard.addListener("keyboardDidShow", () => setKeyboardOpen(true));
+    const hide = Keyboard.addListener("keyboardDidHide", () => setKeyboardOpen(false));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   useSpeechRecognitionEvent("result", (event) =>
     dispatch({
@@ -176,10 +186,6 @@ export default function SetupScreen() {
     }
   }, [request]);
 
-  const onStageLayout = useCallback(
-    (event: LayoutChangeEvent) => setStageArea(event.nativeEvent.layout),
-    [],
-  );
 
   if (resumeHref) return <Redirect href={resumeHref} />;
 
@@ -189,11 +195,15 @@ export default function SetupScreen() {
     dictation: dictation.phase,
     focused,
     hasText: request.trim().length > 0,
+    keyboardOpen,
   });
-  // Whole dp per aura cell keeps the pixels crisp. The caption takes its line out of the free height.
-  const stageSize = auraStageSize(
-    Math.min(stageArea.width, stageArea.height - CAPTION_ROOM),
-  );
+  // Decided once from the window (inputs never change), so Loci keeps its size whatever the screen shows.
+  const stage = stageSize({
+    width: window.width,
+    height: window.height,
+    insetTop: insets.top,
+    insetBottom: insets.bottom,
+  });
 
   return (
     // KeyboardAvoidingView owns its own bottom padding (edge-to-edge does not resize the window), so the system bar
@@ -206,73 +216,69 @@ export default function SetupScreen() {
       <View
         style={[styles.fill, { paddingBottom: focused ? 0 : insets.bottom }]}
       >
-        <View style={styles.stageArea} onLayout={onStageLayout}>
-          {stageArea.width > 0 && (
-            <View style={styles.stage}>
-              <LociStage
-                state={view.lociState}
-                size={stageSize}
-                attentive={view.attentive}
-              />
+        <View style={styles.stageArea}>
+          <View style={styles.stage}>
+            <LociStage
+              state={view.lociState}
+              size={stage}
+              attentive={view.attentive}
+            />
+            <View style={[styles.slot, { marginTop: -Math.round(stage * 0.1) }]}>
               {view.caption && (
                 <AppText
                   variant="label"
                   color={CHAT.text}
                   accessibilityLiveRegion="polite"
                   maxFontSizeMultiplier={1.3}
-                  style={[
-                    styles.caption,
-                    { marginTop: -Math.round(stageSize * 0.1) },
-                  ]}
+                  style={styles.caption}
                 >
                   {view.caption}
                 </AppText>
               )}
+              {view.message && (
+                <View style={styles.messages}>
+                  {dictation.problem && (
+                    <LociMessage
+                      problem={dictation.problem.problem}
+                      recovery={dictation.problem.recovery}
+                    >
+                      {dictation.problem.kind === "denied" &&
+                        dictation.problem.canAskAgain === false && (
+                          <ChatChip
+                            label="Open settings"
+                            onPress={() => Linking.openSettings()}
+                          />
+                        )}
+                    </LociMessage>
+                  )}
+                  {denied && (
+                    <LociMessage
+                      problem="Location is off for Loci."
+                      recovery="Loci needs your position to plan a route around you. Allow location while using the app."
+                    >
+                      {denied.canAskAgain ? (
+                        <ChatChip label="Allow location" onPress={setCourse} />
+                      ) : (
+                        <ChatChip
+                          label="Open settings"
+                          onPress={() => Linking.openSettings()}
+                        />
+                      )}
+                    </LociMessage>
+                  )}
+                  {failure && (
+                    <LociMessage
+                      problem={failure.problem}
+                      recovery={failure.recovery}
+                    />
+                  )}
+                </View>
+              )}
             </View>
-          )}
+          </View>
         </View>
 
         <View style={styles.bottom}>
-          {view.message && (
-            <View style={styles.messages}>
-              {dictation.problem && (
-                <LociMessage
-                  problem={dictation.problem.problem}
-                  recovery={dictation.problem.recovery}
-                >
-                  {dictation.problem.kind === "denied" &&
-                    dictation.problem.canAskAgain === false && (
-                      <ChatChip
-                        label="Open settings"
-                        onPress={() => Linking.openSettings()}
-                      />
-                    )}
-                </LociMessage>
-              )}
-              {denied && (
-                <LociMessage
-                  problem="Location is off for Loci."
-                  recovery="Loci needs your position to lay out a route around you. Allow location while using the app."
-                >
-                  {denied.canAskAgain ? (
-                    <ChatChip label="Allow location" onPress={setCourse} />
-                  ) : (
-                    <ChatChip
-                      label="Open settings"
-                      onPress={() => Linking.openSettings()}
-                    />
-                  )}
-                </LociMessage>
-              )}
-              {failure && (
-                <LociMessage
-                  problem={failure.problem}
-                  recovery={failure.recovery}
-                />
-              )}
-            </View>
-          )}
-
           {view.examples && (
             <View style={styles.chips} accessibilityRole="menu">
               {EXAMPLES.map((example) => (
@@ -300,7 +306,7 @@ export default function SetupScreen() {
                 onBlur={() => setFocused(false)}
                 editable={view.inputEditable}
                 multiline
-                placeholder="Ask Loci for a walk…"
+                placeholder=" Ask Loci for a walk…"
                 placeholderTextColor={CHAT.line}
                 selectionColor={CHAT.text}
                 cursorColor={CHAT.text}
@@ -326,9 +332,6 @@ export default function SetupScreen() {
   );
 }
 
-/** Height kept under the stage for Loci's one-line caption. */
-const CAPTION_ROOM = 56;
-
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: CHAT.ground },
   fill: { flex: 1 },
@@ -339,9 +342,11 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   stage: { alignItems: "center" },
+  // A fixed slot: the caption or the message grows inside it, so Loci never moves when the text changes.
+  slot: { minHeight: CAPTION_SLOT, alignSelf: "stretch", alignItems: "center" },
   caption: { textAlign: "center", paddingHorizontal: 20 },
   bottom: { paddingHorizontal: 16, paddingBottom: 12, gap: 10 },
-  messages: { gap: 8 },
+  messages: { gap: 8, alignSelf: "stretch" },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   bar: { flexDirection: "row", alignItems: "flex-end", gap: 6, padding: 4 },
   input: {

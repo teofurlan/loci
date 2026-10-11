@@ -1,6 +1,6 @@
 import { chatView, type ChatViewInput } from './chat-view';
 
-const IDLE: ChatViewInput = { busy: false, hasError: false, dictation: 'idle', focused: false, hasText: false };
+const IDLE: ChatViewInput = { busy: false, hasError: false, dictation: 'idle', focused: false, hasText: false, keyboardOpen: false };
 const view = (patch: Partial<ChatViewInput> = {}) => chatView({ ...IDLE, ...patch });
 
 describe('chatView', () => {
@@ -16,6 +16,12 @@ describe('chatView', () => {
       inputEditable: true,
       caption: 'Where shall we walk today?',
     });
+  });
+
+  it('hides the examples while the keyboard is open and brings them back after', () => {
+    expect(view({ keyboardOpen: true }).examples).toBe(false);
+    expect(view({ keyboardOpen: true }).mic).toBe(true);
+    expect(view({ keyboardOpen: false }).examples).toBe(true);
   });
 
   it('turns attentive while the input is focused or holds text', () => {

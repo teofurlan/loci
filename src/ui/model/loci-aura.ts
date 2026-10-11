@@ -93,8 +93,3 @@ export function auraPaths(): Record<number, string> {
   cachedPaths = out;
   return out;
 }
-
-/** The stage size for `available` dp: a whole number of dp per cell, so cells stay crisp (at least 1 dp per cell). */
-export function auraStageSize(available: number): number {
-  return Math.max(1, Math.floor(available / AURA_SCENE)) * AURA_SCENE;
-}
