@@ -1,8 +1,8 @@
 import { PALETTE } from './palettes';
 
 /**
- * The semantic color tokens of the world's one palette (see `palettes.ts`). Green appears only as
- * `found`, in the map's parks and woods, and in the park sprite.
+ * The semantic color tokens of the world's one palette (see `palettes.ts`): the night scheme on a black ground. Green
+ * appears only in the map's parks and woods and in the park sprite.
  */
 export const COLORS = PALETTE.ui;
 
@@ -13,7 +13,7 @@ export const FONTS = {
   label: 'PressStart2P_400Regular',
 } as const;
 
-/** Hard 2 dp rules and square corners. The step notch of a pixel border is one rule wide. */
+/** Hard 2 dp rules and stepped corners. The step notch of a pixel border is one rule wide. */
 export const SHAPE = { rule: 2, target: 48 } as const;
 
 export type TypeRole = 'display' | 'headline' | 'title' | 'label' | 'body' | 'bodySmall';
@@ -32,6 +32,3 @@ export const TYPE: Record<TypeRole, RoleStyle> = {
   body: { fontFamily: FONTS.body, fontSize: 26, lineHeight: 30 },
   bodySmall: { fontFamily: FONTS.body, fontSize: 22, lineHeight: 26 },
 };
-
-/** The chat home screen colours: soft text and lines on black, a lavender accent. */
-export const CHAT = PALETTE.chat;

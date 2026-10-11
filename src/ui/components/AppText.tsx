@@ -6,7 +6,7 @@ export type AppTextProps = TextProps & {
   color?: string;
 };
 
-/** Text in one of the pixel type roles. Ink by default. */
+/** Text in one of the pixel type roles. The soft lavender text colour by default. */
 export function AppText({ variant = 'body', color, style, ...rest }: AppTextProps) {
-  return <Text {...rest} style={[TYPE[variant], { color: color ?? COLORS.ink }, style]} />;
+  return <Text {...rest} style={[TYPE[variant], { color: color ?? COLORS.text }, style]} />;
 }

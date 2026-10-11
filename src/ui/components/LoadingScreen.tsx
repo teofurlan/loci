@@ -23,7 +23,7 @@ type Props = {
 
 /**
  * The opening screen after the native splash: the Loci path mark centred exactly where the splash drew it,
- * written like handwriting (the left ring, then one continuous stroke at an even speed, then the right ring) on the dark run-field ground, then the right
+ * written like handwriting (the left ring, then one continuous stroke at an even speed, then the right ring) on the splash ground, then the right
  * ring gives way to the gold found star, the whole mark turns gold and the logo and star twinkle together. The native splash
  * image is fully transparent (plain ink, the same ground) and nothing is drawn at t = 0, so the hand-over does not flash. It uses no text,
  * so it can draw before any font is ready.
@@ -87,5 +87,5 @@ export function LoadingScreen({ onShown, onDone }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: COLORS.runField, alignItems: 'center', justifyContent: 'center' },
+  root: { flex: 1, backgroundColor: COLORS.splash, alignItems: 'center', justifyContent: 'center' },
 });

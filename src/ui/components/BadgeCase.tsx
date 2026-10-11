@@ -20,7 +20,7 @@ function Badge({ slot }: { slot: BadgeSlot }) {
   if (slot.state === 'missed') {
     return (
       <View accessible accessibilityLabel={label} style={[styles.slot, styles.empty]}>
-        <AppText variant="label" allowFontScaling={false} style={styles.emptyNumber}>
+        <AppText variant="label" color={COLORS.muted} allowFontScaling={false} style={styles.emptyNumber}>
           {slot.number}
         </AppText>
       </View>
@@ -28,15 +28,15 @@ function Badge({ slot }: { slot: BadgeSlot }) {
   }
   return (
     <View accessible accessibilityLabel={label} style={styles.slot}>
-      <PixelBox fill={COLORS.found} behind={COLORS.ground} double>
+      <PixelBox fill={COLORS.found} border={COLORS.found} behind={COLORS.ground} corners="round">
         <View style={styles.badge}>
           <PixelSprite name={slot.kind} scale={3} />
-          <AppText variant="label" allowFontScaling={false} style={styles.number}>
+          <AppText variant="label" color={COLORS.onFound} allowFontScaling={false} style={styles.number}>
             {slot.number}
           </AppText>
           {slot.state === 'hinted' && (
             <View style={styles.mark}>
-              <PixelSprite name="glyph:mark" scale={2} />
+              <PixelSprite name="glyph:mark" scale={2} inkColor={COLORS.onFound} />
             </View>
           )}
         </View>
@@ -73,6 +73,6 @@ const styles = StyleSheet.create({
   badge: { height: 84, alignItems: 'center', justifyContent: 'center', gap: 4 },
   number: { fontSize: 11, lineHeight: 14 },
   mark: { position: 'absolute', top: 4, right: 4 },
-  empty: { height: 92, borderWidth: SHAPE.rule, borderColor: COLORS.ink, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
+  empty: { height: 92, borderWidth: SHAPE.rule, borderColor: COLORS.line, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
   emptyNumber: { fontSize: 11, lineHeight: 14 },
 });

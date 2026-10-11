@@ -9,8 +9,8 @@ import { PixelSprite } from './PixelSprite';
 type Props = {
   label: string;
   onPress: () => void;
-  /** `primary` is the one big action; `onInk` is for the ink field of the run screen. */
-  variant?: 'primary' | 'secondary' | 'onInk';
+  /** `primary` is the one big action; `secondary` an outlined control; `quiet` a low-emphasis one (Give up). */
+  variant?: 'primary' | 'secondary' | 'quiet';
   disabled?: boolean;
   loading?: boolean;
   glyph?: GlyphName;
@@ -19,7 +19,7 @@ type Props = {
   selected?: boolean;
 };
 
-/** A pixel button in the action color. Pressed, it flips to an ink fill; on the run field it inverts. */
+/** A pixel button on the black field: accent fill, or a black fill with an outline. Pressed or selected, it flips to the light pressed fill. */
 export function PixelButton({
   label,
   onPress,
@@ -33,18 +33,11 @@ export function PixelButton({
 }: Props) {
   const [pressed, setPressed] = useState(false);
   const inactive = disabled || loading;
-  const onInk = variant === 'onInk';
   const flipped = pressed || selected;
-  const fill = onInk
-    ? flipped
-      ? COLORS.runText
-      : COLORS.runField
-    : flipped
-      ? COLORS.ink
-      : COLORS.action;
-  const text = onInk ? (flipped ? COLORS.runField : COLORS.runText) : COLORS.onAction;
-  const border = onInk ? COLORS.runText : COLORS.ink;
-  const behind = onInk ? COLORS.runField : COLORS.ground;
+  const rest = REST[variant];
+  const fill = flipped ? COLORS.pressed : rest.fill;
+  const border = flipped ? COLORS.pressed : rest.border;
+  const text = flipped ? COLORS.onPressed : rest.text;
   return (
     <Pressable
       accessibilityRole="button"
@@ -57,7 +50,7 @@ export function PixelButton({
       onPressOut={() => setPressed(false)}
       style={{ opacity: disabled ? 0.5 : 1 }}
     >
-      <PixelBox fill={fill} border={border} behind={behind} double={variant === 'primary'}>
+      <PixelBox fill={fill} border={border} behind={COLORS.ground} corners="round">
         <View style={[styles.row, variant === 'primary' ? styles.primary : styles.secondary]}>
           {glyph && <PixelSprite name={`glyph:${glyph}`} scale={3} inkColor={text} />}
           <AppText
@@ -73,6 +66,13 @@ export function PixelButton({
     </Pressable>
   );
 }
+
+/** The resting colours of each variant: the primary is filled with the accent, the others are black with an outline. */
+const REST = {
+  primary: { fill: COLORS.accent, border: COLORS.accent, text: COLORS.onAccent },
+  secondary: { fill: COLORS.ground, border: COLORS.lineStrong, text: COLORS.text },
+  quiet: { fill: COLORS.ground, border: COLORS.line, text: COLORS.muted },
+} as const;
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 14 },

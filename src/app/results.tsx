@@ -72,7 +72,7 @@ export default function ResultsScreen() {
         <AppText variant="label" style={styles.sectionLabel} maxFontSizeMultiplier={1.3}>
           The map
         </AppText>
-        <PixelBox fill={COLORS.ground} behind={COLORS.ground} double>
+        <PixelBox fill={COLORS.ground} behind={COLORS.ground} corners="round">
           <View style={styles.map}>
             <CourseMap
               style={styles.fill}
@@ -114,5 +114,5 @@ const styles = StyleSheet.create({
   sectionLabel: { marginTop: 28, marginBottom: 10 },
   map: { height: 300 },
   sheet: { marginTop: 20 },
-  footer: { paddingHorizontal: 16, paddingTop: 8, borderTopWidth: SHAPE.rule, borderTopColor: COLORS.ink },
+  footer: { paddingHorizontal: 16, paddingTop: 8, borderTopWidth: SHAPE.rule, borderTopColor: COLORS.line },
 });

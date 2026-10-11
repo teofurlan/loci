@@ -2,7 +2,6 @@ import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import * as Location from 'expo-location';
 import * as Speech from 'expo-speech';
 import { Redirect, router } from 'expo-router';
-import { NavigationBar } from 'expo-navigation-bar';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BackHandler, ScrollView, StyleSheet, View } from 'react-native';
@@ -41,7 +40,7 @@ function FoundFlash({ kind, reducedMotion, onDone }: { kind: LandmarkKind; reduc
   }, [reducedMotion, onDone]);
   return (
     <View pointerEvents="none" style={styles.flash}>
-      <PixelBox fill={COLORS.found} border={COLORS.runText} behind={COLORS.runField} double>
+      <PixelBox fill={COLORS.plate} border={COLORS.found} behind={COLORS.ground} corners="round">
         <View style={styles.flashPlate}>
           <PixelSprite name={kind} scale={6} />
           <View style={StyleSheet.absoluteFill}>
@@ -70,12 +69,6 @@ export default function RunScreen() {
   const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const running = course.phase === 'run';
-
-  // The run owns the system bar too: light button ink on the ink field. Leaving restores the ground default.
-  useEffect(() => {
-    NavigationBar.setStyle('light');
-    return () => NavigationBar.setStyle('dark');
-  }, []);
 
   useEffect(() => {
     if (course.phase === 'results') router.replace('/results');
@@ -203,17 +196,17 @@ export default function RunScreen() {
     <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
       <StatusBar style="light" />
       <View accessible accessibilityLiveRegion="polite" accessibilityLabel={`${punched} of ${total} punched`}>
-        <AppText variant="display" color={COLORS.runText} maxFontSizeMultiplier={1.3}>
+        <AppText variant="display" maxFontSizeMultiplier={1.3}>
           {punched}/{total} PLACES
         </AppText>
       </View>
-      <AppText variant="headline" color={COLORS.runText} maxFontSizeMultiplier={1.3} style={styles.time}>
+      <AppText variant="headline" maxFontSizeMultiplier={1.3} style={styles.time}>
         {formatElapsed(now - course.startedAt)}
       </AppText>
       {/* Reserved height: the hint button must not jump when the first GPS fix clears the status. */}
       <View style={styles.status}>
         {status && (
-          <AppText variant="body" color={COLORS.runText}>
+          <AppText variant="body">
             {status}
           </AppText>
         )}
@@ -222,28 +215,28 @@ export default function RunScreen() {
       <ScrollView style={styles.hintScroll} contentContainerStyle={styles.hintBlock}>
         <View style={styles.hintButton}>
           <PixelButton
-            variant="onInk"
+            variant="secondary"
             label="Hint"
             onPress={askForHint}
             accessibilityHint="Reads the nearest missing control's story, then its direction. Costs half a point."
           />
         </View>
-        <AppText variant="body" color={COLORS.runText} style={styles.cost}>
+        <AppText variant="body" style={styles.cost}>
           {HINT_COST}
         </AppText>
         {hintNote && (
-          <AppText variant="body" color={COLORS.runText} style={styles.hintText}>
+          <AppText variant="body" style={styles.hintText}>
             {hintNote}
           </AppText>
         )}
         {hint && (
           <View style={styles.hintText} accessibilityLiveRegion="polite" accessibilityLabel={hintText}>
-            <DialogueBox title="Clue" tone="dark">
+            <DialogueBox title="Clue">
               <View>
-                <AppText variant="body" color={COLORS.runText} style={styles.ghost}>
+                <AppText variant="body" style={styles.ghost}>
                   {hintText}
                 </AppText>
-                <AppText variant="body" color={COLORS.runText} style={styles.typed}>
+                <AppText variant="body" style={styles.typed}>
                   {typing.shown}
                 </AppText>
               </View>
@@ -254,22 +247,22 @@ export default function RunScreen() {
 
       <View style={styles.giveUp}>
         {confirming ? (
-          <DialogueBox tone="dark">
-            <AppText variant="title" color={COLORS.runText}>
+          <DialogueBox>
+            <AppText variant="title">
               End the run and reveal the map?
             </AppText>
             <View style={styles.confirmRow}>
               <View style={styles.confirmButton}>
-                <PixelButton variant="onInk" label="Keep walking" onPress={() => setConfirming(false)} />
+                <PixelButton variant="secondary" label="Keep walking" onPress={() => setConfirming(false)} />
               </View>
               <View style={styles.confirmButton}>
-                <PixelButton variant="onInk" label="End run" onPress={() => courseStore.giveUp(Date.now())} />
+                <PixelButton variant="secondary" label="End run" onPress={() => courseStore.giveUp(Date.now())} />
               </View>
             </View>
           </DialogueBox>
         ) : (
           <View style={styles.giveUpButton}>
-            <PixelButton variant="onInk" label="Give up" onPress={() => setConfirming(true)} />
+            <PixelButton variant="quiet" label="Give up" onPress={() => setConfirming(true)} />
           </View>
         )}
       </View>
@@ -280,7 +273,7 @@ export default function RunScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, paddingHorizontal: 24, backgroundColor: COLORS.runField },
+  root: { flex: 1, paddingHorizontal: 24, backgroundColor: COLORS.ground },
   time: { marginTop: 14 },
   status: { marginTop: 12, minHeight: 48 },
   hintScroll: { flex: 1, marginTop: 16 },

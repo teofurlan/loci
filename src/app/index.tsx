@@ -1,6 +1,5 @@
 import * as Location from "expo-location";
 import { Redirect, router, useIsFocused } from "expo-router";
-import { NavigationBar } from "expo-navigation-bar";
 import { StatusBar } from "expo-status-bar";
 import {
   ExpoSpeechRecognitionModule,
@@ -36,7 +35,7 @@ import { CAPTION_SLOT, stageSize } from "../ui/model/chat-layout";
 import { resumeRoute } from "../ui/model/resume-route";
 import { courseStore } from "../ui/state/course";
 import { services } from "../ui/state/services";
-import { CHAT, TYPE } from "../ui/theme/theme";
+import { COLORS, TYPE } from "../ui/theme/theme";
 
 const EXAMPLES = [
   "20 min walk, green areas",
@@ -94,12 +93,6 @@ export default function SetupScreen() {
       ExpoSpeechRecognitionModule.abort();
     };
   }, []);
-
-  // The home is a black scene, so the system bar buttons are light here. Another screen on top restores the default.
-  useEffect(() => {
-    if (isFocused) NavigationBar.setStyle("light");
-    return () => NavigationBar.setStyle("dark");
-  }, [isFocused]);
 
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", () => setKeyboardOpen(true));
@@ -238,7 +231,7 @@ export default function SetupScreen() {
               {view.caption && (
                 <AppText
                   variant="label"
-                  color={CHAT.text}
+                  color={COLORS.text}
                   accessibilityLiveRegion="polite"
                   maxFontSizeMultiplier={1.3}
                   style={styles.caption}
@@ -303,9 +296,9 @@ export default function SetupScreen() {
           )}
 
           <PixelBox
-            fill={CHAT.ground}
-            border={CHAT.line}
-            behind={CHAT.ground}
+            fill={COLORS.ground}
+            border={COLORS.line}
+            behind={COLORS.ground}
             corners="round"
           >
             <View style={styles.bar}>
@@ -319,9 +312,9 @@ export default function SetupScreen() {
                 editable={view.inputEditable}
                 multiline
                 placeholder=" Ask Loci for a walk…"
-                placeholderTextColor={CHAT.line}
-                selectionColor={CHAT.text}
-                cursorColor={CHAT.text}
+                placeholderTextColor={COLORS.line}
+                selectionColor={COLORS.text}
+                cursorColor={COLORS.text}
                 style={styles.input}
               />
               {view.mic && (
@@ -345,7 +338,7 @@ export default function SetupScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: CHAT.ground },
+  root: { flex: 1, backgroundColor: COLORS.ground },
   fill: { flex: 1 },
   stageArea: {
     flex: 1,
@@ -368,7 +361,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 6,
     textAlignVertical: "center",
-    color: CHAT.text,
+    color: COLORS.text,
     fontFamily: TYPE.body.fontFamily,
     fontSize: TYPE.body.fontSize,
     lineHeight: TYPE.body.lineHeight,

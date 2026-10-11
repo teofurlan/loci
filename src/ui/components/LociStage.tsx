@@ -3,7 +3,7 @@ import Svg, { G, Path } from 'react-native-svg';
 import { AURA_SCENE, LOCI_OFFSET, auraColors, auraPaths } from '../model/loci-aura';
 import type { LociState } from '../model/loci';
 import { useLociPaths } from '../state/use-loci-paths';
-import { CHAT } from '../theme/theme';
+import { COLORS } from '../theme/theme';
 import { LOCI_FILLS, LOCI_PAINTS } from './Loci';
 
 type Props = {
@@ -20,7 +20,7 @@ function LociStageView({ state, size, attentive, accessibilityLabel = 'Loci' }: 
   const loci = useLociPaths(state, attentive);
   const aura = useMemo(() => {
     const paths = auraPaths();
-    const colors = auraColors(CHAT.ground, CHAT.aura);
+    const colors = auraColors(COLORS.ground, COLORS.aura);
     return colors.map((fill, index) => ({ level: index + 1, fill, d: paths[index + 1] })).filter((ring) => ring.d);
   }, []);
 
