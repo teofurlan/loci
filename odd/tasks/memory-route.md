@@ -331,6 +331,12 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - Run `adb reverse tcp:8081 tcp:8082` and `adb reverse tcp:8082 tcp:8082`, because the app may hold a `debug_http_host` of `localhost:8082` from earlier.
   - Launch the app. Verified by the parent: setup loaded from Metro.
   - Native rebuilds only for native config changes. The release APK is built once, before the walk.
+- 2026-10-11: T14 third pass, after user feedback on the phone:
+  - `2f861e5`: the native splash image is fully transparent, so the first screen is plain ink.
+  - `3bacd4e`: the left ring is drawn first. Then the pen moves at a constant speed along the arc (233.6 cells, about 2.2 cells per frame), with a 2.0 s trace and a 1.0 s finale. A cell is drawn only once the stroke touches it, and every prefix of the reveal is connected. The finale star always takes the logo colour (`#FFCD75` or `#8D7451`, never blue).
+  - RED, then GREEN at 444. Parent spot check: jest 444 passed. The contact sheet `dist/logo-anim4-sheet.png` shows a handwriting-like trace and a gold-only finale.
+  - Only one native rebuild, a debug build.
+  - Not verified: the reduce-motion path on the device (unit tests only), and whether release shows a black gap between the native splash and JS. In debug the gap is ~6 s while Metro bundles.
 
 ## Next step
 Resume in one session, from the repo `C:/Users/teofu/Code/loci` (main checkout on `feat/memory-route`). The pixel work lives in the worktree `C:/Users/teofu/Code/loci-worktrees/pixel-world`.
