@@ -1,5 +1,9 @@
 import { FOUND_FRAMES, FOUND_FRAME_MS, KIND_SPRITES, SPRITE_NAMES, SPRITE_SIZE, spriteFor, spritePaths, spriteRows } from './sprites';
 
+const ALL_KINDS_IN_GRID_ORDER = [
+  'park', 'water', 'monument', 'artwork', 'worship', 'fountain', 'viewpoint', 'library', 'square',
+  'museum', 'theatre', 'playground', 'stadium', 'statue', 'tower', 'station', 'market', 'other',
+];
 const NEW_KINDS = ['museum', 'theatre', 'playground', 'stadium', 'statue', 'tower', 'station', 'market'];
 const ALL_KINDS = [
   'park', 'water', 'monument', 'artwork', 'worship', 'fountain', 'viewpoint', 'library', 'square', 'other',
@@ -7,7 +11,7 @@ const ALL_KINDS = [
 ];
 
 describe('sprite data', () => {
-  it.each(SPRITE_NAMES)('%s is exactly 16 x 16 characters of . or 0..3', (name) => {
+  it.each(SPRITE_NAMES)('%s is exactly 32 x 32 characters of . or 0..3', (name) => {
     const rows = spriteRows(name);
     expect(rows).toHaveLength(SPRITE_SIZE);
     for (const row of rows) {
@@ -48,19 +52,34 @@ describe('sprite data', () => {
   });
 });
 
+describe('sprite size', () => {
+  it('is 32 x 32', () => {
+    expect(SPRITE_SIZE).toBe(32);
+  });
+
+  it('keeps the same 22 names in the same order', () => {
+    expect(SPRITE_NAMES).toEqual([...ALL_KINDS_IN_GRID_ORDER, 'you', 'found-a', 'found-b', 'unknown']);
+  });
+
+  it.each(ALL_KINDS)('%s has no dotted ground hatch in its two bottom rows', (kind) => {
+    const rows = spriteRows(kind as (typeof KIND_SPRITES)[number]);
+    for (const row of rows.slice(-2)) expect(row).not.toMatch(/(0.){6}/);
+  });
+});
+
 describe('tree (park) sprite', () => {
   const rows = spriteRows('park');
   const count = (row: string, ch: string) => [...row].filter((c) => c === ch).length;
 
   it('has a green two-tone canopy with no trunk-brown shade in it', () => {
-    const canopy = rows.slice(0, 10);
+    const canopy = rows.slice(0, 20);
     expect(canopy.join('')).toContain('2');
     expect(canopy.join('')).toContain('3');
     expect(canopy.join('')).not.toContain('1');
   });
 
   it('has a light brown trunk: never wider than 4 px, shown in at least 3 rows', () => {
-    const trunkRows = rows.slice(10, 14).filter((row) => row.includes('1'));
+    const trunkRows = rows.slice(20, 25).filter((row) => row.includes('1'));
     expect(trunkRows.length).toBeGreaterThanOrEqual(3);
     for (const row of trunkRows) expect(count(row, '1')).toBeLessThanOrEqual(4);
   });

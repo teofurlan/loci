@@ -8,7 +8,7 @@ import { PALETTE } from '../theme/palettes';
 const GLYPH_COLORS = [COLORS.text, COLORS.text, COLORS.accent, COLORS.ground] as const;
 
 type Props = {
-  /** A named 16 x 16 sprite, or a small glyph. */
+  /** A named 32 x 32 sprite, or a small glyph. */
   name: SpriteName | `glyph:${GlyphName}`;
   /** Integer pixel scale: one sprite pixel is `scale` dp, so edges stay crisp. */
   scale: number;
