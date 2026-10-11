@@ -11,6 +11,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Linking,
+  Pressable,
   StyleSheet,
   TextInput,
   View,
@@ -76,6 +77,7 @@ export default function SetupScreen() {
   const [request, setRequest] = useState("");
   const [busy, setBusy] = useState(false);
   const [focused, setFocused] = useState(false);
+  const inputRef = useRef<TextInput>(null);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const window = useWindowDimensions();
   const [denied, setDenied] = useState<LocationProblem | null>(null);
@@ -101,7 +103,11 @@ export default function SetupScreen() {
 
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", () => setKeyboardOpen(true));
-    const hide = Keyboard.addListener("keyboardDidHide", () => setKeyboardOpen(false));
+    // Android's back button hides the keyboard but leaves the input focused, so release the focus here too.
+    const hide = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardOpen(false);
+      inputRef.current?.blur();
+    });
     return () => {
       show.remove();
       hide.remove();
@@ -214,9 +220,14 @@ export default function SetupScreen() {
     >
       {isFocused && <StatusBar style="light" />}
       <View
-        style={[styles.fill, { paddingBottom: focused ? 0 : insets.bottom }]}
+        style={[styles.fill, { paddingBottom: keyboardOpen ? 0 : insets.bottom }]}
       >
-        <View style={styles.stageArea}>
+        {/* Tapping the scene puts the keyboard away, like tapping outside a chat input. */}
+        <Pressable
+          accessible={false}
+          onPress={Keyboard.dismiss}
+          style={styles.stageArea}
+        >
           <View style={styles.stage}>
             <LociStage
               state={view.lociState}
@@ -276,7 +287,7 @@ export default function SetupScreen() {
               )}
             </View>
           </View>
-        </View>
+        </Pressable>
 
         <View style={styles.bottom}>
           {view.examples && (
@@ -299,6 +310,7 @@ export default function SetupScreen() {
           >
             <View style={styles.bar}>
               <TextInput
+                ref={inputRef}
                 accessibilityLabel="Ask Loci for a walk"
                 value={request}
                 onChangeText={setRequest}
