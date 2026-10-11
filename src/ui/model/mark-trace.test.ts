@@ -109,12 +109,22 @@ describe('the mark trace order', () => {
     expect(rank(rightmost)).toBeGreaterThan(0.9);
   });
 
-  it('follows the stroke: the top of the loop comes after the left stem and before the right ring', () => {
+  it('writes the loop like a cursive l: up the slanted right strand, over the top, then down the left stem', () => {
     const topY = Math.min(...MARK_TRACE.map((c) => c.y));
     const top = MARK_TRACE.find((c) => c.y === topY) as { d: number };
-    const stem = MARK_TRACE.find((c) => c.y === 60 && c.x >= 38 && c.x <= 44) as { d: number };
-    expect(stem.d).toBeLessThan(top.d);
-    expect(top.d).toBeLessThan(STROKE_LENGTH - 20);
+    const upstroke = MARK_TRACE.find((c) => c.y === 60 && c.x >= 54 && c.x <= 59) as { d: number };
+    const stem = MARK_TRACE.find((c) => c.y === 60 && c.x >= 38 && c.x <= 43) as { d: number };
+    expect(upstroke.d).toBeLessThan(top.d);
+    expect(top.d).toBeLessThan(stem.d);
+    expect(stem.d).toBeLessThan(STROKE_LENGTH - 20);
+  });
+
+  it('the upstroke draws the crossing as it passes, so the loop never waits for the stem', () => {
+    const topY = Math.min(...MARK_TRACE.map((c) => c.y));
+    const top = MARK_TRACE.find((c) => c.y === topY) as { d: number };
+    const crossing = MARK_TRACE.find((c) => c.x === 42 && c.y === 84) as { d: number };
+    expect(MARK_ROWS[84][42]).toBe('0');
+    expect(crossing.d).toBeLessThan(top.d - 20);
   });
 });
 

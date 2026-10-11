@@ -2,38 +2,65 @@ import { MARK_ROWS } from './mark';
 import { FOUND_FRAME_MS, spriteRows } from './sprites';
 
 /**
- * The centre line of the mark's stroke, from the left checkpoint ring to the right one, in 96 x 112 mark cells.
- * The stroke crosses itself where the loop closes, so a flood fill from the left end would take the shortcut
- * and finish somewhere in the loop; following this line keeps the order the way a pen would draw it. The line
- * reads the approved art (it is traced on it), and a test checks that the order it yields covers every ink cell.
+ * The centre line of the mark's stroke, from the left checkpoint ring to the right one, in 96 x 112 mark cells, written
+ * the way a cursive "l" is: up the slanted right strand of the loop, counter-clockwise over the top, down the left stem
+ * (crossing back over the upstroke), then out along the bottom to the right ring. The stroke crosses itself where the
+ * loop closes, so a flood fill from the left end would take the shortcut and finish somewhere in the loop; following
+ * this line keeps the order the way a pen would draw it, and the crossing belongs to the first pass (see
+ * CROSSING_REACH). The line reads the approved art (it is traced on it), and a test checks that the order it yields
+ * covers every ink cell.
  */
 const WAYPOINTS: readonly (readonly [number, number])[] = (
   [
     [8.5, 48], // left checkpoint ring
-    [12, 47],
-    [16, 45.5],
-    [20, 43],
-    [21, 38],
-    [20.5, 30],
-    [21, 22],
-    [23, 14],
-    [27, 8],
+    [12, 47.5],
+    [14, 46.5],
+    [16, 45],
+    [17.5, 44],
+    [19, 42.5],
+    [20.5, 41], // the upstroke crosses the stem
+    [22, 39.5],
+    [23, 38],
+    [24.5, 36],
+    [25.5, 34.5],
+    [26.5, 33],
+    [27.5, 31],
+    [28.5, 29],
+    [29.5, 27],
+    [30.5, 25],
+    [31.5, 22],
+    [32, 19.5],
+    [32.5, 17.5],
+    [33, 15],
+    [33, 11.5],
+    [32.5, 8.5],
+    [31.5, 6.5],
     [30, 5.5], // top of the loop
-    [32, 8],
-    [33, 13],
-    [33, 18],
-    [32, 22],
-    [31, 26],
-    [29, 29],
-    [27, 32],
-    [25, 35],
-    [23, 38], // the stroke crosses itself
-    [22, 42],
-    [22.5, 46],
-    [25, 48],
-    [30, 48.5],
-    [33, 46],
-    [35.5, 43],
+    [28.5, 6],
+    [27.5, 7.5],
+    [26.5, 9.5],
+    [25.5, 11.5],
+    [24.5, 13.5],
+    [23.5, 15.5],
+    [23, 17],
+    [22.5, 19],
+    [22, 20.5],
+    [21.5, 22.5],
+    [21, 25],
+    [21, 28],
+    [20.5, 29.5],
+    [20, 32],
+    [20, 36],
+    [20, 40],
+    [20.5, 43], // the stem crosses back over the upstroke
+    [21.5, 45.5],
+    [22.5, 47],
+    [24.5, 48.5],
+    [28, 49.5],
+    [31, 48.5],
+    [33, 47],
+    [34.5, 45],
+    [36, 43.5],
     [38, 40.5], // right checkpoint ring
   ] as const
 ).map(([x, y]) => [x * 2 + 1, y * 2 + 1] as const);
@@ -99,6 +126,28 @@ function samples(points: readonly (readonly [number, number])[]): { x: number; y
   return out;
 }
 
+/**
+ * How close a pass of the centre line must come to a cell, in mark cells (about half the stroke width), to claim it
+ * where the stroke crosses itself: the first pass over a crossing draws the ink there, as a pen would.
+ */
+const CROSSING_REACH = 3;
+
+/**
+ * The distance along the centre line at which the pen draws the cell centred at (px, py): the earliest pass of the
+ * line (a point closer to the cell than its neighbours) that comes within CROSSING_REACH of it, else the nearest point.
+ */
+function ownerDistance(line: readonly { x: number; y: number; d: number }[], px: number, py: number): number {
+  const sq = line.map((p) => (p.x - px) ** 2 + (p.y - py) ** 2);
+  let nearest = 0;
+  for (let i = 1; i < sq.length; i += 1) if (sq[i] < sq[nearest]) nearest = i;
+  const limit = Math.max(sq[nearest], CROSSING_REACH ** 2) + 1e-9;
+  for (let i = 0; i < nearest; i += 1) {
+    const pass = (i === 0 || sq[i] <= sq[i - 1]) && sq[i] <= sq[i + 1];
+    if (pass && sq[i] <= limit) return line[i].d;
+  }
+  return line[nearest].d;
+}
+
 const LINE = samples(WAYPOINTS);
 /** Length of the pen's path from the ring to the right ring, in mark cells. */
 export const STROKE_LENGTH = LINE[LINE.length - 1].d;
@@ -122,11 +171,11 @@ export function strokePoint(length: number): { x: number; y: number } {
 
 /**
  * Every ink cell in the order the pen draws it: first the left checkpoint ring, round from its right wall, then the
- * stroke, then the right checkpoint ring once the stroke reaches it. A stroke cell takes the distance of the nearest
- * point of the centre line (the earliest one when the stroke crosses itself, ties top to bottom, left to right), but
- * it is only drawn once the stroke already touches it: a cell assigned to an early pass that sits beside a later
- * strand waits for that strand, so the drawn part is always one connected stroke ending at the pen tip, never a
- * fragment ahead of it. Deterministic.
+ * stroke, then the right checkpoint ring once the stroke reaches it. A stroke cell takes the distance of the first
+ * pass of the centre line within CROSSING_REACH of it (else the nearest point), so the upstroke draws the crossing and
+ * never waits for the stem; ties go top to bottom, left to right. A cell is only drawn once the stroke already touches
+ * it: a cell assigned to an early pass that sits beside a later strand waits for that strand, so the drawn part is
+ * always one connected stroke ending at the pen tip, never a fragment ahead of it. Deterministic.
  */
 export function traceCells(rows: readonly string[], points = WAYPOINTS): readonly TraceCell[] {
   const line = points === WAYPOINTS ? LINE : samples(points);
@@ -144,16 +193,7 @@ export function traceCells(rows: readonly string[], points = WAYPOINTS): readonl
         rightRing.push({ x, y, d: ringFraction(RIGHT_RING_ORDER, x, y) });
         continue;
       }
-      let best = line[0];
-      let bestSq = Infinity;
-      for (const point of line) {
-        const sq = (point.x - (x + 0.5)) ** 2 + (point.y - (y + 0.5)) ** 2;
-        if (sq < bestSq - 1e-9) {
-          bestSq = sq;
-          best = point;
-        }
-      }
-      stroke.push({ x, y, d: best.d });
+      stroke.push({ x, y, d: ownerDistance(line, x + 0.5, y + 0.5) });
     }
   });
   const byOrder = (a: TraceCell, b: TraceCell) => a.d - b.d || a.y - b.y || a.x - b.x;

@@ -185,7 +185,7 @@ Mobile, single column, Expo Router screens in `src/app`. Spacing is a small hand
 - **Memorize** (first viewport): the real MapLibre map takes 55% of window height (minimum 160 dp), yielding at large font scales so two story rows stay visible. Below it: a header row (title, Read aloud), a horizontal stamp strip (40x52 dp stamps, 6 dp gap), the dialogue box filling the remaining height, and the primary "Hide map & start" button in the footer.
 - **Run**: a full-height ink field, 24 dp side padding. "N/M PLACES" counter, timer, Hint button, a scrolling hint dialogue, and an isolated Give up.
 - **Results**: ground, score line, badge case, then the map and the per-control list, with "New course" pinned at the bottom. Badge rows are one row up to four controls, otherwise two balanced rows.
-- **Loading**: on the dark run-field ground, the mark centered exactly where the native splash would draw it, written like handwriting in Harbor Haze (the left ring, then one continuous stroke at an even speed, then the right ring); the right ring gives way to the gold found star, the whole mark turns gold and the logo and star twinkle together. Text-free so it draws before fonts load.
+- **Loading**: on the dark run-field ground, the mark centered exactly where the native splash would draw it, written like handwriting in Harbor Haze (the left ring, then one continuous stroke at an even speed, up the slanted strand, over the top and down the stem like a cursive l, then the right ring); the right ring gives way to the gold found star, the whole mark turns gold and the logo and star twinkle together. Text-free so it draws before fonts load.
 
 ### Known limits
 - At font scale 1.3 a 7-line story fragment scrolls inside the dialogue box instead of fitting.
