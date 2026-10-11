@@ -62,7 +62,7 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - **Do T13 together with T11, in the same single writer** (user decision on 2026-10-09): only one agent at a time may build to or drive the phone.
   - Placements: the loading-screen logo slot left by the T10 polish batch, and possibly the setup header.
   - Android launcher icon: the symbols are not launcher icons. Build a padded square adaptive-icon foreground (safe zone) on a Sweetie 16 background per the Expo SDK 57 `android.adaptiveIcon` docs, then rebuild natively and check it on the launcher.
-- [x] T14 Animated logo on cold start (user request on 2026-10-10): the "l" path traces from its left end to its right end, then a gold found-style sparkle pops at the right end.
+- [x] T14 Animated logo on cold start (REOPENED 2026-10-11; the fourth pass `cb910b9` fixes the loop direction, and the user confirmed it on the phone on 2026-10-11) (user request on 2026-10-10): the "l" path traces from its left end to its right end, then a gold found-style sparkle pops at the right end.
   - The native splash cannot animate (expo-splash-screen SDK 57: static image plus fade only, verified in the docs), so the trace runs in the JS LoadingScreen. The native splash shows frame 0 so the handoff does not flash.
   - Trace order is a pure, test-first BFS from the left endpoint. It plays once per cold start, takes at most ~1.8 s, and respects reduce motion.
   - Route: one delegated writer (sole phone owner) that also rebuilds and installs the release APK.
@@ -338,7 +338,36 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - Only one native rebuild, a debug build.
   - Not verified: the reduce-motion path on the device (unit tests only), and whether release shows a black gap between the native splash and JS. In debug the gap is ~6 s while Metro bundles.
 
-## Next step
+- 2026-10-11: The user paused the session after the third T14 pass ("still not how I want it"); they will continue in a new session. State at pause:
+  - `feat/memory-route` is 10 commits ahead of `origin` (from `702980e` to `599b319`), not pushed. `main` on origin is at `a70f92f`.
+  - `README.md` has the user's own uncommitted edit; do not touch it or commit it without asking.
+  - The phone `ZT322SKLL5` runs the debug build (`dist/loci-dev.apk`). Metro was left running in the user's Terminal tab, started with `npx expo start --port 8082`. `dist/loci-release.apk` is STALE: it predates `835fa5e`.
+  - User's T14 intent, cumulative and authoritative:
+    1. The first native screen is just the background colour, with no logo.
+    2. The cursive "l" is WRITTEN like handwriting, left ring → up the loop → down → right ring. Reference: https://commons.wikimedia.org/wiki/File:Animated_letter_L_lower_case_hand_writing_Version1.gif
+    3. When the pen reaches the end, the last ring is REPLACED by the gold found-star.
+    4. The whole logo turns gold on the ink background.
+    5. The logo and the star twinkle together, in phase, like the found stars over a reached place.
+  - Already rejected: a column-like chunky reveal, and a light-blue star in the dim frame.
+- 2026-10-11 (new session): T14 fourth pass, after the user said the logo "loads the whole height from left to right":
+  - Root cause: the centre line went the wrong way round the loop. The pen went from the left ring up the LEFT stem, at full height, then clockwise over the top and down the right strand. A cursive "l" goes up the slanted RIGHT strand, turns counter-clockwise over the top, comes down the stem, crosses back over the upstroke and exits to the right ring.
+  - Reversing the waypoints alone stalled the loop at the crossing (974 cells popped in at once). Nearest-point assignment gave the shared crossing cells to the later stem pass, and the touch rule held the upstroke back.
+  - Fix in `cb910b9`: new WAYPOINTS, plus `CROSSING_REACH = 3` and `ownerDistance()`. The earliest pass of the centre line within the reach owns a cell, so the first pass over a crossing draws it. DESIGN.md Loading bullet updated.
+  - Route: inline diagnosis and an offline prototype (a PNG contact-sheet renderer, no phone), then one delegated writer for the code and test files (writer trigger). The parent confirmed the committed render is byte-identical to the prototype.
+  - TDD: RED, then a second RED, then GREEN. Full suite 445 passed; lint and tsc clean. Parent spot check: `mark-trace.test.ts` 31/31.
+  - Prototype checks: every prefix is connected; new cells stay at most 6.0 cells from the pen tip; at most 27 cells per 2.5 cells of pen travel; stroke length 238.1.
+  - Contact sheets: `dist/logo-trace-before-sheet.png` and `dist/logo-trace-after-sheet.png`.
+  - RDD assess, base `599b319`, committed-only, untracked excluded: medium (`executable_change`), `review_due: false` (`under_budget`). Pending in the slice.
+  - Verified by the user on the phone through Metro ("Perfecto! Ahora sí"). T14 closed.
+
+## Next step (2026-10-11, after T14 closed; supersedes the plan below)
+Deadline: 2026-10-11 23:59 PDT = 2026-10-12 03:59 in Argentina.
+1. (done) T14 closed with `cb910b9`, confirmed by the user on the phone.
+2. (done) Iterating T14 through Metro, JS-only.
+3. Next: push `feat/memory-route` and fast-forward `main` (the user already authorized pushing to this repo, but confirm), then build the release APK ONCE (`assembleRelease` from a short-path copy) for the walk.
+4. T8: outdoor walk (verify a real GPS punch, the hinted "?" badge, the found animation and T9 dictation), clips, then finish `docs/dev-post-draft.md`, which the user edits with their own tools.
+
+## Older next step
 Resume in one session, from the repo `C:/Users/teofu/Code/loci` (main checkout on `feat/memory-route`). The pixel work lives in the worktree `C:/Users/teofu/Code/loci-worktrees/pixel-world`.
 1. ONE writer (the sole phone owner), in the pixel-world worktree:
    a. Verify and recapture the T10 batches on the phone, and fix the tree trunk.
