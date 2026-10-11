@@ -7,10 +7,10 @@ import { COLORS } from '../theme/theme';
 import { TraceMark } from './TraceMark';
 
 /**
- * dp per mark cell that the Android 12+ splash actually draws the image at (measured on device: the system scales the
- * 192 dp image to about 0.85 of its size), so the first JS frame lands on the native one. Not an integer, by design.
+ * dp per mark cell: the mark is about 163 dp wide on screen, 60 cells across. Not an integer, by design. The native
+ * splash image is fully transparent, so there is no image hand-over to match, only the background colour (black).
  */
-const SPLASH_CELL_DP = 1.7;
+const SPLASH_CELL_DP = 163 / 60;
 /** With reduced motion the whole mark shows still, held this long (from when the setting is known) so it registers. */
 const REDUCED_HOLD_MS = 500;
 
@@ -22,11 +22,11 @@ type Props = {
 };
 
 /**
- * The opening screen after the native splash: the Loci path mark centred exactly where the splash drew it,
- * written like handwriting (the left ring, then one continuous stroke at an even speed, then the right ring) on the splash ground, then the right
- * ring gives way to the gold found star, the whole mark turns gold and the logo and star twinkle together. The native splash
- * image is fully transparent (plain ink, the same ground) and nothing is drawn at t = 0, so the hand-over does not flash. It uses no text,
- * so it can draw before any font is ready.
+ * The opening screen after the native splash: the Loci path mark centred on the black field, written like handwriting
+ * (the left ring, then one continuous stroke at an even speed, then the right ring), then the right ring gives way to
+ * the gold four-point sparkle, the whole mark turns gold and the logo and star twinkle together. The native splash
+ * image is fully transparent (plain black, the same field) and nothing is drawn at t = 0, so the hand-over does not
+ * flash. It uses no text, so it can draw before any font is ready.
  */
 export function LoadingScreen({ onShown, onDone }: Props) {
   const reducedMotion = useReducedMotion();
@@ -87,5 +87,5 @@ export function LoadingScreen({ onShown, onDone }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: COLORS.splash, alignItems: 'center', justifyContent: 'center' },
+  root: { flex: 1, backgroundColor: COLORS.ground, alignItems: 'center', justifyContent: 'center' },
 });

@@ -1,7 +1,7 @@
 /**
  * Regenerates assets/splash-icon.png: the first frame of the opening animation, which draws nothing, so the image is
  * fully transparent (384 x 448, the 4x mark canvas the splash config sizes against). The native splash then shows only
- * its ink #1A1C2C ground, the same colour as the JS loading screen that takes over, and the pen starts writing there.
+ * its black #000000 ground, the same colour as the JS loading screen that takes over, and the pen starts writing there.
  * Run with `node scripts/generate-splash-icon.js`. Deterministic: same source, same bytes.
  */
 const fs = require('fs');

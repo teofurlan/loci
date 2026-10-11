@@ -1,14 +1,14 @@
-import { MARK_ROWS } from './mark';
-import { FOUND_FRAME_MS, spriteRows } from './sprites';
+import { MARK_ROWS, SOURCE_PER_CELL } from './mark';
 
 /**
- * The centre line of the mark's stroke, from the left checkpoint ring to the right one, in 96 x 112 mark cells, written
+ * The centre line of the mark's stroke, from the left checkpoint ring to the right one, in source cells (the 96 x 112
+ * space the line, the ring boxes and the star were hand-placed on; see SOURCE_PER_CELL for the map onto the grid), written
  * the way a cursive "l" is: up the slanted right strand of the loop, counter-clockwise over the top, down the left stem
  * (crossing back over the upstroke), then out along the bottom to the right ring. The stroke crosses itself where the
  * loop closes, so a flood fill from the left end would take the shortcut and finish somewhere in the loop; following
  * this line keeps the order the way a pen would draw it, and the crossing belongs to the first pass (see
  * CROSSING_REACH). The line reads the approved art (it is traced on it), and a test checks that the order it yields
- * covers every ink cell.
+ * covers every ink cell. The order is the opening study's (`buildMark(60)`) cell for cell.
  */
 const WAYPOINTS: readonly (readonly [number, number])[] = (
   [
@@ -76,17 +76,27 @@ export type TraceCell = {
 };
 
 type Box = { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number };
-const inBox = (box: Box, x: number, y: number) => x >= box.x0 && x <= box.x1 && y >= box.y0 && y <= box.y1;
+/** Whether the source-space point (px, py) is inside the box, whose corners are whole source cells (x1 and y1 inclusive). */
+const inBox = (box: Box, px: number, py: number) => px >= box.x0 && px < box.x1 + 1 && py >= box.y0 && py < box.y1 + 1;
+/** The centre of grid cell `cell` along one axis, in source cells. */
+const sourceCentre = (cell: number) => (cell + 0.5) * SOURCE_PER_CELL;
 
-/** The left checkpoint ring in mark cells (inclusive): the pen's starting point, drawn first. The stroke leaves its right wall. */
+/** The left checkpoint ring in source cells (inclusive): the pen's starting point, drawn first. The stroke leaves its right wall. */
 export const LEFT_RING_BOX = { x0: 11, y0: 89, x1: 25, y1: 102 } as const;
 /**
- * The right checkpoint ring in mark cells (inclusive): ink on all four edges, hollow inside. The stroke runs into
+ * The right checkpoint ring in source cells (inclusive): ink on all four edges, hollow inside. The stroke runs into
  * it from the lower left; its end is below this box. The star replaces everything inside it.
  */
 export const RING_BOX = { x0: 70, y0: 73, x1: 83, y1: 84 } as const;
-/** Centre of the right checkpoint ring in mark cells, where the star sits. */
-export const RING_CENTRE = { x: (RING_BOX.x0 + RING_BOX.x1 + 1) / 2, y: (RING_BOX.y0 + RING_BOX.y1 + 1) / 2 } as const;
+/** Whether grid cell (x, y) belongs to the left checkpoint ring (its centre is inside LEFT_RING_BOX). */
+export const isLeftRingCell = (x: number, y: number) => inBox(LEFT_RING_BOX, sourceCentre(x), sourceCentre(y));
+/** Whether grid cell (x, y) belongs to the right checkpoint ring (its centre is inside RING_BOX). */
+export const isRightRingCell = (x: number, y: number) => inBox(RING_BOX, sourceCentre(x), sourceCentre(y));
+/** Centre of the right checkpoint ring in grid cells, where the star sits. */
+export const RING_CENTRE = {
+  x: (RING_BOX.x0 + RING_BOX.x1 + 1) / 2 / SOURCE_PER_CELL,
+  y: (RING_BOX.y0 + RING_BOX.y1 + 1) / 2 / SOURCE_PER_CELL,
+} as const;
 
 /** Where the pen draws a ring: from `startDeg` (degrees counter-clockwise from east, on screen) once round, in `turn` direction. */
 const LEFT_RING_ORDER = { box: LEFT_RING_BOX, startDeg: 0, turn: 'ccw' } as const;
@@ -94,12 +104,12 @@ const LEFT_RING_ORDER = { box: LEFT_RING_BOX, startDeg: 0, turn: 'ccw' } as cons
 const RIGHT_RING_ORDER = { box: RING_BOX, startDeg: 240, turn: 'cw' } as const;
 type RingOrder = typeof LEFT_RING_ORDER | typeof RIGHT_RING_ORDER;
 
-/** Fraction (0 to 1] of the way round the ring that the cell at (x, y) is, so the first cells drawn sit just after the start. */
-function ringFraction(order: RingOrder, x: number, y: number): number {
+/** Fraction (0 to 1] of the way round the ring that the source-space point (px, py) is, so the first cells drawn sit just after the start. */
+function ringFraction(order: RingOrder, px: number, py: number): number {
   const { box, startDeg, turn } = order;
   const cx = (box.x0 + box.x1 + 1) / 2;
   const cy = (box.y0 + box.y1 + 1) / 2;
-  const deg = (Math.atan2(cy - (y + 0.5), x + 0.5 - cx) * 180) / Math.PI;
+  const deg = (Math.atan2(cy - py, px - cx) * 180) / Math.PI;
   const swept = turn === 'ccw' ? deg - startDeg : startDeg - deg;
   const wrapped = (((swept % 360) + 360) % 360) / 360;
   return wrapped === 0 ? 1 : wrapped;
@@ -127,7 +137,7 @@ function samples(points: readonly (readonly [number, number])[]): { x: number; y
 }
 
 /**
- * How close a pass of the centre line must come to a cell, in mark cells (about half the stroke width), to claim it
+ * How close a pass of the centre line must come to a cell, in source cells (about half the stroke width), to claim it
  * where the stroke crosses itself: the first pass over a crossing draws the ink there, as a pen would.
  */
 const CROSSING_REACH = 3;
@@ -149,10 +159,10 @@ function ownerDistance(line: readonly { x: number; y: number; d: number }[], px:
 }
 
 const LINE = samples(WAYPOINTS);
-/** Length of the pen's path from the ring to the right ring, in mark cells. */
+/** Length of the pen's path from the ring to the right ring, in source cells. */
 export const STROKE_LENGTH = LINE[LINE.length - 1].d;
 
-/** Where the pen tip is when it has written `length` cells of the stroke, in mark cell coordinates. */
+/** Where the pen tip is when it has written `length` source cells of the stroke, in grid cell coordinates. */
 export function strokePoint(length: number): { x: number; y: number } {
   const target = Math.min(Math.max(length, 0), STROKE_LENGTH);
   let lo = 0;
@@ -166,12 +176,13 @@ export function strokePoint(length: number): { x: number; y: number } {
   const b = LINE[Math.min(lo + 1, LINE.length - 1)];
   const span = b.d - a.d;
   const t = span > 0 ? (target - a.d) / span : 0;
-  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+  return { x: (a.x + (b.x - a.x) * t) / SOURCE_PER_CELL, y: (a.y + (b.y - a.y) * t) / SOURCE_PER_CELL };
 }
 
 /**
  * Every ink cell in the order the pen draws it: first the left checkpoint ring, round from its right wall, then the
- * stroke, then the right checkpoint ring once the stroke reaches it. A stroke cell takes the distance of the first
+ * stroke, then the right checkpoint ring once the stroke reaches it. Each cell is placed by its centre, mapped into
+ * source space ((x + 0.5) * SOURCE_PER_CELL). A stroke cell takes the distance of the first
  * pass of the centre line within CROSSING_REACH of it (else the nearest point), so the upstroke draws the crossing and
  * never waits for the stem; ties go top to bottom, left to right. A cell is only drawn once the stroke already touches
  * it: a cell assigned to an early pass that sits beside a later strand waits for that strand, so the drawn part is
@@ -185,15 +196,17 @@ export function traceCells(rows: readonly string[], points = WAYPOINTS): readonl
   rows.forEach((row, y) => {
     for (let x = 0; x < row.length; x += 1) {
       if (row[x] !== '0') continue;
-      if (inBox(LEFT_RING_BOX, x, y)) {
-        leftRing.push({ x, y, d: ringFraction(LEFT_RING_ORDER, x, y) });
+      const px = sourceCentre(x);
+      const py = sourceCentre(y);
+      if (inBox(LEFT_RING_BOX, px, py)) {
+        leftRing.push({ x, y, d: ringFraction(LEFT_RING_ORDER, px, py) });
         continue;
       }
-      if (inBox(RING_BOX, x, y)) {
-        rightRing.push({ x, y, d: ringFraction(RIGHT_RING_ORDER, x, y) });
+      if (inBox(RING_BOX, px, py)) {
+        rightRing.push({ x, y, d: ringFraction(RIGHT_RING_ORDER, px, py) });
         continue;
       }
-      stroke.push({ x, y, d: ownerDistance(line, x + 0.5, y + 0.5) });
+      stroke.push({ x, y, d: ownerDistance(line, px, py) });
     }
   });
   const byOrder = (a: TraceCell, b: TraceCell) => a.d - b.d || a.y - b.y || a.x - b.x;
@@ -233,58 +246,62 @@ export function traceCells(rows: readonly string[], points = WAYPOINTS): readonl
 
 export const MARK_TRACE: readonly TraceCell[] = traceCells(MARK_ROWS);
 /** How many cells of MARK_TRACE belong to the left ring (they come first). */
-export const LEFT_RING_COUNT = MARK_TRACE.filter((c) => inBox(LEFT_RING_BOX, c.x, c.y)).length;
+export const LEFT_RING_COUNT = MARK_TRACE.filter((c) => isLeftRingCell(c.x, c.y)).length;
 /** Index in MARK_TRACE of the right ring's first cell: the stroke is the cells between the two rings. */
-export const RIGHT_RING_START = MARK_TRACE.length - MARK_TRACE.filter((c) => inBox(RING_BOX, c.x, c.y)).length;
+export const RIGHT_RING_START = MARK_TRACE.length - MARK_TRACE.filter((c) => isRightRingCell(c.x, c.y)).length;
 
 /** The last cell drawn: the far side of the right checkpoint ring, where the place is reached. */
 export const TRACE_END: TraceCell = MARK_TRACE[MARK_TRACE.length - 1];
 
 /**
  * The left ring is drawn first, quickly, as the pen's starting point; the stroke then grows from it at an even speed; the
- * right ring is drawn as the pen arrives, just before the star replaces it.
+ * right ring is drawn as the pen arrives, just before the star replaces it. Writing takes 2.5 s in all, split like the
+ * approved study: the rings 7% and 5% of it, the stroke the rest.
  */
-export const RING_MS = 140;
-export const STROKE_MS = 1760;
-export const END_RING_MS = 100;
+export const RING_MS = 175;
+export const STROKE_MS = 2200;
+export const END_RING_MS = 125;
 export const TRACE_MS = RING_MS + STROKE_MS + END_RING_MS;
-/** Pen speed along the stroke, in mark cells per millisecond (about 2 cells in a 60 Hz frame). */
+/** Pen speed along the stroke, in source cells per millisecond (about 1.5 cells in a 60 Hz frame). */
 export const PEN_CELLS_PER_MS = STROKE_LENGTH / STROKE_MS;
 
-/** The mark's colour while it is being written (Harbor Haze), and the finale's two golds. */
-export const TRACE_COLOUR = '#94B0C2';
-/** Gold of the found star (the palette's found-b plus) and of the finished logo. */
-export const GOLD = '#FFCD75';
-/** The dim half of the twinkle: gold at about half strength on ink (3.8:1 against `#1A1C2C`). */
-export const DIM_GOLD = '#8D7451';
+/** The mark's colour while it is being written (Loci's light violet), and the finale's golds, all on the black field. */
+export const TRACE_COLOUR = '#a99cc2';
+/** Gold of the star and of the finished logo (the palette's found gold). */
+export const GOLD = '#ffcd75';
+/** The dim half of the twinkle: gold at about half strength on black (4.1:1). */
+export const DIM_GOLD = '#806a46';
+/** The light core at the heart of the bright star. */
+export const LIGHT_CORE = '#fff3d6';
 
 /**
  * After the trace: the star replaces the ring, the logo turns gold and the two twinkle together, in phase. Each frame
- * lasts one found-flash frame (FOUND_FRAME_MS): bright is the full star over the gold logo, dim is the small star over a
- * dimmer logo; the star is always exactly the logo's colour. It starts and ends bright.
+ * lasts FINALE_FRAME_MS (its own constant: the run screen's found flash keeps FOUND_FRAME_MS): bright is the full star
+ * with its light core over the gold logo, dim is the small star over a dimmer logo; the star is always exactly the
+ * logo's colour (bar the core). It starts and ends bright: TWINKLES dim frames between TWINKLES + 1 bright ones.
  */
-const FINALE: readonly { star: 'full' | 'small' }[] = [
-  { star: 'full' },
-  { star: 'small' },
-  { star: 'full' },
-  { star: 'small' },
-  { star: 'full' },
-];
-export const FINALE_MS = FINALE.length * FOUND_FRAME_MS;
+export const FINALE_FRAME_MS = 220;
+const TWINKLES = 2;
+const FINALE: readonly { star: 'full' | 'small' }[] = Array.from({ length: TWINKLES * 2 + 1 }, (_, i) => ({
+  star: i % 2 === 0 ? 'full' : 'small',
+}));
+export const FINALE_MS = FINALE.length * FINALE_FRAME_MS;
 
 export type TraceFrame = {
   /** How many cells of MARK_TRACE are drawn. */
   revealed: number;
-  /** `none` while tracing, then the found star: `full` (found-b) or `small` (found-a) as it twinkles. */
+  /** `none` while tracing, then the sparkle star: `full` (bright, with its light core) or `small` (dim) as it twinkles. */
   star: 'none' | 'full' | 'small';
   /** The whole logo is gold (after the star replaces the ring). */
   gold: boolean;
   /** The twinkle's dim half: the logo is drawn in a dimmer gold, exactly while the star is the small one. */
   dim: boolean;
-  /** The colour of the logo: Harbor Haze while tracing, then gold or dim gold. */
+  /** The colour of the logo: the pen's violet while tracing, then gold or dim gold. */
   logoColour: string;
   /** The colour of the star: null while tracing, then always the same as `logoColour`. */
   starColour: string | null;
+  /** The colour of the star's light core: only on the bright frame, else null. */
+  coreColour: string | null;
   /** The right checkpoint ring is replaced by the star. */
   ringHidden: boolean;
   done: boolean;
@@ -316,6 +333,7 @@ export function traceFrame(elapsedMs: number, reducedMotion = false): TraceFrame
       dim: false,
       logoColour: GOLD,
       starColour: GOLD,
+      coreColour: LIGHT_CORE,
       ringHidden: true,
       done: true,
     };
@@ -333,11 +351,12 @@ export function traceFrame(elapsedMs: number, reducedMotion = false): TraceFrame
       dim: false,
       logoColour: TRACE_COLOUR,
       starColour: null,
+      coreColour: null,
       ringHidden: false,
       done: false,
     };
   }
-  const index = Math.min(FINALE.length - 1, Math.floor((t - TRACE_MS) / FOUND_FRAME_MS));
+  const index = Math.min(FINALE.length - 1, Math.floor((t - TRACE_MS) / FINALE_FRAME_MS));
   const { star } = FINALE[index];
   const colour = star === 'small' ? DIM_GOLD : GOLD;
   return {
@@ -347,6 +366,7 @@ export function traceFrame(elapsedMs: number, reducedMotion = false): TraceFrame
     dim: star === 'small',
     logoColour: colour,
     starColour: colour,
+    coreColour: star === 'full' ? LIGHT_CORE : null,
     ringHidden: true,
     done: t >= TRACE_MS + FINALE_MS,
   };
@@ -372,19 +392,5 @@ export function revealedRows(count: number): string[] {
 
 /** The mark grid of a frame: the traced cells, minus the right ring once the star replaces it. */
 export function frameRows(frame: TraceFrame): string[] {
-  const rows = revealedRows(frame.revealed);
-  if (!frame.ringHidden) return rows;
-  return rows.map((row, y) =>
-    y < RING_BOX.y0 || y > RING_BOX.y1
-      ? row
-      : row.slice(0, RING_BOX.x0) + '.'.repeat(RING_BOX.x1 - RING_BOX.x0 + 1) + row.slice(RING_BOX.x1 + 1),
-  );
+  return revealedRows(frame.ringHidden ? Math.min(frame.revealed, RIGHT_RING_START) : frame.revealed);
 }
-
-/** The found star: the corner of `found-b` (5 x 5, gold plus in an ink outline) and of `found-a` (3 x 3, a small cross). */
-export const STAR_FULL: readonly string[] = spriteRows('found-b')
-  .slice(0, 5)
-  .map((row) => row.slice(0, 5));
-export const STAR_SMALL: readonly string[] = spriteRows('found-a')
-  .slice(0, 3)
-  .map((row) => row.slice(0, 3));
