@@ -251,7 +251,7 @@ Dark: the field is the app ground, black `#000000`, for the whole sequence, nati
 `app.json` sets the splash background to black `#000000` (light and dark), image `splash-icon.png` (fully transparent, so the splash is plain black; see Loading screen) at 192 dp wide, resizeMode contain. Changing the native splash colour needs a native rebuild (a release or dev-client build, not Metro): it is done once, at the end of the opening-screen work, so until then the native splash still shows the old `#1A1C2C` for a moment before the black JS screen. The adaptive icon background is Paper Mist `#C9D8E1` (an icon-only colour, not a UI token) with the ink mark as foreground and a black monochrome layer. `icon.png` and both adaptive layers are generated from `loci-mark-pixel.png`, nearest-neighbor 4x (5x for `icon.png`), recoloured to ink, centered on a 1024 canvas (the splash image is the exception: it is blank); provenance is in `assets/splash-icon.source.txt`. The app is light-only (`userInterfaceStyle: light`).
 
 ### Named Rules
-**The One Cadence Rule.** Every typed fragment uses the same 70 ms per character; speech is matched to it, never the reverse. Speech uses the best voice Android already offers for the story language (`pickVoice`): an exact locale, then the base language, Enhanced over Default, and never a "network" voice, because the walk has no signal; with no match the engine default speaks.
+**The One Cadence Rule.** Every typed fragment uses the same 70 ms per character; speech is matched to it, never the reverse. Speech uses the engine's default voice: a picked "best" installed voice was tried and removed on 2026-10-11 because it sounded choppy on the test phone.
 
 ## Do's and Don'ts
 
