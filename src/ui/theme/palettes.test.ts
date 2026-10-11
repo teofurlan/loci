@@ -61,3 +61,25 @@ describe('the palette (Sweetie 16)', () => {
     expect(keys.size).toBeGreaterThanOrEqual(12);
   });
 });
+
+describe('the chat home tokens', () => {
+  it('uses only #RRGGBB tokens', () => {
+    for (const value of Object.values(PALETTE.chat)) expect(value).toMatch(HEX);
+  });
+
+  it('puts light text and a lavender aura on a true black ground', () => {
+    expect(PALETTE.chat.ground).toBe('#000000');
+    expect(PALETTE.chat.text).toBe('#cfc8dc');
+    expect(PALETTE.chat.aura).toBe('#d8ccf2');
+  });
+
+  it('keeps the lines visible against the ground', () => {
+    expect(contrastRatio(PALETTE.chat.line, PALETTE.chat.ground)).toBeGreaterThan(1.5);
+  });
+
+  it('is covered by the text pairs: soft text on ground, white on the accent', () => {
+    const names = textPairs(PALETTE).map((pair) => pair.name);
+    expect(names).toContain('chat text on chat ground');
+    expect(names).toContain('chat onAccent on accent');
+  });
+});

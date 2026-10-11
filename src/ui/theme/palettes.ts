@@ -44,11 +44,28 @@ export type SpriteColors = readonly [string, string, string, string];
 /** Loci the companion: body base, upper-left light, lower-right shade, and the eyes. */
 export type LociColors = { base: string; light: string; shade: string; eye: string };
 
+/** The chat-style home screen: a black night scene with soft lavender lines, accent and aura. */
+export type ChatColors = {
+  /** Screen ground and the colour the rounded corners step into. */
+  ground: string;
+  /** Messages, the input text and the chips. */
+  text: string;
+  /** Borders of the bar, the chips, the mic and the message panel. */
+  line: string;
+  /** The send button fill. */
+  accent: string;
+  /** The glyph on the accent. */
+  onAccent: string;
+  /** The aura around Loci, blended over the ground. */
+  aura: string;
+};
+
 export type Palette = {
   name: string;
   ui: UiTokens;
   map: MapTokens;
   loci: LociColors;
+  chat: ChatColors;
   sprites: Record<SpriteName, SpriteColors>;
 };
 
@@ -60,6 +77,7 @@ function build(ui: UiTokens, map: MapTokens, kinds: Record<string, SpriteColors>
     ui,
     map,
     loci: { base: '#9182ac', light: '#a99cc2', shade: '#7a6d97', eye: '#292333' },
+    chat: { ground: '#000000', text: '#cfc8dc', line: '#4a4160', accent: '#6e5f92', onAccent: '#FFFFFF', aura: '#d8ccf2' },
     sprites: {
       park: k('park'),
       water: k('water'),
@@ -147,7 +165,7 @@ export type TextPair = { name: string; fg: string; bg: string; size: 'body' | 'l
  * Every text-on-background pair the UI draws. Body text must reach 4.5:1 and large or chunky labels 3:1.
  * Keep this in step with the components: a new pairing belongs here first.
  */
-export function textPairs({ ui, map }: Palette): TextPair[] {
+export function textPairs({ ui, map, chat }: Palette): TextPair[] {
   return [
     { name: 'ink on ground', fg: ui.ink, bg: ui.ground, size: 'body' },
     { name: 'ink on panel', fg: ui.ink, bg: ui.panel, size: 'body' },
@@ -158,6 +176,8 @@ export function textPairs({ ui, map }: Palette): TextPair[] {
     { name: 'runText on runField', fg: ui.runText, bg: ui.runField, size: 'body' },
     { name: 'runField on runText (pressed)', fg: ui.runField, bg: ui.runText, size: 'label' },
     { name: 'ink on found', fg: ui.ink, bg: ui.found, size: 'label' },
+    { name: 'chat text on chat ground', fg: chat.text, bg: chat.ground, size: 'body' },
+    { name: 'chat onAccent on accent', fg: chat.onAccent, bg: chat.accent, size: 'label' },
     { name: 'map label on land', fg: map.label, bg: map.land, size: 'body' },
     { name: 'map label on halo', fg: map.label, bg: map.labelHalo, size: 'body' },
   ];

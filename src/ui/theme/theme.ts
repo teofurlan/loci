@@ -32,3 +32,6 @@ export const TYPE: Record<TypeRole, RoleStyle> = {
   body: { fontFamily: FONTS.body, fontSize: 26, lineHeight: 30 },
   bodySmall: { fontFamily: FONTS.body, fontSize: 22, lineHeight: 26 },
 };
+
+/** The chat home screen colours: soft text and lines on black, a lavender accent. */
+export const CHAT = PALETTE.chat;
