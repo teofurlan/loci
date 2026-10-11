@@ -20,6 +20,7 @@ import { handleLocations, subscribeRunEvents, tracker } from '../ui/state/locati
 import { FOUND_FRAMES, FOUND_FRAME_MS } from '../ui/model/sprites';
 import { useReducedMotion } from '../ui/state/use-reduced-motion';
 import { useTypewriter } from '../ui/state/use-typewriter';
+import { useVoice } from '../ui/state/use-voice';
 import { COLORS } from '../ui/theme/theme';
 
 const FLASH_MS = 1400;
@@ -55,6 +56,7 @@ function FoundFlash({ kind, reducedMotion, onDone }: { kind: LandmarkKind; reduc
 
 export default function RunScreen() {
   const course = useCourse();
+  const voice = useVoice();
   const insets = useSafeAreaInsets();
   const reducedMotion = useReducedMotion();
   const [now, setNow] = useState(() => Date.now());
@@ -177,11 +179,12 @@ export default function RunScreen() {
     hintTimer.current = setTimeout(() => setHintArmed(true), TTS_START_FALLBACK_MS);
     Speech.stop();
     Speech.speak(given.fragment, {
+      voice,
       onStart: () => {
         if (hintTimer.current) clearTimeout(hintTimer.current);
         setHintArmed(true);
       },
-      onDone: () => Speech.speak(hintSentence(given)),
+      onDone: () => Speech.speak(hintSentence(given), { voice }),
     });
   };
 

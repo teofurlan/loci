@@ -20,6 +20,7 @@ import { courseStore, useCourse } from '../ui/state/course';
 import { declineBackground, hasDeclinedBackground } from '../ui/state/location-task';
 import { useReducedMotion } from '../ui/state/use-reduced-motion';
 import { useBlink, useTypewriter } from '../ui/state/use-typewriter';
+import { useVoice } from '../ui/state/use-voice';
 import { COLORS, SHAPE } from '../ui/theme/theme';
 
 /** If the speech engine never reports a start, typing begins anyway after this long. */
@@ -32,6 +33,7 @@ const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve,
 
 export default function MemorizeScreen() {
   const course = useCourse();
+  const voice = useVoice();
   const insets = useSafeAreaInsets();
   const { height, fontScale } = useWindowDimensions();
   const reducedMotion = useReducedMotion();
@@ -108,6 +110,7 @@ export default function MemorizeScreen() {
         if (speechRun.current === run) setArmedIndex(index);
       }, TTS_START_FALLBACK_MS);
       Speech.speak(`Control ${index + 1}. ${plan.story.fragments[index].text}`, {
+        voice,
         onStart: () => {
           if (speechRun.current !== run) return;
           if (startTimer.current) clearTimeout(startTimer.current);
@@ -120,6 +123,7 @@ export default function MemorizeScreen() {
       });
     };
     Speech.speak(plan.story.title, {
+      voice,
       onDone: () => speakFragment(0),
       onError: () => {
         if (speechRun.current === run) setSpeaking(false);
