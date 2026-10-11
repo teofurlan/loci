@@ -29,7 +29,8 @@ The user wants the app's dynamic and aesthetics to centre on a calm companion. C
 Mode: strict (source: user global CLAUDE.md "Strict TDD Mode: enabled"). Runner: jest via `jest-expo` (`npm test`, `npx jest <path>`). RED before GREEN for every model function.
 
 ## Delivery
-Strategy: ask-on-risk (default). Forecast ~800 authored lines across T1-T3, above the ~400 budget: chain strategy to be asked before the first commit that crosses it.
+Strategy: ask-on-risk. Chain strategy chosen by the user on 2026-10-11: **feature-branch-chain**. Each new slice (T4, T5, T6, ...) is a child branch cut from `feat/loci-companion` with its PR targeting `feat/loci-companion`; when the feature is ready, one PR from `feat/loci-companion` to `main`. Push, PR creation and merge stay the user's decisions.
+Slices so far (committed directly on `feat/loci-companion`, before the strategy was chosen): T1+T2 84d8623; T3 cda770d, cd64f64, a4e3259, 9a2bd04 (+ captures and docs). `feat/loci-companion` is NOT pushed yet: it must be pushed before the first child PR can target it.
 
 ## Tasks
 - [x] T1 Loci model (84d8623): pure pose sampler (keyframes, 12 fps, snapping) and rasterizer (body mask from the concept B path, corner light shading, axis-aligned pill eyes, blink) returning a pixel grid; run-length SVG paths; memoized by quantized pose. Route: delegated writer (2+ non-trivial files).
@@ -60,5 +61,12 @@ Strategy: ask-on-risk (default). Forecast ~800 authored lines across T1-T3, abov
 
 - 2026-10-11: nav-bar bug fixed (writer): after dismissing the keyboard with Android back, the input stayed behind the navigation bar because the bottom inset was dropped while the input was focused and back hides the keyboard without blurring. The inset now follows keyboardDidShow/keyboardDidHide, keyboardDidHide blurs the input, and tapping the stage dismisses the keyboard. Parent reproduced on device: tap input -> back -> input above the nav bar. All 15 message states forced one at a time (temporary code, reverted and grepped) and captured as `.impeccable/review/chat-home-msg-*.png`; all fit, including the longest with the keyboard open. Parent fixed the leftover "set the course again" recovery copy (RED test, then GREEN). `npm test` 502/502, typecheck and lint clean.
 
+- 2026-10-11: user approved the chat home and chose feature-branch-chain; the next screens continue in a new session.
+
+## Housekeeping before the final PR to main
+- Delete the temporary `src/app/loci-preview.tsx` (untracked dev preview of Loci).
+- `.pi/generated-images/` holds the design studies (untracked): `loci-pixel-motion-study-v2.html` (approved Loci), `loci-aura-study.html` (approved chat home: aura, corners, buttons). Decide whether to keep them in the repo.
+- Native review (RDD) was unavailable for every commit on this branch: `gentle-ai sync --agent claude-code` fails probing the Pi CodeGraph MCP adapter (not installed); the user chose to continue without reporting.
+
 ## Next step
-Other screens (T5) or the PR, at the user's choice; the PR chain strategy is still open.
+T5 in a new session: Loci on the pocket (run), hint and results screens. Start from this document and Engram topic `odd/loci-companion/tasks`. Before writing, decide with the user how each screen adopts the new look (black field + aura, or keep the Overworld ground) and which Loci state each moment uses (brief: Loci appears at transitions — start, hide map, finish — and when a hint is requested; hint = brief orientation cue; close = "You finished the route. See you next time.").
