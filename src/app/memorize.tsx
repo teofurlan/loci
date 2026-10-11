@@ -255,7 +255,9 @@ export default function MemorizeScreen() {
                   onPress={advance}
                   style={styles.next}
                 >
-                  <View style={{ opacity: typing.done && blink ? 1 : 0 }}>
+                  {/* Never flattened: the blink flips opacity between 1 (flattenable) and 0, and Fabric could crash
+                      re-parenting the pointer's SVG when that flip met the screen transition (addViewAt). */}
+                  <View collapsable={false} style={{ opacity: typing.done && blink ? 1 : 0 }}>
                     <PixelSprite name="glyph:pointer" scale={3} />
                   </View>
                 </Pressable>
