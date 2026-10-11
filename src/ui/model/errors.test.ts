@@ -31,6 +31,16 @@ describe('describePlanError', () => {
     expect(describePlanError(e).problem).toMatch(/too long/i);
   });
 
+  it('speaks in the chat wording, never the old "set the course" form', () => {
+    const abort = new Error('aborted');
+    abort.name = 'AbortError';
+    const errors = [abort, new TypeError('Network request failed'), 'boom'];
+    for (const error of errors) {
+      expect(describePlanError(error).recovery).not.toMatch(/set the course/i);
+    }
+    expect(describePlanError(abort).recovery).toMatch(/ask again/i);
+  });
+
   it('falls back to a generic message for unknown errors', () => {
     const d = describePlanError('boom');
     expect(d.problem.length).toBeGreaterThan(0);

@@ -26,13 +26,13 @@ export function describePlanError(error: unknown): PlanErrorDescription {
   if (error instanceof Error && error.name === 'AbortError') {
     return {
       problem: 'The map data service took too long to answer.',
-      recovery: 'Check your connection and set the course again.',
+      recovery: 'Check your connection and ask again.',
     };
   }
   if (error instanceof TypeError) {
     return {
       problem: 'Could not connect to the map data service.',
-      recovery: 'Check your network connection and set the course again.',
+      recovery: 'Check your network connection and ask again.',
     };
   }
   return {
