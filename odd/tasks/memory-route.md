@@ -321,6 +321,16 @@ Build an Android app for the DEV "Touch Grass" challenge (deadline 2026-10-11 23
   - RED: 12 failing tests; GREEN: 432 passing. Parent spot check: jest 432 passed.
   - Verified on the phone: same bounding box and background at the handoff, the reduce-motion path, and the release APK reinstalled. Captures in `dist/logo-anim2*`.
   - Known issue: on a cold start the trace looks shorter (~0.7 s instead of 1.2 s), because the animation is clock-based and a busy JS thread at startup eats the first steps.
+- 2026-10-10: T14 revised again (user decision): the logo and the star twinkle in phase. `82dbbc4`:
+  - Bright frame: gold `#FFCD75` and full star. Dim frame: `#8D7451` (3.8:1 on ink) and small star.
+  - The clock starts two rAFs after the first layout, and `advanceElapsed` caps each tick at one step, so no step is skipped.
+  - Dev measurements: all 30 steps in 3 of 3 runs, against 28 of 30 once before. Not re-measured in release.
+  - RED: 5 failing; GREEN: 435. Parent spot check: jest 435 passed.
+- 2026-10-10: Dev loop adopted (the user asked to stop unneeded builds). The phone runs the debug build (copy at `dist/loci-dev.apk`, plain RN without expo-dev-client). To iterate:
+  - Run `npx expo start --port 8082` from the repo.
+  - Run `adb reverse tcp:8081 tcp:8082` and `adb reverse tcp:8082 tcp:8082`, because the app may hold a `debug_http_host` of `localhost:8082` from earlier.
+  - Launch the app. Verified by the parent: setup loaded from Metro.
+  - Native rebuilds only for native config changes. The release APK is built once, before the walk.
 
 ## Next step
 Resume in one session, from the repo `C:/Users/teofu/Code/loci` (main checkout on `feat/memory-route`). The pixel work lives in the worktree `C:/Users/teofu/Code/loci-worktrees/pixel-world`.
