@@ -59,6 +59,13 @@ describe('pixelizeStyle', () => {
     expect(paintOf(out, 'building')['fill-color']).toBe(MAP.building);
   });
 
+  it('draws the night map: dark land under lavender major roads', () => {
+    expect(paintOf(out, 'background')['background-color']).toBe('#100d16');
+    expect(paintOf(out, 'highway_major_casing')['line-color']).toBe('#6e5f92');
+    expect(paintOf(out, 'highway_minor')['line-color']).toBe('#3a3250');
+    expect(paintOf(out, 'boundary_2')['line-color']).toBe('#4a4160');
+  });
+
   it('demotes minor roads and paths to the muted tone, keeping ink for major roads', () => {
     expect(paintOf(out, 'highway_minor')['line-color']).toBe(MAP.roadMinor);
     expect(paintOf(out, 'highway_major_casing')['line-color']).toBe(MAP.road);

@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useReducedMotion } from '../state/use-reduced-motion';
 import { useBlink } from '../state/use-typewriter';
-import { CHAT } from '../theme/theme';
+import { COLORS } from '../theme/theme';
 import { PixelBox } from './PixelBox';
 import { PixelSprite } from './PixelSprite';
 
@@ -33,9 +33,9 @@ export function MicButton({ listening, stopping, disabled, onPress }: Props) {
       onPress={onPress}
       style={[styles.root, { opacity: disabled ? 0.5 : 1 }]}
     >
-      <PixelBox fill={lit ? CHAT.accent : CHAT.ground} border={CHAT.line} behind={CHAT.ground} corners="round" stretch>
+      <PixelBox fill={lit ? COLORS.accent : COLORS.ground} border={COLORS.line} behind={COLORS.ground} corners="round" stretch>
         <View style={styles.icon}>
-          <PixelSprite name={listening ? 'glyph:stop' : 'glyph:mic'} scale={3} inkColor={CHAT.text} />
+          <PixelSprite name={listening ? 'glyph:stop' : 'glyph:mic'} scale={3} inkColor={COLORS.text} />
         </View>
       </PixelBox>
     </Pressable>

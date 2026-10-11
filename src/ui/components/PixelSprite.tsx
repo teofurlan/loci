@@ -5,7 +5,7 @@ import { spriteFor, spritePaths, type PaletteIndex, type Sprite, type SpriteName
 import { COLORS } from '../theme/theme';
 import { PALETTE } from '../theme/palettes';
 
-const GLYPH_COLORS = [COLORS.ink, COLORS.ink, COLORS.action, COLORS.panel] as const;
+const GLYPH_COLORS = [COLORS.text, COLORS.text, COLORS.accent, COLORS.ground] as const;
 
 type Props = {
   /** A named 16 x 16 sprite, or a small glyph. */
@@ -24,7 +24,7 @@ function resolve(name: Props['name']): Sprite {
 function PixelSpriteView({ name, scale, inkColor }: Props) {
   const sprite = resolve(name);
   const paths = spritePaths(sprite);
-  // Glyphs are ink marks (the pointer also uses the action color); sprites take four colors from the palette.
+  // Glyphs are text-coloured marks (the pointer also uses the accent); sprites take four colors from the palette.
   const colors = name.startsWith('glyph:') ? GLYPH_COLORS : PALETTE.sprites[name as SpriteName];
   const cols = sprite[0].length;
   return (
@@ -36,7 +36,7 @@ function PixelSpriteView({ name, scale, inkColor }: Props) {
       importantForAccessibility="no-hide-descendants"
     >
       {([0, 1, 2, 3] as PaletteIndex[]).map((shade) =>
-        paths[shade] ? <Path key={shade} d={paths[shade]} fill={shade === 0 && inkColor ? inkColor : (colors?.[shade] ?? COLORS.ink)} /> : null,
+        paths[shade] ? <Path key={shade} d={paths[shade]} fill={shade === 0 && inkColor ? inkColor : (colors?.[shade] ?? COLORS.text)} /> : null,
       )}
     </Svg>
   );

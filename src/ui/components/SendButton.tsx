@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useBlink } from '../state/use-typewriter';
 import { useReducedMotion } from '../state/use-reduced-motion';
-import { CHAT } from '../theme/theme';
+import { COLORS } from '../theme/theme';
 import { CHAT_BUTTON } from './MicButton';
 import { PixelBox } from './PixelBox';
 import { PixelSprite } from './PixelSprite';
@@ -27,12 +27,12 @@ export function SendButton({ onPress, disabled, busy }: Props) {
       onPress={onPress}
       style={[styles.root, { opacity: disabled && !busy ? 0.5 : 1 }]}
     >
-      <PixelBox fill={CHAT.accent} border={CHAT.accent} behind={CHAT.ground} corners="round" stretch>
+      <PixelBox fill={COLORS.accent} border={COLORS.accent} behind={COLORS.ground} corners="round" stretch>
         <View style={styles.icon}>
           {busy ? (
             <View style={[styles.busy, { opacity: blink ? 1 : 0.35 }]} />
           ) : (
-            <PixelSprite name="glyph:send" scale={3} inkColor={CHAT.onAccent} />
+            <PixelSprite name="glyph:send" scale={3} inkColor={COLORS.onAccent} />
           )}
         </View>
       </PixelBox>
@@ -43,5 +43,5 @@ export function SendButton({ onPress, disabled, busy }: Props) {
 const styles = StyleSheet.create({
   root: { width: CHAT_BUTTON, height: CHAT_BUTTON },
   icon: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  busy: { width: 12, height: 12, backgroundColor: CHAT.onAccent },
+  busy: { width: 12, height: 12, backgroundColor: COLORS.onAccent },
 });

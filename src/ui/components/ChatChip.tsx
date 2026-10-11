@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { CHAT } from '../theme/theme';
+import { COLORS } from '../theme/theme';
 import { AppText } from './AppText';
 import { PixelBox } from './PixelBox';
 
@@ -21,9 +21,9 @@ export function ChatChip({ label, onPress, disabled }: Props) {
       onPress={onPress}
       style={[styles.root, { opacity: disabled ? 0.5 : 1 }]}
     >
-      <PixelBox fill={CHAT.ground} border={CHAT.line} behind={CHAT.ground} corners="round">
+      <PixelBox fill={COLORS.ground} border={COLORS.line} behind={COLORS.ground} corners="round">
         <View style={styles.body}>
-          <AppText variant="bodySmall" color={CHAT.text} maxFontSizeMultiplier={1.3}>
+          <AppText variant="bodySmall" color={COLORS.text} maxFontSizeMultiplier={1.3}>
             {label}
           </AppText>
         </View>

@@ -162,12 +162,12 @@ export default function MemorizeScreen() {
     await hideAndStart();
   };
 
-  // The signature: the screen steps through the four greens to ink, then the run begins.
+  // The screen steps through four tones from ground to ground (black to black on the night palette), then the run begins.
   const hideAndStart = async () => {
     if (hiding) return;
     setHiding(true);
     stopSpeech();
-    for (const step of fadeSequence(reducedMotion, COLORS.ground, COLORS.runField)) {
+    for (const step of fadeSequence(reducedMotion, COLORS.ground, COLORS.ground)) {
       setFade(step.color);
       await sleep(step.ms);
     }
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 4,
     borderTopWidth: SHAPE.rule,
-    borderTopColor: COLORS.ink,
+    borderTopColor: COLORS.line,
   },
   headerText: { flex: 1 },
   storyTitle: { fontSize: 24, lineHeight: 26 },

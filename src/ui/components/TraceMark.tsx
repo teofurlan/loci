@@ -31,8 +31,8 @@ const SMALL = { origin: starOrigin(3), paths: spritePaths(parseGrid(STAR_SMALL))
 /**
  * The Loci path mark written part way along its stroke, in a light ink-on-ink colour; at the end the right ring gives
  * way to the found star, the whole mark turns gold and the logo and star twinkle together. The star is always drawn in
- * the logo's own colour (`frame.logoColour`: gold with the full star, dim gold with the small cross). Meant for the ink
- * run-field ground: the full star's ink outline is invisible there.
+ * the logo's own colour (`frame.logoColour`: gold with the full star, dim gold with the small cross). Meant for the splash
+ * ground: the full star's ink outline is invisible there.
  */
 function TraceMarkView({ scale = 2, frame }: Props) {
   const star = frame.star === 'full' ? FULL : frame.star === 'small' ? SMALL : null;
@@ -47,7 +47,7 @@ function TraceMarkView({ scale = 2, frame }: Props) {
       <Path d={markPathFor(frame)} fill={frame.logoColour} />
       {star ? (
         <G transform={`translate(${star.origin.x} ${star.origin.y}) scale(${STAR_SCALE})`}>
-          {star.paths[0] ? <Path d={star.paths[0]} fill={frame.star === 'full' ? COLORS.runField : (frame.starColour ?? frame.logoColour)} /> : null}
+          {star.paths[0] ? <Path d={star.paths[0]} fill={frame.star === 'full' ? COLORS.splash : (frame.starColour ?? frame.logoColour)} /> : null}
           {star.paths[3] ? <Path d={star.paths[3]} fill={frame.starColour ?? frame.logoColour} /> : null}
         </G>
       ) : null}

@@ -1,24 +1,40 @@
 import type { SpriteName } from '../model/sprites';
 
-/** UI chrome tokens. Green appears only as `found` (the success state); nature lives in `map` and the sprites. */
+/**
+ * UI chrome tokens: one night scheme on a black ground, shared by every screen. Green is not here: found is gold, and
+ * green lives only in the map's parks and woods and the park sprite.
+ */
 export type UiTokens = {
-  /** Screen ground on setup, memorize and results. */
+  /** The black field of every screen, and the fill of boxes, buttons and rows (a box is a line on black, no fill). */
   ground: string;
-  /** Dialogue boxes, stamps, menu rows and map plates: the paper a sprite sits on. */
-  panel: string;
-  /** All text and lines on ground or panel. */
-  ink: string;
+  /** Messages, labels and body text. */
+  text: string;
   /** Secondary text. */
   muted: string;
-  /** Buttons: the pressable fill. */
-  action: string;
-  /** Text on an `action` fill (and on a pressed, ink-filled button). */
-  onAction: string;
-  /** The run screen: a deep, non-black field with its light text. */
-  runField: string;
-  runText: string;
-  /** The success state: found tags, found badges, the found flash. */
+  /** Decorative box borders: dialogue box, chips, stamps' default, rows. Too soft (about 2.2:1) for a control outline. */
+  line: string;
+  /** Outlines of interactive controls (secondary buttons); reaches 3:1 on the ground. */
+  lineStrong: string;
+  /** The one action colour: primary buttons, the selected stamp, number tags, the dialogue pointer. */
+  accent: string;
+  /** The label on an `accent` fill. */
+  onAccent: string;
+  /** A pressed or selected button: the light flip of the accent. */
+  pressed: string;
+  /** The label on a `pressed` fill. */
+  onPressed: string;
+  /** The aura around Loci, blended over the ground; also the hint direction text. */
+  aura: string;
+  /** The success state: found badges, found tags, the found flash. */
   found: string;
+  /** The label on a `found` fill. */
+  onFound: string;
+  /** The mist plate a sprite sits on: stamps, map markers, row sprites. */
+  plate: string;
+  /** Text on a `plate`. */
+  onPlate: string;
+  /** The opening screen and native splash ground; `app.json` fixes it, so it cannot follow the black field. */
+  splash: string;
 };
 
 /** Terrain colors for the recolored OpenFreeMap style. */
@@ -44,40 +60,24 @@ export type SpriteColors = readonly [string, string, string, string];
 /** Loci the companion: body base, upper-left light, lower-right shade, and the eyes. */
 export type LociColors = { base: string; light: string; shade: string; eye: string };
 
-/** The chat-style home screen: a black night scene with soft lavender lines, accent and aura. */
-export type ChatColors = {
-  /** Screen ground and the colour the rounded corners step into. */
-  ground: string;
-  /** Messages, the input text and the chips. */
-  text: string;
-  /** Borders of the bar, the chips, the mic and the message panel. */
-  line: string;
-  /** The send button fill. */
-  accent: string;
-  /** The glyph on the accent. */
-  onAccent: string;
-  /** The aura around Loci, blended over the ground. */
-  aura: string;
-};
-
 export type Palette = {
   name: string;
   ui: UiTokens;
   map: MapTokens;
   loci: LociColors;
-  chat: ChatColors;
   sprites: Record<SpriteName, SpriteColors>;
 };
 
+/** The dark outline every sprite keeps on its mist plate. */
+const OUTLINE = '#1A1C2C';
+
 function build(ui: UiTokens, map: MapTokens, kinds: Record<string, SpriteColors>, name: string): Palette {
   const k = (id: string) => kinds[id];
-  const outline = ui.ink;
   return {
     name,
     ui,
     map,
     loci: { base: '#9182ac', light: '#a99cc2', shade: '#7a6d97', eye: '#292333' },
-    chat: { ground: '#000000', text: '#cfc8dc', line: '#4a4160', accent: '#6e5f92', onAccent: '#FFFFFF', aura: '#d8ccf2' },
     sprites: {
       park: k('park'),
       water: k('water'),
@@ -99,38 +99,44 @@ function build(ui: UiTokens, map: MapTokens, kinds: Record<string, SpriteColors>
       market: k('market'),
       you: k('you'),
       // Sparkles around a newly earned badge are gold, not green.
-      'found-a': [outline, '#EF7D57', '#FFCD75', '#FFCD75'],
-      'found-b': [outline, '#EF7D57', '#FFCD75', '#FFCD75'],
-      unknown: [outline, ui.muted, ui.panel, ui.panel],
+      'found-a': [OUTLINE, '#EF7D57', '#FFCD75', '#FFCD75'],
+      'found-b': [OUTLINE, '#EF7D57', '#FFCD75', '#FFCD75'],
+      unknown: [OUTLINE, ui.muted, ui.plate, ui.plate],
     },
   };
 }
 
-/** Sweetie 16 (GrafxKid) on a blue-grey ground, ink #1a1c2c, crimson action. Green is for nature and found only. */
+/** Night: the chat home's black field with lavender text, lines and accent; sprite kinds keep their Sweetie 16 tones. */
 const B = build(
   {
-    ground: '#94B0C2',
-    panel: '#C9D8E1',
-    ink: '#1A1C2C',
-    muted: '#333C57',
-    action: '#B13E53',
-    onAction: '#F4F4F4',
-    runField: '#1A1C2C',
-    runText: '#F4F4F4',
-    found: '#38B764',
+    ground: '#000000',
+    text: '#cfc8dc',
+    muted: '#8f86a3',
+    line: '#4a4160',
+    lineStrong: '#6e5f92',
+    accent: '#6e5f92',
+    onAccent: '#ffffff',
+    pressed: '#d8ccf2',
+    onPressed: '#000000',
+    aura: '#d8ccf2',
+    found: '#ffcd75',
+    onFound: '#000000',
+    plate: '#cfc8dc',
+    onPlate: '#000000',
+    splash: '#1A1C2C',
   },
   {
-    land: '#C9D8E1',
-    park: '#A7F070',
-    wood: '#38B764',
-    water: '#41A6F6',
-    road: '#1A1C2C',
-    roadMinor: '#333C57',
-    roadFill: '#94B0C2',
-    building: '#94B0C2',
-    boundary: '#566C86',
-    label: '#1A1C2C',
-    labelHalo: '#F4F4F4',
+    land: '#100d16',
+    park: '#16301f',
+    wood: '#1f4a2c',
+    water: '#173a5e',
+    road: '#6e5f92',
+    roadMinor: '#3a3250',
+    roadFill: '#6e5f92',
+    building: '#1d1828',
+    boundary: '#4a4160',
+    label: '#cfc8dc',
+    labelHalo: '#000000',
   },
   {
     park: ['#1A1C2C', '#8A4A3A', '#38B764', '#A7F070'],
@@ -153,7 +159,7 @@ const B = build(
     market: ['#1A1C2C', '#EF7D57', '#F4F4F4', '#FFCD75'],
     you: ['#1A1C2C', '#B13E53', '#FFCD75', '#3B5DC9'],
   },
-  'Sweetie 16',
+  'Night',
 );
 
 /** The world's one palette. */
@@ -165,19 +171,15 @@ export type TextPair = { name: string; fg: string; bg: string; size: 'body' | 'l
  * Every text-on-background pair the UI draws. Body text must reach 4.5:1 and large or chunky labels 3:1.
  * Keep this in step with the components: a new pairing belongs here first.
  */
-export function textPairs({ ui, map, chat }: Palette): TextPair[] {
+export function textPairs({ ui, map }: Palette): TextPair[] {
   return [
-    { name: 'ink on ground', fg: ui.ink, bg: ui.ground, size: 'body' },
-    { name: 'ink on panel', fg: ui.ink, bg: ui.panel, size: 'body' },
+    { name: 'text on ground', fg: ui.text, bg: ui.ground, size: 'body' },
     { name: 'muted on ground', fg: ui.muted, bg: ui.ground, size: 'body' },
-    { name: 'muted on panel', fg: ui.muted, bg: ui.panel, size: 'body' },
-    { name: 'onAction on action', fg: ui.onAction, bg: ui.action, size: 'label' },
-    { name: 'onAction on ink (pressed)', fg: ui.onAction, bg: ui.ink, size: 'label' },
-    { name: 'runText on runField', fg: ui.runText, bg: ui.runField, size: 'body' },
-    { name: 'runField on runText (pressed)', fg: ui.runField, bg: ui.runText, size: 'label' },
-    { name: 'ink on found', fg: ui.ink, bg: ui.found, size: 'label' },
-    { name: 'chat text on chat ground', fg: chat.text, bg: chat.ground, size: 'body' },
-    { name: 'chat onAccent on accent', fg: chat.onAccent, bg: chat.accent, size: 'label' },
+    { name: 'aura on ground', fg: ui.aura, bg: ui.ground, size: 'body' },
+    { name: 'onAccent on accent', fg: ui.onAccent, bg: ui.accent, size: 'label' },
+    { name: 'onPressed on pressed', fg: ui.onPressed, bg: ui.pressed, size: 'label' },
+    { name: 'onFound on found', fg: ui.onFound, bg: ui.found, size: 'label' },
+    { name: 'onPlate on plate', fg: ui.onPlate, bg: ui.plate, size: 'label' },
     { name: 'map label on land', fg: map.label, bg: map.land, size: 'body' },
     { name: 'map label on halo', fg: map.label, bg: map.labelHalo, size: 'body' },
   ];

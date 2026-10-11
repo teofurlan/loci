@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { CHAT } from '../theme/theme';
+import { COLORS } from '../theme/theme';
 import { AppText } from './AppText';
 
 type Props = {
@@ -16,11 +16,11 @@ type Props = {
 export function LociMessage({ problem, recovery, children }: Props) {
   return (
     <View accessibilityLiveRegion="polite" style={styles.root}>
-      <AppText variant="body" color={CHAT.text} maxFontSizeMultiplier={1.3} style={styles.text}>
+      <AppText variant="body" color={COLORS.text} maxFontSizeMultiplier={1.3} style={styles.text}>
         {problem}
       </AppText>
       {recovery ? (
-        <AppText variant="bodySmall" color={CHAT.text} maxFontSizeMultiplier={1.3} style={styles.text}>
+        <AppText variant="bodySmall" color={COLORS.text} maxFontSizeMultiplier={1.3} style={styles.text}>
           {recovery}
         </AppText>
       ) : null}

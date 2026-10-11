@@ -23,7 +23,7 @@ type Props = {
 
 const N = SHAPE.rule;
 
-function Single({ fill, border = COLORS.ink, behind, stretch, style, children }: Omit<Props, 'double'>) {
+function Single({ fill, border = COLORS.line, behind, stretch, style, children }: Omit<Props, 'double'>) {
   return (
     <View style={[{ backgroundColor: border, padding: N }, stretch && styles.stretch, style]}>
       <View style={[styles.inner, stretch && styles.stretch, { backgroundColor: fill }]}>{children}</View>
@@ -48,7 +48,7 @@ function corner(rect: CornerRect, inset: number) {
   ];
 }
 
-function Round({ fill, border = COLORS.ink, behind, stretch, style, children }: Omit<Props, 'double' | 'corners'>) {
+function Round({ fill, border = COLORS.line, behind, stretch, style, children }: Omit<Props, 'double' | 'corners'>) {
   return (
     <View style={[{ backgroundColor: border, padding: N }, stretch && styles.stretch, style]}>
       <View style={[styles.inner, stretch && styles.stretch, { backgroundColor: fill }]}>{children}</View>
