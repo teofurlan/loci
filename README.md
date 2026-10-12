@@ -4,6 +4,12 @@ Loci is an Android app that plans a walking loop through real landmarks, turns i
 
 You ask Loci, a small pixel-art companion, for a route ("20 min walk, green areas") by typing or by voice. Loci finds named places near you in OpenStreetMap and links them into a short story using the method of loci: each place becomes a vivid image, and the images follow one another. You read (or listen to) the story once with the map visible, then hide the map and walk. GPS confirms each checkpoint with a vibration, and at the end Loci shows how many you remembered.
 
+## See it
+
+- **Website:** [lociwalk.vercel.app](https://lociwalk.vercel.app)
+- **Demo video** (1:29, the release build on the Android emulator with a simulated location): [youtu.be/D2KuZpFce-s](https://youtu.be/D2KuZpFce-s)
+- **DEV post:** [Loci: A Walk You Have to Remember](https://dev.to/teo_furlan/loci-a-walk-you-have-to-remember-14lf)
+
 ## Try it
 
 Download the Android APK from the [latest release](https://github.com/teofurlan/loci/releases/latest) ([`loci-1.0.0.apk`](https://github.com/teofurlan/loci/releases/download/v1.0.0/loci-1.0.0.apk)), open it on the phone and allow installing from that source. It is a sideload build signed with a debug key, not a Play Store build. Location permission is needed; planning a route needs a connection, the walk itself works offline.
