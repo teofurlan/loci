@@ -10,7 +10,7 @@ android
 Casual walkers who head out around their own neighborhood or city. They want a light memory game that gives them a reason to go outside. The pace is relaxed and there is no performance pressure. The app also supports running, but walking is the primary scene.
 
 ## Product Purpose
-Loci builds a random walking loop through real, named landmarks near the user. An open-weight model (Gemma) turns that loop into a vivid mnemonic story using the method of loci.
+Loci builds a random walking loop through real, named landmarks near the user. An open-weight model (Gemma) turns that loop into a vivid mnemonic story using the method of loci. The user asks for the route from Loci, a small pixel-art companion who stays with them through the whole walk.
 
 The user reads and hears the story once with the map visible. Then they put the phone away, map hidden, and walk the route from memory. GPS confirms each checkpoint with a vibration. At the end the app scores how many checkpoints they remembered.
 
@@ -20,10 +20,10 @@ Success means the user spends the walk looking at the street, not at the screen,
 Orienteering "memory-O" drills, MapRun and UsynligO rely on courses made by an organizer. SpecTrek-style apps use random points with no memory element. Loci generates a fresh route on demand, snaps it to real landmarks, and makes remembering that route the game. The AI is the mechanism, not decoration: without the generated story there is no memory challenge.
 
 ## Operating Context
-- **Setup, at home or on the doorstep:** the user types a free-text request such as "20 min walk, green areas, I remember places better than street names". Gemma parses it into route parameters; it never invents coordinates.
+- **Ask Loci, at home or on the doorstep:** a chat-style home where Loci waits and the user types or dictates a free-text request such as "20 min walk, green areas, I remember places better than street names". Loci listens while planning and speaks any problem in a short message. Gemma parses the request into route parameters; it never invents coordinates.
 - **Memorize:** a map with numbered checkpoints plus the story text, optionally read aloud with Android text-to-speech. This is the only moment the full route is shown.
-- **Run, outdoors:** the phone is in a pocket and the map is hidden behind a black pocket overlay. The screen may also be off. GPS hits trigger haptics. Hints replay one unvisited checkpoint's story fragment through TTS, then give a direction, and each one costs score. Giving up is always available and reveals the map.
-- **Results:** checkpoints visited out of N, with points adjusted for hints.
+- **Run, outdoors:** the phone is in a pocket and the map is replaced by a black pocket screen with Loci. The screen may also be off. GPS hits trigger haptics. Hints replay one unvisited checkpoint's story fragment through TTS, then give a direction, and each one costs score. Giving up is always available and reveals the map.
+- **Results:** Loci celebrates a finished route; checkpoints visited out of N, with badges and points adjusted for hints.
 - **Environment:** outdoor daylight, glare, one hand, often while moving. Signal may be weak, so the run itself must work offline.
 
 ## Capabilities and Constraints
@@ -40,7 +40,7 @@ Orienteering "memory-O" drills, MapRun and UsynligO rely on courses made by an o
 Name: Loci, after the method of loci (the "memory palace").
 
 ## Evidence on Hand
-No users, testimonials, metrics or screenshots exist yet. An outdoor test run and a DEV challenge post are planned (deadline 2026-10-11). Do not fabricate usage numbers or quotes.
+No users, testimonials or metrics exist yet; screenshots of the current app are in `docs/screenshots/`. An outdoor test run and a DEV challenge post are planned (deadline 2026-10-11). Do not fabricate usage numbers or quotes.
 
 ## Product Principles
 - **Off the screen is the goal.** Every screen should get the user outside faster and keep the phone in the pocket during the walk.
