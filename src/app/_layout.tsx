@@ -20,21 +20,21 @@ export default function RootLayout() {
   const ready = fontsReady && introDone;
 
   // Edge-to-edge: the system bars are transparent, so they show the app ground. `style` names the button ink,
-  // like StatusBar. The overworld is one fixed palette: the system light or dark setting is ignored.
-  // The opening screen is dark (the run-field ground), so the buttons are light there.
+  // like StatusBar. The night palette is one fixed scheme: the system light or dark setting is ignored.
+  // The opening screen and every screen after it are dark, so the buttons are light throughout.
   useEffect(() => {
-    NavigationBar.setStyle(ready ? 'dark' : 'light');
-  }, [ready]);
+    NavigationBar.setStyle('light');
+  }, []);
 
   if (!ready) return <LoadingScreen onShown={() => SplashScreen.hideAsync()} onDone={() => setIntroDone(true)} />;
 
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: COLORS.ground } }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="memorize" />
-        <Stack.Screen name="run" options={{ animation: 'none', gestureEnabled: false, contentStyle: { backgroundColor: COLORS.runField } }} />
+        <Stack.Screen name="run" options={{ animation: 'none', gestureEnabled: false }} />
         <Stack.Screen name="results" options={{ animation: 'none', gestureEnabled: false }} />
       </Stack>
     </>

@@ -25,12 +25,12 @@ export function StampStrip({ controls, selected, onSelect }: Props) {
             accessibilityState={{ selected: active }}
             onPress={() => onSelect(index)}
           >
-            <PixelBox fill={COLORS.panel} behind={COLORS.ground} double={active}>
+            <PixelBox fill={COLORS.plate} border={active ? COLORS.accent : COLORS.plate} behind={COLORS.ground} corners="round">
               <View style={styles.stamp}>
-                <AppText variant="label" maxFontSizeMultiplier={1.2} allowFontScaling={false} style={styles.number}>
+                <AppText variant="label" color={COLORS.onPlate} maxFontSizeMultiplier={1.2} allowFontScaling={false} style={styles.number}>
                   {index + 1}
                 </AppText>
-                <PixelSprite name={control.kind} scale={2} />
+                <PixelSprite name={control.kind} scale={1} />
               </View>
             </PixelBox>
           </Pressable>

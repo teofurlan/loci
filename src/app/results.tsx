@@ -7,12 +7,17 @@ import { AppText } from '../ui/components/AppText';
 import { BadgeCase } from '../ui/components/BadgeCase';
 import { ControlRow } from '../ui/components/ControlRow';
 import { CourseMap } from '../ui/components/CourseMap';
+import { LociStage } from '../ui/components/LociStage';
 import { PixelBox } from '../ui/components/PixelBox';
 import { PixelButton } from '../ui/components/PixelButton';
 import { controlsFigure, formatElapsed, pointsLabel, SCORING_RULE } from '../ui/model/format';
+import { resultsLoci } from '../ui/model/results-loci';
 import { courseStore, useCourse } from '../ui/state/course';
 import { services } from '../ui/state/services';
 import { COLORS, SHAPE } from '../ui/theme/theme';
+
+/** Loci's stage: 120 cells at 2 dp per cell. */
+const STAGE = 240;
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
@@ -40,7 +45,7 @@ export default function ResultsScreen() {
   if (course.phase !== 'results') return <Redirect href="/" />;
 
   const score = scoreSession(course.session);
-  const completed = course.session.status === 'completed';
+  const loci = resultsLoci(course.session.status);
   const scoreLine = `${controlsFigure(score.visited, score.total)} visited · ${pointsLabel(score.points)}`;
 
   const newCourse = () => {
@@ -51,9 +56,14 @@ export default function ResultsScreen() {
   return (
     <View style={styles.root}>
       <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 24 }]}>
-        <AppText variant="headline" accessibilityRole="header" maxFontSizeMultiplier={1.3}>
-          {completed ? 'Course complete' : 'Course ended'}
-        </AppText>
+        <View style={styles.loci}>
+          <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <LociStage state={loci.state} size={STAGE} />
+          </View>
+          <AppText variant="body" style={styles.line} accessibilityRole="header" maxFontSizeMultiplier={1.3}>
+            {loci.line}
+          </AppText>
+        </View>
         <AppText variant="title" style={styles.figure} accessibilityLabel={scoreLine}>
           {scoreLine}
         </AppText>
@@ -72,7 +82,7 @@ export default function ResultsScreen() {
         <AppText variant="label" style={styles.sectionLabel} maxFontSizeMultiplier={1.3}>
           The map
         </AppText>
-        <PixelBox fill={COLORS.ground} behind={COLORS.ground} double>
+        <PixelBox fill={COLORS.ground} behind={COLORS.ground} corners="round">
           <View style={styles.map}>
             <CourseMap
               style={styles.fill}
@@ -108,11 +118,13 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: COLORS.ground },
   fill: { flex: 1 },
   scroll: { paddingHorizontal: 16, paddingBottom: 24 },
-  figure: { marginTop: 14 },
+  loci: { alignItems: 'center' },
+  line: { textAlign: 'center', marginTop: 4, paddingHorizontal: 8 },
+  figure: { marginTop: 20 },
   stats: { marginTop: 12 },
   rule: { marginTop: 8 },
   sectionLabel: { marginTop: 28, marginBottom: 10 },
   map: { height: 300 },
   sheet: { marginTop: 20 },
-  footer: { paddingHorizontal: 16, paddingTop: 8, borderTopWidth: SHAPE.rule, borderTopColor: COLORS.ink },
+  footer: { paddingHorizontal: 16, paddingTop: 8, borderTopWidth: SHAPE.rule, borderTopColor: COLORS.line },
 });

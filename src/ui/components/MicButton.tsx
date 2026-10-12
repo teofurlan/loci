@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useReducedMotion } from '../state/use-reduced-motion';
 import { useBlink } from '../state/use-typewriter';
-import { COLORS, SHAPE } from '../theme/theme';
+import { COLORS } from '../theme/theme';
 import { PixelBox } from './PixelBox';
 import { PixelSprite } from './PixelSprite';
 
@@ -13,9 +13,12 @@ type Props = {
   onPress: () => void;
 };
 
+/** Side of the square chat buttons, dp. */
+export const CHAT_BUTTON = 44;
+
 /**
- * Dictation: a square, icon-only button (48 dp) meant for the bottom-right corner of the request box.
- * Listening swaps the mic for a stop square and blinks the fill; the screen adds a "Listening…" line.
+ * Dictation: a square, icon-only button (44 dp) with a line border and a black fill, sitting inside the chat
+ * input bar. Listening swaps the mic for a stop square and blinks the fill; the screen adds a "Listening…" line.
  */
 export function MicButton({ listening, stopping, disabled, onPress }: Props) {
   const reducedMotion = useReducedMotion();
@@ -30,9 +33,9 @@ export function MicButton({ listening, stopping, disabled, onPress }: Props) {
       onPress={onPress}
       style={[styles.root, { opacity: disabled ? 0.5 : 1 }]}
     >
-      <PixelBox fill={listening && !lit ? COLORS.ink : COLORS.action} behind={COLORS.panel} stretch>
+      <PixelBox fill={lit ? COLORS.accent : COLORS.ground} border={COLORS.line} behind={COLORS.ground} corners="round" stretch>
         <View style={styles.icon}>
-          <PixelSprite name={listening ? 'glyph:stop' : 'glyph:mic'} scale={3} inkColor={COLORS.onAction} />
+          <PixelSprite name={listening ? 'glyph:stop' : 'glyph:mic'} scale={3} inkColor={COLORS.text} />
         </View>
       </PixelBox>
     </Pressable>
@@ -40,6 +43,6 @@ export function MicButton({ listening, stopping, disabled, onPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { width: SHAPE.target, height: SHAPE.target },
+  root: { width: CHAT_BUTTON, height: CHAT_BUTTON },
   icon: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });

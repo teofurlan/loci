@@ -2,7 +2,7 @@ import { mapHeight, punchColumns } from './layout';
 
 describe('mapHeight', () => {
   it('keeps the original 55% share at the default font scale on a tall window', () => {
-    expect(mapHeight(1200, 1)).toBe(660);
+    expect(mapHeight(1400, 1)).toBe(770);
   });
 
   it('gives the map less as the font scale grows, so the story keeps its room', () => {
@@ -16,6 +16,14 @@ describe('mapHeight', () => {
 
   it('leaves the story box room for five lines at the default font scale on a 921 dp window', () => {
     expect(921 - mapHeight(921, 1)).toBeGreaterThanOrEqual(520);
+  });
+
+  it('leaves the story box room for the taller Loci header at the default font scale on a 921 dp window', () => {
+    expect(921 - mapHeight(921, 1)).toBeGreaterThanOrEqual(555);
+  });
+
+  it('keeps the same extra room for the Loci header at font scale 1.3', () => {
+    expect(921 - mapHeight(921, 1.3)).toBeGreaterThanOrEqual(675);
   });
 
   it('never collapses below a usable map', () => {

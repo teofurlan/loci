@@ -5,7 +5,7 @@ import { parseGrid, spritePaths } from '../model/sprites';
 import { COLORS } from '../theme/theme';
 
 type Props = {
-  /** Integer multiple of the native 96 x 112 grid: one mark cell is `scale` dp, so every edge stays crisp. */
+  /** dp per mark cell of the 60 x 70 grid; a whole number keeps every edge crisp. */
   scale?: number;
   color?: string;
 };
@@ -13,10 +13,10 @@ type Props = {
 const MARK_PATH = spritePaths(parseGrid(MARK_ROWS))[0] ?? '';
 
 /**
- * The Loci path mark in palette ink: the approved pixel sprite, never stretched or smoothed. Below about
+ * The Loci path mark in the palette text colour: the approved pixel sprite, never stretched or smoothed. Below about
  * 48 dp the checkpoint holes fill in, so use it at scale 1 or more.
  */
-function AppMarkView({ scale = 2, color = COLORS.ink }: Props) {
+function AppMarkView({ scale = 2, color = COLORS.text }: Props) {
   return (
     <Svg
       width={MARK_WIDTH * scale}

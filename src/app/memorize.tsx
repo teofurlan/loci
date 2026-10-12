@@ -7,11 +7,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '../ui/components/AppText';
 import { CourseMap } from '../ui/components/CourseMap';
 import { DialogueBox } from '../ui/components/DialogueBox';
+import { Loci } from '../ui/components/Loci';
 import { PixelButton } from '../ui/components/PixelButton';
 import { PixelSprite } from '../ui/components/PixelSprite';
 import { StampStrip } from '../ui/components/StampStrip';
+import { LOCI_COLS } from '../ui/model/loci';
 import { mapHeight } from '../ui/model/layout';
-import { fadeSequence } from '../ui/model/palette-fade';
+import { mapFadeSequence } from '../ui/model/palette-fade';
 import { advanceIndex } from '../ui/model/typewriter';
 import { walkingMinutes } from '../ui/model/walking-minutes';
 import { courseStore, useCourse } from '../ui/state/course';
@@ -23,6 +25,9 @@ import { COLORS, SHAPE } from '../ui/theme/theme';
 /** If the speech engine never reports a start, typing begins anyway after this long. */
 const TTS_START_FALLBACK_MS = 1500;
 
+/** Loci beside the story: one dp per Loci cell, so every cell is a whole dp (64 dp wide). */
+const LOCI_SIZE = LOCI_COLS;
+
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export default function MemorizeScreen() {
@@ -32,7 +37,7 @@ export default function MemorizeScreen() {
   const reducedMotion = useReducedMotion();
   const [selected, setSelected] = useState(0);
   const [hiding, setHiding] = useState(false);
-  const [fade, setFade] = useState<string | null>(null);
+  const [fade, setFade] = useState(0);
   const [speaking, setSpeaking] = useState(false);
   const [armedIndex, setArmedIndex] = useState<number | null>(null);
   const [asking, setAsking] = useState(false);
@@ -162,13 +167,13 @@ export default function MemorizeScreen() {
     await hideAndStart();
   };
 
-  // The signature: the screen steps through the four greens to ink, then the run begins.
+  // The map steps down to black in four hard cuts (one at once with reduced motion), then the run begins.
   const hideAndStart = async () => {
     if (hiding) return;
     setHiding(true);
     stopSpeech();
-    for (const step of fadeSequence(reducedMotion, COLORS.ground, COLORS.runField)) {
-      setFade(step.color);
+    for (const step of mapFadeSequence(reducedMotion)) {
+      setFade(step.opacity);
       await sleep(step.ms);
     }
     courseStore.beginRun(Date.now());
@@ -189,6 +194,7 @@ export default function MemorizeScreen() {
           onSelect={jump}
           padding={{ top: 56, right: 44, bottom: 72, left: 44 }}
         />
+        {fade > 0 && <View pointerEvents="auto" style={[styles.fade, { opacity: fade }]} />}
       </View>
 
       <View style={styles.header}>
@@ -234,6 +240,8 @@ export default function MemorizeScreen() {
           <View style={styles.dialogue}>
             <DialogueBox
               title={current.name}
+              subtitle={`Control ${selected + 1} of ${total} · ${minutes.perControl[selected]} min`}
+              portrait={<Loci state="waiting" size={LOCI_SIZE} />}
               stretch
               corner={
                 <Pressable
@@ -243,16 +251,15 @@ export default function MemorizeScreen() {
                   onPress={advance}
                   style={styles.next}
                 >
-                  <View style={{ opacity: typing.done && blink ? 1 : 0 }}>
+                  {/* Never flattened: the blink flips opacity between 1 (flattenable) and 0, and Fabric could crash
+                      re-parenting the pointer's SVG when that flip met the screen transition (addViewAt). */}
+                  <View collapsable={false} style={{ opacity: typing.done && blink ? 1 : 0 }}>
                     <PixelSprite name="glyph:pointer" scale={3} />
                   </View>
                 </Pressable>
               }
             >
               <ScrollView style={styles.fill} contentContainerStyle={styles.dialogueText}>
-                <AppText variant="bodySmall">
-                  Control {selected + 1} of {total} · {minutes.perControl[selected]} min
-                </AppText>
                 <Pressable
                   accessibilityLabel={`${current.name}. ${fragment}`}
                   accessibilityHint="Tap to show the whole fragment"
@@ -283,8 +290,6 @@ export default function MemorizeScreen() {
           />
         </View>
       )}
-
-      {fade && <View pointerEvents="auto" style={[styles.fade, { backgroundColor: fade }]} />}
     </View>
   );
 }
@@ -299,7 +304,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 4,
     borderTopWidth: SHAPE.rule,
-    borderTopColor: COLORS.ink,
+    borderTopColor: COLORS.line,
   },
   headerText: { flex: 1 },
   storyTitle: { fontSize: 24, lineHeight: 26 },
@@ -312,5 +317,5 @@ const styles = StyleSheet.create({
   next: { width: SHAPE.target, height: SHAPE.target, alignItems: 'center', justifyContent: 'center' },
   askContent: { padding: 12, gap: 12 },
   footer: { paddingHorizontal: 16, paddingTop: 8 },
-  fade: { ...StyleSheet.absoluteFill },
+  fade: { ...StyleSheet.absoluteFill, backgroundColor: COLORS.ground },
 });

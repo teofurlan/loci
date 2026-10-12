@@ -11,7 +11,7 @@ describe('glyphs', () => {
     expect(glyphFor(name).flat().some((p) => p !== null)).toBe(true);
   });
 
-  it('has the cursors, the mic and the unknown mark', () => {
-    expect(GLYPH_NAMES).toEqual(expect.arrayContaining(['down', 'right', 'mic', 'stop', 'mark']));
+  it('has the cursors, the mic, the send arrow and the unknown mark', () => {
+    expect(GLYPH_NAMES).toEqual(expect.arrayContaining(['down', 'right', 'mic', 'stop', 'mark', 'send']));
   });
 });

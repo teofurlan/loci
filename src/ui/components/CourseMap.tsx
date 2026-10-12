@@ -53,7 +53,7 @@ function boundsOf(points: readonly LatLng[]): BoundsTuple {
 type MapStyle = ComponentProps<typeof Map>['mapStyle'];
 
 /**
- * The overworld: the OpenFreeMap terrain recolored to four greens, a pixel "you" at the start and one
+ * The night map: the OpenFreeMap terrain recolored to dark land, lavender roads and muted greens and blues, a pixel "you" at the start and one
  * kind sprite per control with its number tag. No legs, because the order is free.
  */
 function CourseMapView({ start, controls, visited, selected, onSelect, style, padding }: Props) {
@@ -110,13 +110,18 @@ function CourseMapView({ start, controls, visited, selected, onSelect, style, pa
                   hitSlop={6}
                   style={styles.marker}
                 >
-                  <PixelBox fill={missed ? COLORS.ground : COLORS.panel} behind={COLORS.ground}>
+                  <PixelBox
+                    fill={missed ? COLORS.ground : COLORS.plate}
+                    border={missed ? COLORS.line : COLORS.plate}
+                    behind={COLORS.ground}
+                    corners="round"
+                  >
                     <View style={styles.plate}>
-                      <PixelSprite name={control.kind} scale={2} />
+                      <PixelSprite name={control.kind} scale={1} />
                     </View>
                   </PixelBox>
                   <View style={[styles.tag, found && styles.tagFound]}>
-                    <AppText variant="label" allowFontScaling={false} color={COLORS.ink} style={styles.tagText}>
+                    <AppText variant="label" allowFontScaling={false} color={found ? COLORS.onFound : COLORS.onAccent} style={styles.tagText}>
                       {index + 1}
                     </AppText>
                   </View>
@@ -144,7 +149,7 @@ function CourseMapView({ start, controls, visited, selected, onSelect, style, pa
             offset={[offsets[controls.length].dx, offsets[controls.length].dy]}
           >
             <View accessible accessibilityLabel="You are here, the start">
-              <PixelSprite name="you" scale={2} />
+              <PixelSprite name="you" scale={1} />
             </View>
           </ViewAnnotation>
         </Map>
@@ -170,22 +175,22 @@ const styles = StyleSheet.create({
     minWidth: 18,
     height: 18,
     paddingHorizontal: 2,
-    backgroundColor: COLORS.panel,
+    backgroundColor: COLORS.accent,
     borderWidth: SHAPE.rule,
-    borderColor: COLORS.ink,
+    borderColor: COLORS.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tagFound: { backgroundColor: COLORS.found },
+  tagFound: { backgroundColor: COLORS.found, borderColor: COLORS.found },
   tagText: { fontSize: 9, lineHeight: 12 },
   attribution: {
     position: 'absolute',
     left: 6,
     bottom: 6,
     paddingHorizontal: 4,
-    backgroundColor: COLORS.panel,
+    backgroundColor: COLORS.ground,
     borderWidth: SHAPE.rule,
-    borderColor: COLORS.ink,
+    borderColor: COLORS.line,
   },
   attributionText: { fontSize: 18, lineHeight: 20 },
 });
