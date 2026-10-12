@@ -82,7 +82,7 @@ The screen-off run is deliberately simple: it checks proximity to the prepared c
 
 ## Try it
 
-The project is [on GitHub](https://github.com/teofurlan/loci); the README explains how to run it. **TODO (user): publish the Android APK as a GitHub Release and add the exact download link here.** Native capabilities require an installed app build.
+The project is [on GitHub](https://github.com/teofurlan/loci); the README explains how to run it. You can install the Android APK from the [v1.0.0 release](https://github.com/teofurlan/loci/releases/tag/v1.0.0). Native capabilities require an installed app build.
 
 **TODO (user): add the demo video URL here.**
 
